@@ -181,6 +181,7 @@
       .products-grid { grid-template-columns: 1fr; }
     }
   </style>
+<link rel="stylesheet" href="../css/devis.css">
 </head>
 <body>
 
@@ -499,5 +500,6 @@ function showToast(msg, type = 'success') {
 /* ---- Init si déjà connecté ---- */
 if (sessionStorage.getItem(SESSION_KEY) === 'ok') buildGrid();
 </script>
+<script src="../js/devis.js"></script>
 </body>
 </html>

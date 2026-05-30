@@ -62,6 +62,7 @@
     .devis-note a{color:#8b1a1a;font-weight:700;text-decoration:none;}
     @media(max-width:600px){.diag-banner-inner{flex-direction:column;text-align:center;}.diag-banner-btn{width:100%;text-align:center;}}
   </style>
+<link rel="stylesheet" href="css/devis.css">
 </head>
 <body>
 
@@ -138,7 +139,7 @@
       <strong>🔧 Diagnostic 100% gratuit — Devis en 5 minutes</strong><br>
       Appelez le 05 31 21 71 38 ou venez directement au 221 Route de Seysses, Toulouse
     </div>
-    <a href="tel:0531217138" class="diag-banner-btn">📞 Appeler maintenant</a>
+    <button class="diag-banner-btn" onclick="ouvrirDevis()" style="cursor:pointer;border:none;">🔧 Devis gratuit</button>
   </div>
 </div>
 
@@ -197,11 +198,11 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement écran OLED</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Connecteur USB-C</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement écran OLED</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Connecteur USB-C</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -212,11 +213,11 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement écran OLED</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Connecteur Lightning</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement écran OLED</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Connecteur Lightning</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -227,11 +228,11 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement écran OLED</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Connecteur Lightning</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement écran OLED</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Connecteur Lightning</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -242,11 +243,11 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement écran OLED</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Connecteur Lightning</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement écran OLED</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Connecteur Lightning</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -272,11 +273,11 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement écran AMOLED</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Connecteur USB-C</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement écran AMOLED</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Connecteur USB-C</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -287,11 +288,11 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement écran AMOLED</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Connecteur USB-C</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement écran AMOLED</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Caméra arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Vitre arrière</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Connecteur USB-C</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -302,9 +303,9 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement écran</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Connecteur de charge</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement écran</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Connecteur de charge</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -330,10 +331,10 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement dalle LCD 15"</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement dalle LCD 17"</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement clavier</td><td class="delay-cell">🕐 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Réparation charnières</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement dalle LCD 15"</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement dalle LCD 17"</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement clavier</td><td class="delay-cell">🕐 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Réparation charnières</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -344,10 +345,10 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement batterie laptop</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement SSD (migration incluse)</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Ajout RAM</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Nettoyage ventilateur + pâte thermique</td><td class="delay-cell">🕐 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement batterie laptop</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement SSD (migration incluse)</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Ajout RAM</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Nettoyage ventilateur + pâte thermique</td><td class="delay-cell">🕐 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -358,10 +359,10 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Réinstallation Windows 10/11</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Récupération de données</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Nettoyage virus / malware</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Configuration &amp; optimisation</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Réinstallation Windows 10/11</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Récupération de données</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Nettoyage virus / malware</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Configuration &amp; optimisation</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -387,10 +388,10 @@
         <table>
           <thead><tr><th>Modèle</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>iPad Air 5/4</td><td class="delay-cell">🕐 Sur RDV</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>iPad Pro 11"/12.9"</td><td class="delay-cell">🕐 Sur RDV</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>iPad mini 6/5</td><td class="delay-cell">🕐 Sur RDV</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>iPad (9e/10e gen)</td><td class="delay-cell">🕐 Sur RDV</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>iPad Air 5/4</td><td class="delay-cell">🕐 Sur RDV</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>iPad Pro 11"/12.9"</td><td class="delay-cell">🕐 Sur RDV</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>iPad mini 6/5</td><td class="delay-cell">🕐 Sur RDV</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>iPad (9e/10e gen)</td><td class="delay-cell">🕐 Sur RDV</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -401,9 +402,9 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Remplacement écran Samsung Tab S9/S8</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Connecteur de charge</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Remplacement écran Samsung Tab S9/S8</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement batterie</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Connecteur de charge</td><td class="delay-cell">🕐 2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -429,10 +430,10 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Réparation joystick drift (manette)</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Nettoyage + pâte thermique ventilateur</td><td class="delay-cell">🕐 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement lecteur BD</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Diagnostic complet</td><td class="delay-cell">⚡ Sur place</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Réparation joystick drift (manette)</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Nettoyage + pâte thermique ventilateur</td><td class="delay-cell">🕐 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement lecteur BD</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Diagnostic complet</td><td class="delay-cell">⚡ Sur place</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -443,10 +444,10 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Réparation joystick drift</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Nettoyage complet ventilateur</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement lecteur BD</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Remplacement disque dur / SSD</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Réparation joystick drift</td><td class="delay-cell">⚡ 1h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Nettoyage complet ventilateur</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement lecteur BD</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Remplacement disque dur / SSD</td><td class="delay-cell">🕐 2-4h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -457,10 +458,10 @@
         <table>
           <thead><tr><th>Réparation</th><th>Délai</th><th>Devis</th><th>Devis</th></tr></thead>
           <tbody>
-            <tr><td>Switch — Remplacement écran LCD</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Switch — Joystick drift Joy-Con</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Xbox Series — Joystick drift</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
-            <tr><td>Xbox Series — Ventilateur</td><td class="delay-cell">🕐 1-2h</td><td class="devis-cell"><a href="tel:0531217138" class="btn-devis">📞 Appeler</a></td></tr>
+            <tr><td>Switch — Remplacement écran LCD</td><td class="delay-cell">🕐 24-48h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Switch — Joystick drift Joy-Con</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Xbox Series — Joystick drift</td><td class="delay-cell">⚡ 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
+            <tr><td>Xbox Series — Ventilateur</td><td class="delay-cell">🕐 1-2h</td><td class="devis-cell"><button class="btn-devis" onclick="ouvrirDevis()">🔧 Devis gratuit en boutique</button></td></tr>
           </tbody>
         </table>
       <div class="devis-note">💡 Le tarif dépend du modèle exact et du cours des pièces. Devis gratuit en boutique ou par téléphone au <a href="tel:0531217138">05 31 21 71 38</a> — réponse en 5 minutes.</div>
@@ -536,5 +537,6 @@ if (device) {
   if (tab) tab.click();
 }
 </script>
+<script src="js/devis.js"></script>
 </body>
 </html>

@@ -1,0 +1,287 @@
+/* ============================================================
+   i-Mobile Service — Système Devis Flottant
+   ============================================================ */
+
+/* ── Widget flottant ── */
+#devis-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #8b1a1a;
+  color: #fff;
+  border-radius: 50px;
+  padding: 14px 22px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 998;
+  box-shadow: 0 8px 32px rgba(139,26,26,0.45);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  animation: devisFloat 3s ease-in-out infinite;
+  transition: box-shadow 0.2s;
+}
+#devis-float:hover {
+  box-shadow: 0 12px 40px rgba(139,26,26,0.6);
+  animation-play-state: paused;
+}
+@keyframes devisFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+.devis-badge {
+  background: #00bcd4;
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+
+/* ── Overlay ── */
+#devis-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+}
+#devis-overlay.open { display: block; }
+
+/* ── Panneau glissant ── */
+.devis-panel {
+  position: fixed;
+  top: 0;
+  right: -440px;
+  width: 420px;
+  max-width: 100vw;
+  height: 100vh;
+  background: #fff;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+}
+.devis-panel.open { right: 0; }
+
+/* Header */
+.devis-header {
+  background: #8b1a1a;
+  color: #fff;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: .95rem;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.devis-header button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  opacity: .8;
+}
+.devis-header button:hover { opacity: 1; }
+
+/* Stepper */
+.devis-steps {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.devis-steps .step {
+  flex: 1;
+  text-align: center;
+  padding: 11px 6px;
+  font-size: .75rem;
+  font-weight: 600;
+  color: #aaa;
+  border-bottom: 3px solid transparent;
+  transition: all .2s;
+}
+.devis-steps .step.active { color: #8b1a1a; border-bottom-color: #8b1a1a; }
+.devis-steps .step.done   { color: #22c55e; border-bottom-color: #22c55e; }
+
+/* Contenu étapes */
+.step-content { display: none; padding: 20px; flex: 1; }
+.step-content.active { display: block; }
+.step-content > p:first-child {
+  font-weight: 700;
+  font-size: .97rem;
+  margin-bottom: 14px;
+  color: #1a1a2e;
+}
+
+/* Grille appareils */
+.device-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.device-btn {
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  color: #333;
+  user-select: none;
+}
+.device-btn:hover  { border-color: #8b1a1a; background: #fff5f5; color: #8b1a1a; }
+.device-btn.selected { border-color: #8b1a1a; background: #8b1a1a; color: #fff; }
+
+/* Select */
+.devis-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: .9rem;
+  margin: 6px 0 14px;
+  background: #fff;
+  color: #333;
+  font-family: inherit;
+}
+.devis-select:focus { outline: none; border-color: #8b1a1a; }
+
+/* Pannes */
+.panne-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+.panne-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1.5px solid #f0f0f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: .86rem;
+  transition: all .15s;
+}
+.panne-item:hover { border-color: #8b1a1a; background: #fff5f5; }
+.panne-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #8b1a1a; flex-shrink: 0; }
+
+/* Textarea & inputs */
+.devis-textarea, .devis-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color .2s;
+}
+.devis-textarea { resize: vertical; margin-bottom: 8px; }
+.devis-input    { margin-bottom: 10px; }
+.devis-textarea:focus, .devis-input:focus { outline: none; border-color: #8b1a1a; }
+
+/* Navigation */
+.devis-nav { display: flex; gap: 10px; margin-top: 14px; }
+.devis-nav > button:first-child {
+  padding: 10px 16px;
+  background: #f5f5f5;
+  color: #555;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: .88rem;
+  transition: background .2s;
+}
+.devis-nav > button:first-child:hover { background: #e5e5e5; }
+
+.btn-next {
+  flex: 1;
+  padding: 12px 20px;
+  background: #8b1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: .92rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .2s;
+}
+.btn-next:hover { background: #6d1515; }
+
+.btn-submit {
+  flex: 1;
+  padding: 12px 20px;
+  background: #166534;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: .92rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .2s;
+}
+.btn-submit:hover { background: #14532d; }
+
+/* Récap */
+.devis-recap { background: #f8f9fc; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+.recap-title { font-weight: 700; font-size: .83rem; color: #555; margin-bottom: 6px; }
+.recap-row   { font-size: .82rem; color: #444; padding: 2px 0; }
+
+/* RGPD */
+.rgpd-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: .76rem;
+  color: #666;
+  margin-bottom: 12px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.rgpd-check input { margin-top: 2px; flex-shrink: 0; accent-color: #8b1a1a; }
+
+/* Confirmation */
+.devis-confirm { text-align: center; padding: 2.5rem 1rem; }
+.confirm-icon  { font-size: 4rem; margin-bottom: 1rem; }
+.devis-confirm h3 { font-size: 1.4rem; color: #1a1a2e; margin-bottom: .75rem; }
+.devis-confirm p  { color: #555; line-height: 1.6; margin-bottom: .5rem; }
+
+/* ── Bouton devis (dans tableaux et inline) ── */
+.btn-devis {
+  display: inline-block;
+  background: #8b1a1a;
+  color: #fff !important;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none !important;
+  border: none;
+  font-family: inherit;
+  transition: background .2s;
+  white-space: nowrap;
+}
+.btn-devis:hover { background: #6d1515; }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .devis-panel { width: 100%; right: -100%; }
+  #devis-float { bottom: 16px; right: 16px; padding: 12px 16px; font-size: .85rem; }
+}
