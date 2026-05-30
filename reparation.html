@@ -10,8 +10,22 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .repair-hero{background:linear-gradient(135deg,#fce8e8 0%,#f8f9fc 60%,#e0f7fa 100%);padding:4rem 1.5rem;text-align:center;border-bottom:1px solid var(--color-border);}
-    .repair-hero h1{margin-bottom:.75rem;}.repair-hero p{color:var(--color-text-secondary);font-size:1.05rem;max-width:540px;margin:0 auto 1.5rem;}
+    /* ---- Hero réparation ---- */
+    .repair-hero{background:linear-gradient(135deg,#fce8e8 0%,#f8f9fc 60%,#e0f7fa 100%);padding:4rem 1.5rem;border-bottom:1px solid var(--color-border);}
+    .repair-hero-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:3rem;}
+    .repair-hero-text{flex:1;text-align:left;}
+    .repair-hero-text h1{margin-bottom:.75rem;}
+    .repair-hero-text p{color:var(--color-text-secondary);font-size:1.05rem;margin:0 0 1.25rem;}
+    .repair-hero-photo{flex:1;}
+    .repair-photo-wrapper{position:relative;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.15);}
+    .repair-photo-wrapper img{width:100%;height:340px;object-fit:cover;display:block;}
+    .repair-photo-badge{position:absolute;bottom:16px;left:16px;background:#8b1a1a;color:#fff;padding:9px 16px;border-radius:8px;font-size:.82rem;font-weight:700;letter-spacing:.02em;box-shadow:0 4px 12px rgba(139,26,26,.35);}
+    @media(max-width:800px){
+      .repair-hero-inner{flex-direction:column;gap:2rem;}
+      .repair-hero-text{text-align:center;}
+      .repair-hero-photo{width:100%;}
+      .repair-photo-wrapper img{height:220px;}
+    }
     .device-tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:3rem;}
     .device-tab{padding:.5rem 1.25rem;border-radius:var(--radius-full);border:1.5px solid var(--color-border);background:white;font-size:.9rem;font-weight:600;cursor:pointer;transition:all var(--transition-fast);color:var(--color-text-secondary);}
     .device-tab:hover{border-color:var(--color-cyan);color:var(--color-cyan-dark);}
@@ -107,10 +121,31 @@
 </div>
 
 <div class="repair-hero">
-  <div class="section-tag" style="background:var(--color-bordeaux-light);color:var(--color-bordeaux);">🔧 Tarifs transparents</div>
-  <h1>Tous nos tarifs de réparation</h1>
-  <p>Prix indicatifs — devis gratuit sur place ou par téléphone. TVA réduite à 5,5% grâce au Label QualiRépar.</p>
-  <span class="tva-note">🏅 Label QualiRépar — TVA 5,5% sur toutes les réparations</span>
+  <div class="repair-hero-inner">
+
+    <!-- Texte gauche -->
+    <div class="repair-hero-text">
+      <div class="section-tag" style="background:var(--color-bordeaux-light);color:var(--color-bordeaux);display:inline-flex;margin-bottom:1rem;">🔧 Tarifs transparents</div>
+      <h1>Tous nos tarifs<br>de réparation</h1>
+      <p>Prix indicatifs — devis gratuit sur place ou par téléphone. TVA réduite à 5,5% grâce au Label QualiRépar.</p>
+      <span class="tva-note">🏅 Label QualiRépar — TVA 5,5% sur toutes les réparations</span>
+    </div>
+
+    <!-- Photo droite -->
+    <div class="repair-hero-photo">
+      <div class="repair-photo-wrapper">
+        <img
+          src="assets/images/photo_rep.webp"
+          alt="Technicien i-Mobile Service en train de réparer un iPhone — Toulouse"
+          loading="eager"
+          width="800"
+          height="500"
+          onerror="this.src='https://images.unsplash.com/photo-1512054502232-10a0a035d672?w=800&h=500&q=80&auto=format&fit=crop'">
+        <div class="repair-photo-badge">✅ Technicien certifié — Toulouse</div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <main class="section">
