@@ -3,267 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Admin — i-Mobile Service</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Dashboard — Admin i-Mobile Service</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'DM Sans',sans-serif;background:#f4f4f4;color:#1a1a2e;min-height:100vh;}
-    /* Auth */
-    #auth-screen{position:fixed;inset:0;background:#8b1a1a;display:flex;align-items:center;justify-content:center;z-index:999;}
-    .auth-box{background:#fff;border-radius:16px;padding:2.5rem 2rem;width:340px;text-align:center;}
-    .auth-box h2{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;margin-bottom:.5rem;color:#1a1a2e;}
-    .auth-box p{color:#666;font-size:.9rem;margin-bottom:1.5rem;}
-    .auth-input{width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:1rem;font-family:inherit;margin-bottom:12px;}
-    .auth-input:focus{outline:none;border-color:#8b1a1a;}
-    .auth-btn{width:100%;padding:12px;background:#8b1a1a;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;}
-    .auth-btn:hover{background:#6d1515;}
-    .auth-error{color:#dc2626;font-size:.85rem;margin-top:8px;display:none;}
-    /* Layout */
-    #app{display:none;}
-    .admin-header{background:#8b1a1a;color:#fff;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;}
-    .admin-header h1{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;}
-    .admin-nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:.5rem 2rem;display:flex;gap:.5rem;flex-wrap:wrap;}
-    .nav-tab{padding:.5rem 1rem;border-radius:6px;border:none;background:transparent;font-size:.88rem;font-weight:600;cursor:pointer;color:#666;font-family:inherit;transition:all .2s;}
-    .nav-tab.active{background:#8b1a1a;color:#fff;}
-    .nav-tab:hover:not(.active){background:#f5f5f5;color:#333;}
-    /* Content */
-    .admin-content{max-width:1100px;margin:0 auto;padding:1.5rem;}
-    .section{display:none;} .section.active{display:block;}
-    /* KPI */
-    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;}
-    .kpi-card{background:#fff;border-radius:12px;padding:1.25rem 1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #e5e7eb;}
-    .kpi-label{font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;}
-    .kpi-value{font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:800;color:#8b1a1a;}
-    /* Table */
-    .data-card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #e5e7eb;overflow:hidden;margin-bottom:1.5rem;}
-    .data-card-header{padding:1rem 1.5rem;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
-    .data-card-title{font-weight:700;font-size:1rem;}
-    .data-table{width:100%;border-collapse:collapse;}
-    .data-table th{background:#f8f8f8;padding:.7rem 1rem;text-align:left;font-size:.75rem;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
-    .data-table td{padding:.75rem 1rem;font-size:.87rem;border-bottom:1px solid #f5f5f5;vertical-align:middle;}
-    .data-table tr:last-child td{border-bottom:none;}
-    .data-table tr:hover td{background:#fafafa;}
-    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.74rem;font-weight:700;}
-    .badge-devis{background:#fef3c7;color:#92400e;}
-    .badge-commande{background:#dcfce7;color:#166534;}
-    .btn-action{padding:6px 14px;border-radius:6px;border:1.5px solid;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;text-decoration:none;display:inline-block;}
-    .btn-repondre{border-color:#8b1a1a;color:#8b1a1a;background:transparent;}
-    .btn-repondre:hover{background:#8b1a1a;color:#fff;}
-    .btn-delete{border-color:#dc2626;color:#dc2626;background:transparent;margin-left:4px;}
-    .btn-delete:hover{background:#dc2626;color:#fff;}
-    .empty-state{padding:3rem;text-align:center;color:#aaa;font-size:.9rem;}
-    .empty-icon{font-size:2.5rem;margin-bottom:.75rem;}
-    /* Responsive */
-    @media(max-width:640px){
-      .admin-header,admin-nav{padding:.75rem 1rem;}
-      .admin-content{padding:1rem;}
-      .data-table th:nth-child(3),.data-table td:nth-child(3){display:none;}
-    }
-  </style>
+  <link rel="stylesheet" href="admin.css">
 </head>
 <body>
+<div class="admin-layout">
 
-<!-- ÉCRAN DE CONNEXION -->
-<div id="auth-screen">
-  <div class="auth-box">
-    <div style="font-size:2rem;margin-bottom:.5rem;">🔧</div>
-    <h2>Admin i-Mobile</h2>
-    <p>Connectez-vous pour accéder au dashboard</p>
-    <input type="password" id="pwd-input" class="auth-input" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')verifierMdp()">
-    <button class="auth-btn" onclick="verifierMdp()">Accéder →</button>
-    <p class="auth-error" id="auth-error">Mot de passe incorrect</p>
-  </div>
-</div>
-
-<!-- DASHBOARD -->
-<div id="app">
-  <div class="admin-header">
-    <h1>🔧 i-Mobile Service — Admin</h1>
-    <div style="display:flex;gap:.75rem;align-items:center;">
-      <a href="photos.html" style="color:rgba(255,255,255,.8);font-size:.85rem;text-decoration:none;">📸 Photos</a>
-      <button onclick="sessionStorage.clear();location.reload()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.83rem;">Déconnexion</button>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">🔧 i-Mobile Service<span>Administration</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="active"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="produits.html"><span class="nav-icon">📦</span> Produits</a>
+      <a href="photos.html"><span class="nav-icon">🖼️</span> Photos</a>
+      <a href="prix.html"><span class="nav-icon">💰</span> Prix</a>
+      <a href="commandes.html"><span class="nav-icon">📋</span> Commandes</a>
+      <a href="devis.html"><span class="nav-icon">📩</span> Devis reçus</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="adminLogout()">🚪 Déconnexion</button>
     </div>
-  </div>
+  </aside>
 
-  <div class="admin-nav">
-    <button class="nav-tab active" onclick="afficherSection('devis',this)">📋 Devis reçus</button>
-    <button class="nav-tab" onclick="afficherSection('commandes',this)">🛍️ Commandes</button>
-  </div>
-
-  <div class="admin-content">
-
-    <!-- ─── SECTION DEVIS ─── -->
-    <div class="section active" id="section-devis">
-      <div class="kpi-grid" id="kpi-devis"></div>
-      <div class="data-card">
-        <div class="data-card-header">
-          <span class="data-card-title">📋 Devis reçus</span>
-          <button onclick="viderDevis()" style="border:1.5px solid #dc2626;color:#dc2626;background:transparent;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.8rem;font-family:inherit;">🗑 Tout effacer</button>
-        </div>
-        <div id="table-devis"></div>
+  <!-- MAIN -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">📊 Tableau de bord</div>
+      <div class="topbar-right">
+        <span class="admin-badge">🟢 Connecté</span>
+        <a href="../index.html" target="_blank" style="font-size:.83rem;color:#8b1a1a;text-decoration:none;font-weight:600;">↗ Voir le site</a>
       </div>
     </div>
 
-    <!-- ─── SECTION COMMANDES ─── -->
-    <div class="section" id="section-commandes">
-      <div class="kpi-grid" id="kpi-commandes"></div>
-      <div class="data-card">
-        <div class="data-card-header">
-          <span class="data-card-title">🛍️ Commandes boutique</span>
-          <button onclick="viderCommandes()" style="border:1.5px solid #dc2626;color:#dc2626;background:transparent;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.8rem;font-family:inherit;">🗑 Tout effacer</button>
-        </div>
-        <div id="table-commandes"></div>
-      </div>
-    </div>
+    <div class="admin-content">
 
+      <!-- KPI -->
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-label">Produits total</div><div class="kpi-value" id="kpi-produits">—</div></div>
+        <div class="kpi-card"><div class="kpi-icon">👁️</div><div class="kpi-label">Produits visibles</div><div class="kpi-value" id="kpi-visibles">—</div></div>
+        <div class="kpi-card"><div class="kpi-icon">🛍️</div><div class="kpi-label">Commandes</div><div class="kpi-value" id="kpi-commandes">—</div></div>
+        <div class="kpi-card"><div class="kpi-icon">📩</div><div class="kpi-label">Devis reçus</div><div class="kpi-value" id="kpi-devis">—</div></div>
+      </div>
+
+      <!-- Accès rapide -->
+      <div class="data-card">
+        <div class="card-header"><span class="card-title">⚡ Accès rapide</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;padding:1.25rem;">
+          <a href="produits.html" class="btn-admin btn-primary" style="justify-content:center;padding:1rem;font-size:.92rem;">📦 Gérer les produits</a>
+          <a href="photos.html"   class="btn-admin btn-secondary" style="justify-content:center;padding:1rem;font-size:.92rem;">🖼️ Gérer les photos</a>
+          <a href="prix.html"     class="btn-admin btn-primary" style="justify-content:center;padding:1rem;font-size:.92rem;">💰 Modifier les prix</a>
+          <a href="commandes.html" class="btn-admin btn-secondary" style="justify-content:center;padding:1rem;font-size:.92rem;">📋 Voir les commandes</a>
+          <a href="devis.html"    class="btn-admin btn-ghost" style="justify-content:center;padding:1rem;font-size:.92rem;">📩 Voir les devis</a>
+        </div>
+      </div>
+
+      <!-- Dernières commandes -->
+      <div class="data-card">
+        <div class="card-header">
+          <span class="card-title">🛍️ Dernières commandes</span>
+          <a href="commandes.html" class="btn-admin btn-ghost btn-sm">Voir tout →</a>
+        </div>
+        <div id="recent-commandes">
+          <div class="empty-state"><div class="empty-state-icon">🛍️</div>Aucune commande pour l'instant.</div>
+        </div>
+      </div>
+
+      <!-- Derniers devis -->
+      <div class="data-card">
+        <div class="card-header">
+          <span class="card-title">📩 Derniers devis</span>
+          <a href="devis.html" class="btn-admin btn-ghost btn-sm">Voir tout →</a>
+        </div>
+        <div id="recent-devis">
+          <div class="empty-state"><div class="empty-state-icon">📩</div>Aucun devis reçu pour l'instant.</div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
-<div id="toast-container" style="position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;"></div>
-
+<div id="toast-container"></div>
+<script src="auth.js"></script>
 <script>
-  const ADMIN_PASSWORD = 'iMobile2026!';
+  requireAuth();
 
-  function verifierMdp() {
-    const val = document.getElementById('pwd-input').value;
-    if (val === ADMIN_PASSWORD) {
-      sessionStorage.setItem('ims_admin_session', '1');
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      chargerDevis();
-      chargerCommandes();
-    } else {
-      document.getElementById('auth-error').style.display = 'block';
-      document.getElementById('pwd-input').value = '';
-    }
-  }
-
-  /* Vérifier session existante */
-  if (sessionStorage.getItem('ims_admin_session') === '1') {
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.addEventListener('DOMContentLoaded', () => { chargerDevis(); chargerCommandes(); });
-  }
-
-  function afficherSection(nom, btn) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById('section-' + nom).classList.add('active');
-    btn.classList.add('active');
-  }
-
-  /* ─── DEVIS ─── */
-  function chargerDevis() {
-    const data = JSON.parse(localStorage.getItem('ims_devis') || '[]');
-
+  document.addEventListener('DOMContentLoaded', () => {
     /* KPI */
-    document.getElementById('kpi-devis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Total devis</div><div class="kpi-value">${data.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Ce mois</div><div class="kpi-value">${data.filter(d => {
-        const [j,m,a] = d.date.split('/'); const now = new Date();
-        return parseInt(m) === now.getMonth()+1 && parseInt(a) === now.getFullYear();
-      }).length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">iPhone</div><div class="kpi-value">${data.filter(d => d.appareil?.includes('iPhone')).length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Samsung</div><div class="kpi-value">${data.filter(d => d.appareil?.includes('Samsung')).length}</div></div>`;
+    const catalogue  = JSON.parse(localStorage.getItem('ims_catalogue') || 'null');
+    const commandes  = JSON.parse(localStorage.getItem('ims_commandes') || '[]');
+    const devis      = JSON.parse(localStorage.getItem('ims_devis') || '[]');
+    const hidden     = JSON.parse(localStorage.getItem('ims_hidden') || '[]');
 
-    if (!data.length) {
-      document.getElementById('table-devis').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>Aucun devis reçu pour le moment.</div>';
-      return;
+    const totalProd = catalogue ? catalogue.length : 87;
+    const visibles  = totalProd - hidden.length;
+
+    document.getElementById('kpi-produits').textContent  = totalProd;
+    document.getElementById('kpi-visibles').textContent  = visibles;
+    document.getElementById('kpi-commandes').textContent = commandes.length;
+    document.getElementById('kpi-devis').textContent     = devis.length;
+
+    /* Dernières commandes */
+    if (commandes.length) {
+      const tbody = commandes.slice(0, 5).map(c => `
+        <tr>
+          <td><span class="badge badge-commande">${c.id}</span></td>
+          <td>${c.date}</td>
+          <td>${c.client?.nom || '—'}</td>
+          <td><strong>${c.total}€</strong></td>
+          <td><a href="commandes.html" class="btn-admin btn-ghost btn-sm">Voir →</a></td>
+        </tr>`).join('');
+      document.getElementById('recent-commandes').innerHTML =
+        `<table class="data-table"><thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Total</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
     }
 
-    document.getElementById('table-devis').innerHTML = `
-      <table class="data-table">
-        <thead><tr><th>N°</th><th>Date</th><th>Appareil / Modèle</th><th>Panne(s)</th><th>Client</th><th>Actions</th></tr></thead>
-        <tbody>
-          ${data.map((d, i) => `
-            <tr>
-              <td><span class="badge badge-devis">${d.numero}</span></td>
-              <td>${d.date}</td>
-              <td><strong>${d.appareil}</strong>${d.modele ? '<br><span style="color:#888;font-size:.8rem">'+d.modele+'</span>' : ''}</td>
-              <td style="max-width:200px;word-break:break-word;">${d.pannes || '—'}</td>
-              <td><strong>${d.client?.prenom} ${d.client?.nom}</strong><br>
-                <a href="tel:${d.client?.tel}" style="color:#8b1a1a;font-size:.82rem;">${d.client?.tel}</a></td>
-              <td style="white-space:nowrap;">
-                <a href="mailto:${d.client?.email}?subject=Réponse devis ${d.numero}&body=Bonjour ${d.client?.prenom},%0A%0AConcernant votre demande de devis (${d.numero}) pour votre ${d.modele || d.appareil},%0A" class="btn-action btn-repondre">✉️ Répondre</a>
-                <button class="btn-action btn-delete" onclick="supprimerDevis(${i})">✕</button>
-              </td>
-            </tr>`).join('')}
-        </tbody>
-      </table>`;
-  }
-
-  function supprimerDevis(i) {
-    const data = JSON.parse(localStorage.getItem('ims_devis') || '[]');
-    data.splice(i, 1);
-    localStorage.setItem('ims_devis', JSON.stringify(data));
-    chargerDevis();
-    toast('Devis supprimé', 'success');
-  }
-
-  function viderDevis() {
-    if (!confirm('Effacer tous les devis ?')) return;
-    localStorage.removeItem('ims_devis');
-    chargerDevis();
-    toast('Devis effacés', 'success');
-  }
-
-  /* ─── COMMANDES ─── */
-  function chargerCommandes() {
-    const data = JSON.parse(localStorage.getItem('ims_commandes') || '[]');
-
-    document.getElementById('kpi-commandes').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Total commandes</div><div class="kpi-value">${data.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">CA total</div><div class="kpi-value">${data.reduce((s,c)=>s+parseFloat(c.total||0),0).toFixed(0)}€</div></div>`;
-
-    if (!data.length) {
-      document.getElementById('table-commandes').innerHTML = '<div class="empty-state"><div class="empty-icon">🛍️</div>Aucune commande pour le moment.</div>';
-      return;
+    /* Derniers devis */
+    if (devis.length) {
+      const tbody = devis.slice(0, 5).map(d => `
+        <tr>
+          <td><span class="badge badge-devis">${d.numero}</span></td>
+          <td>${d.date}</td>
+          <td>${d.client?.prenom} ${d.client?.nom}</td>
+          <td>${d.appareil}</td>
+          <td><a href="mailto:${d.client?.email}" class="btn-admin btn-ghost btn-sm">✉️ Répondre</a></td>
+        </tr>`).join('');
+      document.getElementById('recent-devis').innerHTML =
+        `<table class="data-table"><thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Appareil</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
     }
-
-    document.getElementById('table-commandes').innerHTML = `
-      <table class="data-table">
-        <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Total</th><th>Livraison</th><th>Actions</th></tr></thead>
-        <tbody>
-          ${data.map((c, i) => `
-            <tr>
-              <td><span class="badge badge-commande">${c.id}</span></td>
-              <td>${c.date}</td>
-              <td><strong>${c.client?.nom}</strong><br>
-                <a href="mailto:${c.client?.email}" style="color:#8b1a1a;font-size:.82rem;">${c.client?.email}</a></td>
-              <td><strong>${c.total}€</strong></td>
-              <td style="font-size:.82rem;">${c.livraison?.mode || '—'}</td>
-              <td>
-                <a href="mailto:${c.client?.email}?subject=Commande ${c.id}&body=Bonjour," class="btn-action btn-repondre">✉️ Répondre</a>
-                <button class="btn-action btn-delete" onclick="supprimerCommande(${i})">✕</button>
-              </td>
-            </tr>`).join('')}
-        </tbody>
-      </table>`;
-  }
-
-  function supprimerCommande(i) {
-    const data = JSON.parse(localStorage.getItem('ims_commandes') || '[]');
-    data.splice(i, 1);
-    localStorage.setItem('ims_commandes', JSON.stringify(data));
-    chargerCommandes();
-    toast('Commande supprimée', 'success');
-  }
-
-  function viderCommandes() {
-    if (!confirm('Effacer toutes les commandes ?')) return;
-    localStorage.removeItem('ims_commandes');
-    chargerCommandes();
-    toast('Commandes effacées', 'success');
-  }
-
-  function toast(msg, type) {
-    const t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = `background:${type==='success'?'#166534':'#dc2626'};color:#fff;padding:10px 18px;border-radius:8px;font-size:.88rem;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2);`;
-    document.getElementById('toast-container').appendChild(t);
-    setTimeout(() => t.remove(), 3000);
-  }
+  });
 </script>
 </body>
 </html>

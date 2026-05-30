@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Prix — Admin i-Mobile Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+  <style>
+    .prix-value { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:800; color:#8b1a1a; }
+    .prix-input { width:90px; }
+    .masse-grid { display:grid; grid-template-columns:1fr 1fr auto auto; gap:.75rem; align-items:end; padding:1.25rem; }
+    .historique-row { display:flex; align-items:center; gap:1rem; padding:.6rem 1rem; border-bottom:1px solid #f5f5f5; font-size:.87rem; }
+    .historique-row:last-child { border-bottom:none; }
+    .old-prix { text-decoration:line-through; color:#aaa; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">🔧 i-Mobile Service<span>Administration</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="produits.html"><span class="nav-icon">📦</span> Produits</a>
+      <a href="photos.html"><span class="nav-icon">🖼️</span> Photos</a>
+      <a href="prix.html" class="active"><span class="nav-icon">💰</span> Prix</a>
+      <a href="commandes.html"><span class="nav-icon">📋</span> Commandes</a>
+      <a href="devis.html"><span class="nav-icon">📩</span> Devis reçus</a>
+    </nav>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="adminLogout()">🚪 Déconnexion</button></div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">💰 Gestion des prix</div>
+    </div>
+    <div class="admin-content">
+
+      <!-- Modification en masse -->
+      <div class="data-card" style="margin-bottom:1.5rem;">
+        <div class="card-header"><span class="card-title">⚡ Modification en masse par catégorie</span></div>
+        <div class="masse-grid">
+          <div>
+            <label style="font-size:.8rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem;">Catégorie</label>
+            <select id="masse-cat" class="admin-select" style="width:100%;">
+              <option value="all">Toutes catégories</option>
+              <option value="telephone">📱 Téléphones</option>
+              <option value="pc">💻 PC & Tablettes</option>
+              <option value="protection">🛡️ Protection</option>
+              <option value="coque">🎨 Coques</option>
+              <option value="chargeur">⚡ Chargeurs</option>
+              <option value="cable">🔗 Câbles</option>
+              <option value="audio">🎧 Audio</option>
+              <option value="accessoire">🔧 Accessoires</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.8rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem;">Type</label>
+            <select id="masse-type" class="admin-select" style="width:100%;">
+              <option value="pct_remise">% Remise</option>
+              <option value="pct_hausse">% Hausse</option>
+              <option value="fixe_remise">€ Remise</option>
+              <option value="fixe_hausse">€ Hausse</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.8rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem;">Valeur</label>
+            <input type="number" id="masse-val" class="admin-input prix-input" placeholder="ex: 10" min="0" step="0.01">
+          </div>
+          <button class="btn-admin btn-primary" onclick="appliquerMasse()">Appliquer</button>
+        </div>
+      </div>
+
+      <!-- Liste produits -->
+      <div class="data-card">
+        <div class="card-header">
+          <span class="card-title">📋 Tous les prix</span>
+          <input type="text" id="search-prix" class="admin-input" placeholder="🔍 Rechercher..." oninput="filtrerPrix()" style="width:180px;">
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Produit</th><th>Catégorie</th><th>Prix actuel</th><th>Nouveau prix</th><th>Sauvegarder</th></tr></thead>
+            <tbody id="prix-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Historique -->
+      <div class="data-card">
+        <div class="card-header">
+          <span class="card-title">🕐 Historique (20 dernières modifs)</span>
+          <button class="btn-admin btn-danger btn-sm" onclick="viderHistorique()">🗑 Effacer</button>
+        </div>
+        <div id="historique-list">
+          <div class="empty-state"><div class="empty-state-icon">🕐</div>Aucune modification enregistrée.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="../js/catalogue.js"></script>
+<script src="auth.js"></script>
+<script>
+  requireAuth();
+  let catalogue = [];
+  let prices    = JSON.parse(localStorage.getItem('ims_prices') || '{}');
+  let historique = JSON.parse(localStorage.getItem('ims_prix_historique') || '[]');
+
+  const catLabels = { telephone:'📱', pc:'💻', protection:'🛡️', coque:'🎨', chargeur:'⚡', cable:'🔗', audio:'🎧', accessoire:'🔧' };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    catalogue = typeof CATALOGUE !== 'undefined' ? CATALOGUE.map(p => ({ ...p, prix: prices[p.id] ?? p.prix })) : [];
+    afficherPrix(catalogue);
+    afficherHistorique();
+  });
+
+  function filtrerPrix() {
+    const q = document.getElementById('search-prix').value.toLowerCase();
+    afficherPrix(catalogue.filter(p => p.nom.toLowerCase().includes(q)));
+  }
+
+  function afficherPrix(liste) {
+    document.getElementById('prix-tbody').innerHTML = liste.map(p => `
+      <tr>
+        <td>${p.emoji} <strong>${p.nom}</strong></td>
+        <td>${catLabels[p.categorie] || ''} ${p.categorie}</td>
+        <td><span class="prix-value">${p.prix.toFixed(2).replace('.',',')}€</span></td>
+        <td><input type="number" class="admin-input prix-input" id="new-prix-${p.id}" value="${p.prix.toFixed(2)}" step="0.01" min="0"></td>
+        <td><button class="btn-admin btn-primary btn-sm" onclick="sauvegarderPrix(${p.id})">✅ Mettre à jour</button></td>
+      </tr>`).join('');
+  }
+
+  function sauvegarderPrix(id) {
+    const input = document.getElementById('new-prix-' + id);
+    const val   = parseFloat(input.value);
+    const p     = catalogue.find(x => x.id === id);
+    if (!p || isNaN(val) || val < 0) { adminToast('Valeur invalide', 'error'); return; }
+    const ancien = p.prix;
+    prices[id] = val;
+    p.prix = val;
+    localStorage.setItem('ims_prices', JSON.stringify(prices));
+    /* Historique */
+    historique.unshift({ id, nom: p.nom, ancien: ancien, nouveau: val, date: new Date().toLocaleString('fr-FR') });
+    if (historique.length > 20) historique = historique.slice(0, 20);
+    localStorage.setItem('ims_prix_historique', JSON.stringify(historique));
+    afficherPrix(catalogue);
+    afficherHistorique();
+    adminToast(`Prix mis à jour : ${val.toFixed(2).replace('.',',')}€`, 'success');
+  }
+
+  function appliquerMasse() {
+    const cat  = document.getElementById('masse-cat').value;
+    const type = document.getElementById('masse-type').value;
+    const val  = parseFloat(document.getElementById('masse-val').value);
+    if (isNaN(val) || val < 0) { adminToast('Valeur invalide', 'error'); return; }
+    let nb = 0;
+    catalogue.filter(p => cat === 'all' || p.categorie === cat).forEach(p => {
+      let nvx;
+      if (type === 'pct_remise') nvx = Math.max(0, p.prix * (1 - val / 100));
+      if (type === 'pct_hausse') nvx = p.prix * (1 + val / 100);
+      if (type === 'fixe_remise') nvx = Math.max(0, p.prix - val);
+      if (type === 'fixe_hausse') nvx = p.prix + val;
+      nvx = Math.round(nvx * 100) / 100;
+      prices[p.id] = nvx;
+      historique.unshift({ id: p.id, nom: p.nom, ancien: p.prix, nouveau: nvx, date: new Date().toLocaleString('fr-FR') });
+      p.prix = nvx;
+      nb++;
+    });
+    if (historique.length > 20) historique = historique.slice(0, 20);
+    localStorage.setItem('ims_prices', JSON.stringify(prices));
+    localStorage.setItem('ims_prix_historique', JSON.stringify(historique));
+    filtrerPrix();
+    afficherHistorique();
+    adminToast(nb + ' produit(s) mis à jour', 'success');
+  }
+
+  function afficherHistorique() {
+    const el = document.getElementById('historique-list');
+    if (!historique.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🕐</div>Aucune modification.</div>';
+      return;
+    }
+    el.innerHTML = historique.map((h, i) => `
+      <div class="historique-row">
+        <span style="flex:1;font-weight:600;">${h.nom}</span>
+        <span class="old-prix">${h.ancien?.toFixed(2).replace('.',',')}€</span>
+        <span>→</span>
+        <span style="color:#8b1a1a;font-weight:700;">${h.nouveau?.toFixed(2).replace('.',',')}€</span>
+        <span style="color:#aaa;font-size:.78rem;">${h.date}</span>
+        <button class="btn-admin btn-ghost btn-sm" onclick="annulerModif(${i})">↩ Annuler</button>
+      </div>`).join('');
+  }
+
+  function annulerModif(i) {
+    const h = historique[i];
+    const p = catalogue.find(x => x.id === h.id);
+    if (!p) return;
+    prices[h.id] = h.ancien;
+    p.prix = h.ancien;
+    historique.splice(i, 1);
+    localStorage.setItem('ims_prices', JSON.stringify(prices));
+    localStorage.setItem('ims_prix_historique', JSON.stringify(historique));
+    filtrerPrix();
+    afficherHistorique();
+    adminToast('Prix annulé', 'success');
+  }
+
+  function viderHistorique() {
+    historique = [];
+    localStorage.removeItem('ims_prix_historique');
+    afficherHistorique();
+  }
+</script>
+</body>
+</html>

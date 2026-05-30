@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Devis reçus — Admin i-Mobile Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">🔧 i-Mobile Service<span>Administration</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="produits.html"><span class="nav-icon">📦</span> Produits</a>
+      <a href="photos.html"><span class="nav-icon">🖼️</span> Photos</a>
+      <a href="prix.html"><span class="nav-icon">💰</span> Prix</a>
+      <a href="commandes.html"><span class="nav-icon">📋</span> Commandes</a>
+      <a href="devis.html" class="active"><span class="nav-icon">📩</span> Devis reçus</a>
+    </nav>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="adminLogout()">🚪 Déconnexion</button></div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">📩 Devis reçus</div>
+      <div class="topbar-right">
+        <button class="btn-admin btn-danger btn-sm" onclick="viderDevis()">🗑 Tout effacer</button>
+      </div>
+    </div>
+    <div class="admin-content">
+
+      <div class="kpi-grid" id="kpi-devis" style="margin-bottom:1.5rem;"></div>
+
+      <div class="data-card">
+        <div class="card-header">
+          <span class="card-title">📩 Toutes les demandes de devis</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>N°</th><th>Date</th><th>Appareil / Modèle</th><th>Panne(s)</th><th>Client</th><th>Actions</th></tr></thead>
+            <tbody id="devis-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="auth.js"></script>
+<script>
+  requireAuth();
+  let devis = JSON.parse(localStorage.getItem('ims_devis') || '[]');
+
+  document.addEventListener('DOMContentLoaded', () => {
+    afficherKPI();
+    afficherDevis(devis);
+  });
+
+  function afficherKPI() {
+    const iphone  = devis.filter(d => d.appareil?.includes('iPhone')).length;
+    const samsung = devis.filter(d => d.appareil?.includes('Samsung')).length;
+    document.getElementById('kpi-devis').innerHTML = `
+      <div class="kpi-card"><div class="kpi-icon">📩</div><div class="kpi-label">Total devis</div><div class="kpi-value">${devis.length}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📱</div><div class="kpi-label">iPhone</div><div class="kpi-value">${iphone}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">🤖</div><div class="kpi-label">Samsung</div><div class="kpi-value">${samsung}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">🔧</div><div class="kpi-label">Autres</div><div class="kpi-value">${devis.length - iphone - samsung}</div></div>`;
+  }
+
+  function afficherDevis(liste) {
+    const tbody = document.getElementById('devis-tbody');
+    if (!liste.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">Aucun devis reçu.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = liste.map((d, i) => {
+      const sujet = encodeURIComponent(`Réponse devis ${d.numero} — ${d.modele || d.appareil}`);
+      const corps = encodeURIComponent(`Bonjour ${d.client?.prenom},\n\nSuite à votre demande de devis (${d.numero}) pour votre ${d.modele || d.appareil},\n\n...\n\nCordialement,\ni-Mobile Service\n05 31 21 71 38`);
+      return `<tr>
+        <td><span class="badge badge-devis">${d.numero}</span></td>
+        <td style="font-size:.82rem;white-space:nowrap;">${d.date}</td>
+        <td>
+          <strong>${d.appareil || '—'}</strong>
+          ${d.modele ? `<br><span style="font-size:.78rem;color:#888;">${d.modele}</span>` : ''}
+        </td>
+        <td style="font-size:.82rem;max-width:180px;">${d.pannes || '—'}</td>
+        <td>
+          <strong>${d.client?.prenom || ''} ${d.client?.nom || ''}</strong><br>
+          <a href="tel:${d.client?.tel}" style="font-size:.78rem;color:#8b1a1a;">${d.client?.tel || ''}</a>
+        </td>
+        <td style="white-space:nowrap;">
+          <a href="mailto:${d.client?.email}?subject=${sujet}&body=${corps}" class="btn-admin btn-primary btn-sm">✉️ Répondre</a>
+          <button class="btn-admin btn-danger btn-sm" onclick="supprimerDevis(${i})" style="margin-left:4px;">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function supprimerDevis(i) {
+    devis.splice(i, 1);
+    localStorage.setItem('ims_devis', JSON.stringify(devis));
+    afficherKPI();
+    afficherDevis(devis);
+    adminToast('Devis supprimé', 'success');
+  }
+
+  function viderDevis() {
+    if (!confirm('Effacer tous les devis ?')) return;
+    devis = [];
+    localStorage.removeItem('ims_devis');
+    afficherKPI();
+    afficherDevis([]);
+    adminToast('Devis effacés');
+  }
+</script>
+</body>
+</html>
