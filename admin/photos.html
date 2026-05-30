@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin — Photos produits · i-Mobile Service</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f8f9fc; color: #1a1a2e; min-height: 100vh; }
+
+    /* ---- Écran de connexion ---- */
+    #login-screen {
+      position: fixed; inset: 0; background: #1a1a2e;
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .login-box {
+      background: white; border-radius: 16px; padding: 2.5rem 2rem;
+      width: 100%; max-width: 360px; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .login-logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.25rem; }
+    .login-logo span { color: #8b1a1a; }
+    .login-sub { font-size: 0.85rem; color: #888; margin-bottom: 2rem; }
+    .login-box input {
+      width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #e5e7eb;
+      border-radius: 8px; font-size: 0.95rem; font-family: inherit;
+      margin-bottom: 0.75rem; transition: border-color 0.2s;
+    }
+    .login-box input:focus { outline: none; border-color: #8b1a1a; }
+    .login-btn {
+      width: 100%; padding: 0.85rem; background: #8b1a1a; color: white;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: background 0.2s;
+    }
+    .login-btn:hover { background: #6d1515; }
+    .login-error { color: #dc2626; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+
+    /* ---- Layout admin ---- */
+    #admin-app { display: none; }
+    .admin-header {
+      background: #1a1a2e; color: white; padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .admin-header-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .admin-header-title span { color: #00bcd4; }
+    .admin-header-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .btn-save-all {
+      padding: 0.55rem 1.25rem; background: #8b1a1a; color: white;
+      border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: background 0.2s;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .btn-save-all:hover { background: #6d1515; }
+    .btn-reset {
+      padding: 0.55rem 1.1rem; background: transparent; color: rgba(255,255,255,0.6);
+      border: 1.5px solid rgba(255,255,255,0.2); border-radius: 8px;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover { border-color: rgba(255,255,255,0.6); color: white; }
+    .btn-logout {
+      padding: 0.55rem 1.1rem; background: transparent; color: rgba(255,255,255,0.5);
+      border: none; font-size: 0.82rem; cursor: pointer; font-family: inherit;
+    }
+    .btn-logout:hover { color: white; }
+
+    /* ---- Toolbar ---- */
+    .toolbar {
+      padding: 1.25rem 2rem; background: white; border-bottom: 1px solid #e5e7eb;
+      display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+    }
+    .toolbar-search {
+      flex: 1; min-width: 200px; padding: 0.6rem 1rem;
+      border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.88rem;
+      font-family: inherit;
+    }
+    .toolbar-search:focus { outline: none; border-color: #00bcd4; }
+    .toolbar-filter {
+      padding: 0.6rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      font-size: 0.88rem; font-family: inherit; background: white; cursor: pointer;
+    }
+    .toolbar-filter:focus { outline: none; }
+    .toolbar-info { font-size: 0.82rem; color: #888; margin-left: auto; }
+
+    /* ---- Grille produits ---- */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+      padding: 1.5rem 2rem;
+    }
+
+    /* ---- Carte produit ---- */
+    .photo-card {
+      background: white; border-radius: 12px; border: 1.5px solid #e5e7eb;
+      overflow: hidden; transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .photo-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #00bcd4; }
+    .photo-card.modified { border-color: #8b1a1a; }
+
+    .card-img-wrap {
+      height: 180px; background: #f0f2f5; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .card-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .card-img-wrap img.contain { object-fit: contain; padding: 12px; background: #f8f9fc; }
+    .photo-card:hover .card-img-wrap img { transform: scale(1.03); }
+    .card-emoji-fallback { font-size: 3rem; }
+    .card-modified-badge {
+      position: absolute; top: 8px; right: 8px;
+      background: #8b1a1a; color: white; font-size: 0.65rem; font-weight: 800;
+      padding: 2px 7px; border-radius: 99px; letter-spacing: 0.04em;
+      display: none;
+    }
+    .photo-card.modified .card-modified-badge { display: block; }
+
+    .card-body { padding: 0.9rem; }
+    .card-cat {
+      font-size: 0.68rem; font-weight: 700; color: #00838f;
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.2rem;
+    }
+    .card-name { font-weight: 600; font-size: 0.88rem; line-height: 1.3; margin-bottom: 0.75rem; }
+    .card-id { font-size: 0.72rem; color: #aaa; }
+
+    .url-input-row { display: flex; gap: 0.4rem; margin-top: 0.6rem; }
+    .url-input {
+      flex: 1; padding: 0.5rem 0.65rem; border: 1.5px solid #e5e7eb;
+      border-radius: 6px; font-size: 0.78rem; font-family: inherit;
+      transition: border-color 0.2s; min-width: 0;
+    }
+    .url-input:focus { outline: none; border-color: #00bcd4; }
+    .url-input.has-custom { border-color: #8b1a1a; background: #fff5f5; }
+    .btn-apply {
+      padding: 0.5rem 0.75rem; background: #00bcd4; color: white;
+      border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .btn-apply:hover { background: #0097a7; }
+    .btn-apply.saved { background: #16a34a; }
+
+    .btn-reset-one {
+      margin-top: 0.4rem; padding: 0.3rem 0.6rem; background: transparent;
+      color: #dc2626; border: 1px solid #fca5a5; border-radius: 6px;
+      font-size: 0.72rem; cursor: pointer; font-family: inherit;
+      display: none; transition: all 0.2s;
+    }
+    .btn-reset-one:hover { background: #fef2f2; }
+    .photo-card.modified .btn-reset-one { display: inline-block; }
+
+    /* ---- Toast ---- */
+    #toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      background: #1a1a2e; color: white; padding: 0.85rem 1.25rem;
+      border-radius: 10px; font-size: 0.88rem; font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      transform: translateY(100px); opacity: 0;
+      transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+      z-index: 999; pointer-events: none;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { border-left: 4px solid #16a34a; }
+    #toast.info { border-left: 4px solid #00bcd4; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 600px) {
+      .products-grid { grid-template-columns: 1fr 1fr; padding: 1rem; gap: 0.75rem; }
+      .toolbar { padding: 0.75rem 1rem; }
+      .admin-header { padding: 0.75rem 1rem; }
+      .btn-save-all span { display: none; }
+    }
+    @media (max-width: 400px) {
+      .products-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== ÉCRAN DE CONNEXION ===== -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">i-Mobile <span>Service</span></div>
+    <div class="login-sub">Administration — Gestion des photos</div>
+    <input type="password" id="login-pass" placeholder="Mot de passe" autocomplete="current-password">
+    <button class="login-btn" onclick="doLogin()">Se connecter</button>
+    <div class="login-error" id="login-error">Mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- ===== APP ADMIN ===== -->
+<div id="admin-app">
+  <header class="admin-header">
+    <div class="admin-header-title">🖼️ <span>Photos</span> produits</div>
+    <div class="admin-header-actions">
+      <button class="btn-reset" onclick="confirmResetAll()">↩ Réinitialiser tout</button>
+      <button class="btn-save-all" onclick="saveAll()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+        <span>Tout sauvegarder</span>
+      </button>
+      <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <input type="search" class="toolbar-search" id="search-input" placeholder="🔍 Rechercher un produit…" oninput="filterCards()">
+    <select class="toolbar-filter" id="cat-filter" onchange="filterCards()">
+      <option value="">Toutes les catégories</option>
+      <option value="telephone">📱 Téléphones</option>
+      <option value="pc">💻 PC & Tablettes</option>
+      <option value="protection">🛡️ Protection</option>
+      <option value="coque">🎨 Coques</option>
+      <option value="chargeur">⚡ Chargeurs</option>
+      <option value="cable">🔗 Câbles</option>
+      <option value="audio">🎧 Audio</option>
+      <option value="accessoire">🔧 Accessoires</option>
+    </select>
+    <div class="toolbar-info" id="toolbar-info"></div>
+  </div>
+
+  <div class="products-grid" id="products-grid"></div>
+</div>
+
+<div id="toast"></div>
+
+<script src="../js/catalogue.js"></script>
+<script src="../js/images.js"></script>
+<script>
+/* ============================================================
+   Admin photos — gestion des photos produits via localStorage
+   ============================================================ */
+
+/* Mot de passe admin (modifiable ici) */
+const ADMIN_PASSWORD = 'iMobile2026!';
+const SESSION_KEY    = 'ims_admin_session';
+const PHOTOS_KEY     = 'ims_photos';
+
+/* ---- Authentification ---- */
+function doLogin() {
+  const pass = document.getElementById('login-pass').value;
+  if (pass === ADMIN_PASSWORD) {
+    sessionStorage.setItem(SESSION_KEY, 'ok');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').style.display = 'block';
+    buildGrid();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function logout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+/* Vérifier la session au chargement */
+if (sessionStorage.getItem(SESSION_KEY) === 'ok') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-app').style.display = 'block';
+}
+
+/* ---- Photos personnalisées (localStorage) ---- */
+function getCustomPhotos() {
+  try { return JSON.parse(localStorage.getItem(PHOTOS_KEY) || '{}'); } catch { return {}; }
+}
+function saveCustomPhotos(obj) {
+  localStorage.setItem(PHOTOS_KEY, JSON.stringify(obj));
+}
+
+/* État temporaire : modifications en cours avant sauvegarde */
+const pendingChanges = {};
+
+/* ---- Construction de la grille ---- */
+const CAT_LABELS = {
+  telephone: '📱 Téléphones', pc: '💻 PC & Tablettes',
+  protection: '🛡️ Protection', coque: '🎨 Coques',
+  chargeur: '⚡ Chargeurs', cable: '🔗 Câbles',
+  audio: '🎧 Audio', accessoire: '🔧 Accessoires',
+};
+
+function buildGrid() {
+  if (typeof CATALOGUE === 'undefined') {
+    document.getElementById('products-grid').innerHTML = '<p style="padding:2rem;color:#888">Catalogue non chargé.</p>';
+    return;
+  }
+  const customPhotos = getCustomPhotos();
+  const grid = document.getElementById('products-grid');
+  grid.innerHTML = '';
+
+  CATALOGUE.forEach(p => {
+    const isContain = p.categorie === 'telephone' || p.categorie === 'pc';
+    const defaultSrc = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) ? IMAGES[p.id].src : '';
+    const customSrc = customPhotos[p.id] || '';
+    const currentSrc = customSrc || defaultSrc;
+    const isModified = !!customSrc;
+
+    const card = document.createElement('div');
+    card.className = 'photo-card' + (isModified ? ' modified' : '');
+    card.dataset.id = p.id;
+    card.dataset.cat = p.categorie;
+    card.dataset.name = p.nom.toLowerCase();
+
+    card.innerHTML = `
+      <div class="card-img-wrap">
+        ${currentSrc
+          ? `<img src="${currentSrc}" alt="${p.nom}" class="${isContain ? 'contain' : ''}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+          : ''}
+        <span class="card-emoji-fallback" style="${currentSrc ? 'display:none' : ''}">${p.emoji}</span>
+        <div class="card-modified-badge">MODIFIÉ</div>
+      </div>
+      <div class="card-body">
+        <div class="card-cat">${CAT_LABELS[p.categorie] || p.categorie}</div>
+        <div class="card-name">${p.nom}</div>
+        <div class="card-id">#${p.id}</div>
+        <div class="url-input-row">
+          <input type="url" class="url-input ${customSrc ? 'has-custom' : ''}" id="url-${p.id}"
+            value="${customSrc}"
+            placeholder="https://images.unsplash.com/…"
+            oninput="onUrlChange(${p.id}, this)">
+          <button class="btn-apply" id="btn-${p.id}" onclick="applyPhoto(${p.id})">Appliquer</button>
+        </div>
+        <button class="btn-reset-one" onclick="resetOne(${p.id})">✕ Retirer la photo custom</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  updateToolbarInfo();
+}
+
+/* ---- Appliquer une URL sur un produit ---- */
+function onUrlChange(id, input) {
+  pendingChanges[id] = input.value.trim();
+}
+
+function applyPhoto(id) {
+  const input = document.getElementById(`url-${id}`);
+  const url = input.value.trim();
+  const card = document.querySelector(`.photo-card[data-id="${id}"]`);
+  if (!card) return;
+
+  const imgWrap = card.querySelector('.card-img-wrap');
+  const fallback = card.querySelector('.card-emoji-fallback');
+
+  if (!url) {
+    resetOne(id);
+    return;
+  }
+
+  /* Vérifier que l'URL charge bien avant de sauvegarder */
+  const testImg = new Image();
+  testImg.onload = () => {
+    /* Sauvegarder immédiatement */
+    const photos = getCustomPhotos();
+    photos[id] = url;
+    saveCustomPhotos(photos);
+
+    /* Mettre à jour l'aperçu */
+    let img = imgWrap.querySelector('img');
+    const isContain = card.dataset.cat === 'telephone' || card.dataset.cat === 'pc';
+    if (!img) {
+      img = document.createElement('img');
+      img.alt = '';
+      img.className = isContain ? 'contain' : '';
+      img.onerror = () => { img.style.display = 'none'; fallback.style.display = 'flex'; };
+      imgWrap.insertBefore(img, fallback);
+    }
+    img.src = url;
+    img.style.display = '';
+    fallback.style.display = 'none';
+
+    /* Marquages visuels */
+    card.classList.add('modified');
+    input.classList.add('has-custom');
+
+    const btn = document.getElementById(`btn-${id}`);
+    btn.textContent = '✓ Sauvé';
+    btn.classList.add('saved');
+    setTimeout(() => { btn.textContent = 'Appliquer'; btn.classList.remove('saved'); }, 2000);
+
+    showToast('✅ Photo mise à jour !', 'success');
+    delete pendingChanges[id];
+  };
+  testImg.onerror = () => {
+    showToast('⚠️ URL invalide ou image inaccessible', 'info');
+  };
+  testImg.src = url;
+}
+
+/* ---- Réinitialiser un produit ---- */
+function resetOne(id) {
+  const photos = getCustomPhotos();
+  delete photos[id];
+  saveCustomPhotos(photos);
+  delete pendingChanges[id];
+
+  const card = document.querySelector(`.photo-card[data-id="${id}"]`);
+  if (!card) return;
+  card.classList.remove('modified');
+
+  const input = document.getElementById(`url-${id}`);
+  input.value = '';
+  input.classList.remove('has-custom');
+
+  /* Restaurer la photo par défaut */
+  const defaultSrc = (typeof IMAGES !== 'undefined' && IMAGES[id]) ? IMAGES[id].src : '';
+  const p = CATALOGUE.find(x => x.id === id);
+  const isContain = p && (p.categorie === 'telephone' || p.categorie === 'pc');
+  const imgWrap = card.querySelector('.card-img-wrap');
+  const fallback = card.querySelector('.card-emoji-fallback');
+  let img = imgWrap.querySelector('img');
+
+  if (defaultSrc) {
+    if (!img) {
+      img = document.createElement('img');
+      img.className = isContain ? 'contain' : '';
+      imgWrap.insertBefore(img, fallback);
+    }
+    img.src = defaultSrc;
+    img.style.display = '';
+    fallback.style.display = 'none';
+  } else {
+    if (img) img.style.display = 'none';
+    fallback.style.display = '';
+  }
+
+  showToast('↩ Photo réinitialisée', 'info');
+}
+
+/* ---- Tout sauvegarder (changements en attente) ---- */
+function saveAll() {
+  if (Object.keys(pendingChanges).length === 0) {
+    showToast('✅ Toutes les photos sont déjà sauvegardées', 'success');
+    return;
+  }
+  const photos = getCustomPhotos();
+  Object.entries(pendingChanges).forEach(([id, url]) => {
+    if (url) photos[id] = url;
+    else delete photos[id];
+  });
+  saveCustomPhotos(photos);
+  Object.keys(pendingChanges).forEach(k => delete pendingChanges[k]);
+  showToast(`✅ ${Object.keys(photos).length} photo(s) sauvegardée(s)`, 'success');
+}
+
+/* ---- Réinitialiser toutes les photos custom ---- */
+function confirmResetAll() {
+  if (!confirm('Remettre toutes les photos par défaut ? Les photos personnalisées seront perdues.')) return;
+  localStorage.removeItem(PHOTOS_KEY);
+  Object.keys(pendingChanges).forEach(k => delete pendingChanges[k]);
+  buildGrid();
+  showToast('↩ Toutes les photos réinitialisées', 'info');
+}
+
+/* ---- Filtrer la grille ---- */
+function filterCards() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const cat = document.getElementById('cat-filter').value;
+  let visible = 0;
+  document.querySelectorAll('.photo-card').forEach(card => {
+    const matchQ = !q || card.dataset.name.includes(q);
+    const matchC = !cat || card.dataset.cat === cat;
+    const show = matchQ && matchC;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  updateToolbarInfo(visible);
+}
+
+function updateToolbarInfo(count) {
+  const total = typeof CATALOGUE !== 'undefined' ? CATALOGUE.length : 0;
+  const shown = count !== undefined ? count : total;
+  document.getElementById('toolbar-info').textContent = `${shown} produit${shown > 1 ? 's' : ''}`;
+}
+
+/* ---- Toast notifications ---- */
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+/* ---- Init si déjà connecté ---- */
+if (sessionStorage.getItem(SESSION_KEY) === 'ok') buildGrid();
+</script>
+</body>
+</html>

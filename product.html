@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Produit — i-Mobile Service Toulouse</title>
+  <meta name="description" id="page-desc" content="Détail produit — i-Mobile Service Toulouse">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/boutique.css">
+  <style>
+    /* ---- Page produit spécifique ---- */
+    .product-page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .product-breadcrumb {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .product-breadcrumb a { color: var(--color-cyan-dark); text-decoration: none; }
+    .product-breadcrumb a:hover { text-decoration: underline; }
+    .product-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+      margin-bottom: 3rem;
+    }
+    .product-detail-visual {
+      background: white;
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7rem;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    .product-detail-visual[data-category] {
+      background-size: cover;
+      background-position: center;
+      font-size: 0;
+    }
+    /* Image réelle dans la fiche produit */
+    .product-detail-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: var(--radius-xl);
+    }
+    .product-detail-img.detail-img-contain {
+      object-fit: contain;
+      padding: 24px;
+      background: #f8f9fc;
+    }
+    .product-detail-img-fallback {
+      font-size: 7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+    .product-detail-info { }
+    .product-detail-category {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-cyan-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+    }
+    .product-detail-name {
+      font-family: var(--font-title);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--color-text);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .product-detail-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    .product-detail-prix {
+      font-family: var(--font-title);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #8b1a1a;
+      margin-bottom: 0.5rem;
+    }
+    .product-detail-dispo { margin-bottom: 1.5rem; }
+    .product-detail-desc {
+      font-size: 0.95rem;
+      color: var(--color-text-secondary);
+      line-height: 1.75;
+      margin-bottom: 1.75rem;
+    }
+    .product-detail-garanties {
+      background: var(--color-bg);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+    .product-detail-garanties h4 {
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .garantie-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.88rem;
+      color: var(--color-text);
+      padding: 0.3rem 0;
+      font-weight: 500;
+    }
+    .garantie-item svg {
+      width: 16px;
+      height: 16px;
+      color: #16a34a;
+      flex-shrink: 0;
+    }
+    .product-detail-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .btn-action-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.5rem;
+      background: var(--color-cyan);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+    .btn-action-primary:hover { background: var(--color-cyan-dark); transform: translateY(-1px); }
+    .btn-action-reserve {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.5rem;
+      background: #8b1a1a;
+      color: white;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all var(--transition);
+    }
+    .btn-action-reserve:hover { background: #6d1414; transform: translateY(-1px); }
+    .btn-action-question {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: white;
+      color: var(--color-text);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all var(--transition-fast);
+    }
+    .btn-action-question:hover { border-color: var(--color-cyan); color: var(--color-cyan-dark); }
+
+    /* Section produits similaires */
+    .similar-section { margin-top: 3rem; }
+    .similar-section h2 {
+      font-size: 1.2rem;
+      font-family: var(--font-title);
+      margin-bottom: 1.5rem;
+      color: var(--color-text);
+    }
+    .similar-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 768px) {
+      .product-detail-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .product-detail-visual { max-width: 280px; margin: 0 auto; }
+      .product-detail-name { font-size: 1.3rem; }
+      .similar-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      .similar-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- BANDEAU PROMO -->
+<div class="promo-banner" aria-label="Promotions">
+  <div class="promo-banner-track">
+    <span class="promo-banner-text">⚡ Meilleurs prix garantis</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Coques dès 10€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Verre trempé dès 10€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Livraison offerte dès 50€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">🏪 Retrait gratuit — 221 Route de Seysses Toulouse</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">📱 Téléphones Grade A dès 149€</span>
+    <span class="promo-banner-sep">·</span>
+    <!-- Dupliquer pour boucle infinie -->
+    <span class="promo-banner-text">⚡ Meilleurs prix garantis</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Coques dès 10€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Verre trempé dès 10€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Livraison offerte dès 50€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">🏪 Retrait gratuit — 221 Route de Seysses Toulouse</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">📱 Téléphones Grade A dès 149€</span>
+    <span class="promo-banner-sep">·</span>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/logo.jpg" alt="i-Mobile Service" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <span class="nav-logo-fallback" style="display:none">i-Mobile <span>Service</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="reparation.html">Réparations</a>
+      <a href="boutique.html" class="active">Boutique</a>
+      <a href="rdv.html">RDV</a>
+      <a href="contact.html">Contact</a>
+      <a href="about.html">À propos</a>
+    </div>
+    <div class="nav-actions">
+      <a href="tel:0531217138" class="nav-phone">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+        05 31 21 71 38
+      </a>
+      <button class="cart-btn" id="cart-btn-nav" aria-label="Panier">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+        <span class="cart-badge hidden">0</span>
+      </button>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">🏠 Accueil</a>
+  <a href="reparation.html">🔧 Réparations</a>
+  <a href="boutique.html">🛍️ Boutique</a>
+  <a href="rdv.html">📅 Prendre RDV</a>
+  <a href="contact.html">📍 Contact</a>
+  <a href="about.html">ℹ️ À propos</a>
+  <a href="tel:0531217138" class="nav-phone">📞 05 31 21 71 38</a>
+</div>
+
+<!-- CONTENU PRODUIT -->
+<div class="section" style="padding-top:2rem;">
+  <div class="product-page">
+
+    <!-- Fil d'Ariane -->
+    <nav class="product-breadcrumb" aria-label="Fil d'Ariane">
+      <a href="boutique.html">← Boutique</a>
+      <span>›</span>
+      <span id="breadcrumb-category"></span>
+      <span>›</span>
+      <span id="breadcrumb-name" style="color:var(--color-text);font-weight:600;"></span>
+    </nav>
+
+    <!-- Grille détail produit -->
+    <div class="product-detail-grid" id="product-detail-content">
+      <div style="text-align:center;padding:3rem;color:var(--color-text-muted);">Chargement…</div>
+    </div>
+
+    <!-- Produits similaires -->
+    <div class="similar-section" id="similar-section" style="display:none">
+      <h2>Vous aimerez aussi</h2>
+      <div class="similar-grid" id="similar-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Drawer panier (repris de boutique.html) -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<aside class="cart-drawer" id="cart-drawer" role="dialog" aria-label="Panier">
+  <div class="cart-header">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+      Mon panier
+    </h2>
+    <button class="cart-close-btn" id="cart-close-btn" aria-label="Fermer">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="cart-body" id="cart-body">
+    <div class="cart-empty">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+      <p>Votre panier est vide</p>
+      <button class="btn btn-primary btn-sm" onclick="closeCart()">Parcourir la boutique</button>
+    </div>
+  </div>
+  <div class="delivery-section" id="delivery-section" style="display:none">
+    <h3>Mode de réception</h3>
+    <div class="delivery-options">
+      <label class="delivery-option">
+        <input type="radio" name="delivery" value="store" checked>
+        <div class="delivery-option-label">
+          <div class="delivery-option-title">🏪 Retrait en boutique</div>
+          <div class="delivery-option-sub">Disponible le jour même</div>
+        </div>
+        <span class="delivery-option-price free">Gratuit</span>
+      </label>
+      <label class="delivery-option">
+        <input type="radio" name="delivery" value="pickup">
+        <div class="delivery-option-label">
+          <div class="delivery-option-title">📦 Point Relais Pickup</div>
+          <div class="delivery-option-sub">Proche de chez vous</div>
+        </div>
+        <span class="delivery-option-price free">Gratuit</span>
+      </label>
+      <label class="delivery-option">
+        <input type="radio" name="delivery" value="vinted">
+        <div class="delivery-option-label">
+          <div class="delivery-option-title">🔁 Vinted Locker</div>
+          <div class="delivery-option-sub">Consigne 24h/24</div>
+        </div>
+        <span class="delivery-option-price free">Gratuit</span>
+      </label>
+      <label class="delivery-option">
+        <input type="radio" name="delivery" value="delivery">
+        <div class="delivery-option-label">
+          <div class="delivery-option-title">🚚 Livraison à domicile</div>
+          <div class="delivery-option-sub">Offerte dès 50€</div>
+        </div>
+        <span class="delivery-option-price" id="shipping-price-label">+4,90€</span>
+      </label>
+    </div>
+    <div class="address-field" id="address-field"></div>
+  </div>
+  <div class="cart-footer" id="cart-footer" style="display:none">
+    <div class="cart-totals">
+      <div class="cart-total-row"><span>Sous-total</span><span id="cart-subtotal">0,00€</span></div>
+      <div class="cart-total-row"><span>Livraison</span><span id="cart-shipping">—</span></div>
+      <div class="cart-total-row total"><span>Total</span><span id="cart-total">0,00€</span></div>
+    </div>
+    <button class="cart-checkout-btn" id="cart-checkout-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/></svg>
+      Valider la commande
+    </button>
+  </div>
+</aside>
+
+<div id="toast-container"></div>
+
+<script src="js/catalogue.js"></script>
+<script src="js/images.js"></script>
+<script src="js/main.js"></script>
+<script src="js/cart.js"></script>
+<script>
+/* ---- Rendu de la page produit depuis catalogue.js ---- */
+const LABELS_CAT = {
+  telephone:  '📱 Téléphones reconditionnés',
+  pc:         '💻 PC & Tablettes',
+  protection: '🛡️ Protection écran',
+  coque:      '🎨 Coques & Housses',
+  chargeur:   '⚡ Chargeurs & Alimentation',
+  cable:      '🔗 Câbles & Adaptateurs',
+  audio:      '🎧 Audio',
+  accessoire: '🔧 Accessoires',
+};
+
+/* BG_IMAGES conservé comme fallback catégorie si IMAGES map absent */
+const BG_IMAGES = {
+  protection: "url('https://images.unsplash.com/photo-1556656793-08538906a9f8?w=600&q=80&auto=format&fit=crop')",
+  coque:      "url('https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?w=600&q=80&auto=format&fit=crop')",
+  chargeur:   "url('https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&q=80&auto=format&fit=crop')",
+  cable:      "url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&auto=format&fit=crop')",
+  audio:      "url('https://images.unsplash.com/photo-1588423771073-b8903fead714?w=600&q=80&auto=format&fit=crop')",
+  piece:      "url('https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=600&q=80&auto=format&fit=crop')",
+  accessoire: "url('https://images.unsplash.com/photo-1512054502232-10a0a035d672?w=600&q=80&auto=format&fit=crop')",
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof CATALOGUE === 'undefined') return;
+
+  const params = new URLSearchParams(window.location.search);
+  const id = parseInt(params.get('id'));
+  const produit = CATALOGUE.find(p => p.id === id);
+
+  if (!produit) {
+    document.getElementById('product-detail-content').innerHTML =
+      '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--color-text-muted);">Produit introuvable. <a href="boutique.html" style="color:var(--color-cyan-dark);">← Retour à la boutique</a></div>';
+    return;
+  }
+
+  /* Mettre à jour le titre et la meta */
+  document.getElementById('page-title').textContent = produit.nom + ' — i-Mobile Service';
+  document.getElementById('page-desc').content = produit.description || produit.nom;
+  document.getElementById('breadcrumb-category').textContent = LABELS_CAT[produit.categorie] || produit.categorie;
+  document.getElementById('breadcrumb-name').textContent = produit.nom;
+
+  /* Badges */
+  const badgeLabels = { bestseller: 'Bestseller', nouveau: 'Nouveau', pro: 'Pro' };
+  const badgeClasses = { bestseller: 'badge-bestseller', nouveau: 'badge-nouveau', pro: 'badge-pro' };
+  let badgesHTML = '';
+  if (produit.badge) {
+    badgesHTML += `<span class="product-badge ${badgeClasses[produit.badge]}">${badgeLabels[produit.badge]}</span>`;
+  }
+  if (produit.grade === 'A') {
+    badgesHTML += `<span class="grade-badge grade-a" style="position:relative;bottom:auto;left:auto;font-size:.75rem;padding:.2rem .65rem;">Grade A</span>`;
+  }
+  if (produit.neuf) {
+    badgesHTML += `<span class="grade-badge grade-neuf" style="position:relative;bottom:auto;left:auto;font-size:.75rem;padding:.2rem .65rem;">Neuf</span>`;
+  }
+
+  /* Disponibilité */
+  const dispoHTML = (!produit.disponible)
+    ? '<span class="dispo-tag dispo-pending">⏳ Disponibilité confirmée sous 24h</span>'
+    : '<span class="dispo-tag dispo-ok">✅ En stock</span>';
+
+  /* Bouton principal */
+  const sujet = encodeURIComponent('Réservation — ' + produit.nom);
+  const corps = encodeURIComponent(
+    'Bonjour,\n\nJe souhaite réserver le produit suivant :\n' +
+    produit.nom + ' — ' + produit.prix + '€\n\n' +
+    'Merci de me confirmer la disponibilité.\n\nCordialement'
+  );
+  const actionHTML = produit.disponible
+    ? `<button class="btn-action-primary add-to-cart-btn"
+         data-id="${produit.id}" data-name="${produit.nom.replace(/"/g,'&quot;')}"
+         data-price="${produit.prix}" data-emoji="${produit.emoji}">
+         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:20px;height:20px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+         Ajouter au panier
+       </button>`
+    : `<a href="mailto:ims.tlse@gmail.com?subject=${sujet}&body=${corps}" class="btn-action-reserve">
+         📩 Réserver ce produit par email
+       </a>`;
+
+  /* Garanties pour téléphones/PC */
+  let garantiesHTML = '';
+  if (produit.categorie === 'telephone' || produit.categorie === 'pc') {
+    const checkSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>`;
+    garantiesHTML = `
+      <div class="product-detail-garanties">
+        <h4>Inclus &amp; certifié</h4>
+        <div class="garantie-item">${checkSVG} Garantie 6 mois pièces &amp; main d'œuvre</div>
+        <div class="garantie-item">${checkSVG} Testé sur 100 points de contrôle</div>
+        <div class="garantie-item">${checkSVG} Batterie &gt; 85 % de capacité</div>
+        ${(produit.categorie === 'telephone') ? `<div class="garantie-item">${checkSVG} Livré avec câble + chargeur</div>` : ''}
+        <div class="garantie-item">${checkSVG} SAV en boutique — 221 Route de Seysses</div>
+      </div>`;
+  }
+
+  /* Image produit : IMAGES map par id, sinon BG_IMAGES catégorie, sinon emoji */
+  const imgData = (typeof IMAGES !== 'undefined' && IMAGES[produit.id]) || null;
+  const isContain = produit.categorie === 'telephone' || produit.categorie === 'pc';
+  let visualHTML;
+  if (imgData) {
+    visualHTML = `<img
+      src="${imgData.src}"
+      alt="${imgData.alt}"
+      class="product-detail-img${isContain ? ' detail-img-contain' : ''}"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <span class="product-detail-img-fallback" style="display:none">${produit.emoji}</span>`;
+  } else {
+    const bgImg = BG_IMAGES[produit.categorie] || '';
+    visualHTML = bgImg ? '' : produit.emoji;
+  }
+  const visualAttr = (!imgData && BG_IMAGES[produit.categorie])
+    ? `style="background-image:${BG_IMAGES[produit.categorie]}" data-category="${produit.categorie}"`
+    : '';
+
+  document.getElementById('product-detail-content').innerHTML = `
+    <div class="product-detail-visual" ${visualAttr}>${visualHTML}</div>
+    <div class="product-detail-info">
+      <div class="product-detail-category">${LABELS_CAT[produit.categorie] || ''}</div>
+      <h1 class="product-detail-name">${produit.nom}</h1>
+      <div class="product-detail-badges">${badgesHTML}</div>
+      <div class="product-detail-prix">${produit.prix.toFixed(2).replace('.',',')}€</div>
+      <div class="product-detail-dispo">${dispoHTML}</div>
+      <p class="product-detail-desc">${produit.description || ''}</p>
+      ${garantiesHTML}
+      <div class="product-detail-actions">
+        ${actionHTML}
+        <a href="mailto:ims.tlse@gmail.com?subject=${encodeURIComponent('Question — ' + produit.nom)}"
+           class="btn-action-question">
+          💬 Poser une question
+        </a>
+      </div>
+    </div>`;
+
+  /* Rebrancher bouton panier si accessoire */
+  const cartBtn = document.querySelector('.add-to-cart-btn');
+  if (cartBtn && typeof addToCart === 'function') {
+    cartBtn.addEventListener('click', () => {
+      addToCart({
+        id: parseInt(cartBtn.dataset.id),
+        name: cartBtn.dataset.name,
+        price: parseFloat(cartBtn.dataset.price),
+        emoji: cartBtn.dataset.emoji,
+      });
+      cartBtn.innerHTML = '✓ Ajouté au panier';
+      setTimeout(() => {
+        cartBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:20px;height:20px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Ajouter au panier`;
+      }, 1500);
+    });
+  }
+
+  /* Produits similaires (3 de la même catégorie, hors produit courant) */
+  const similaires = CATALOGUE.filter(p => p.categorie === produit.categorie && p.id !== produit.id).slice(0, 3);
+  if (similaires.length > 0) {
+    const sectionSimilaire = document.getElementById('similar-section');
+    const gridSimilaire = document.getElementById('similar-grid');
+    sectionSimilaire.style.display = '';
+
+    gridSimilaire.innerHTML = similaires.map(p => {
+      const prixF = p.prix.toFixed(2).replace('.',',') + '€';
+      const relImg = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) || null;
+      const relIsContain = p.categorie === 'telephone' || p.categorie === 'pc';
+      const relImgHTML = relImg
+        ? `<img src="${relImg.src}" alt="${relImg.alt}" loading="lazy"
+             class="product-img${relIsContain ? ' product-img-contain' : ''}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+           <span class="product-img-fallback" style="display:none">${p.emoji}</span>`
+        : `<span class="product-img-fallback">${p.emoji}</span>`;
+      return `<a href="product.html?id=${p.id}" class="product-card" style="text-decoration:none;display:flex;flex-direction:column;" data-category="${p.categorie}">
+        <div class="product-image" data-category="${p.categorie}">${relImgHTML}</div>
+        <div class="product-body">
+          <div class="product-name" style="font-size:.88rem;">${p.nom}</div>
+          <div class="product-footer">
+            <span class="product-price">${prixF}</span>
+          </div>
+        </div>
+      </a>`;
+    }).join('');
+  }
+
+  /* Ouvrir le panier */
+  document.querySelectorAll('.cart-btn').forEach(b => b.addEventListener('click', openCart));
+});
+</script>
+</body>
+</html>

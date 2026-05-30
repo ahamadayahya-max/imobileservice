@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>i-Mobile Service — Réparation & Accessoires Toulouse</title>
+  <meta name="description" content="Réparation express smartphones, tablettes, PC & consoles à Toulouse. Label QualiRépar, TVA 5,5%, devis gratuit. 221 Route de Seysses.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- BANDEAU PROMO DÉFILANT -->
+<div class="promo-banner" aria-label="Promotions">
+  <div class="promo-banner-track">
+    <span class="promo-banner-text">⚡ Meilleurs prix garantis</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Coques dès 10€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Verre trempé dès 10€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Livraison offerte dès 50€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">🏪 Retrait gratuit — 221 Route de Seysses, Toulouse</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">📱 Téléphones Grade A dès 149€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">⚡ Meilleurs prix garantis</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Coques dès 10€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Verre trempé dès 10€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">Livraison offerte dès 50€</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">🏪 Retrait gratuit — 221 Route de Seysses, Toulouse</span>
+    <span class="promo-banner-sep">·</span>
+    <span class="promo-banner-text">📱 Téléphones Grade A dès 149€</span>
+    <span class="promo-banner-sep">·</span>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/logo.jpg" alt="i-Mobile Service" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <span class="nav-logo-fallback" style="display:none">i-Mobile <span>Service</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Accueil</a>
+      <a href="reparation.html">Réparations</a>
+      <a href="boutique.html">Boutique</a>
+      <a href="rdv.html">RDV</a>
+      <a href="about.html">À propos</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="tel:0531217138" class="nav-phone">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+        05 31 21 71 38
+      </a>
+      <button class="cart-btn" aria-label="Panier">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+        <span class="cart-badge hidden">0</span>
+      </button>
+      <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">🏠 Accueil</a>
+  <a href="reparation.html">🔧 Réparations</a>
+  <a href="boutique.html">🛍️ Boutique</a>
+  <a href="rdv.html">📅 Prendre RDV</a>
+  <a href="about.html">ℹ️ À propos</a>
+  <a href="contact.html">📍 Contact</a>
+  <a href="tel:0531217138" class="nav-phone">📞 05 31 21 71 38</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" style="background-image: linear-gradient(155deg, rgba(248,249,252,0.96) 0%, rgba(232,245,247,0.94) 40%, rgba(254,240,240,0.94) 80%, rgba(248,249,252,0.96) 100%), url('https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=1920&h=900&q=60&auto=format&fit=crop'); background-size: cover; background-position: center;">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-label fade-in">
+        <span class="dot"></span>
+        Label QualiRépar officiel — TVA réduite 5,5%
+      </div>
+      <h1 class="hero-title fade-in delay-1">
+        Votre appareil réparé.<br>
+        <span class="highlight-cyan">Vos accessoires</span> livrés.
+      </h1>
+      <p class="hero-subtitle fade-in delay-2">
+        Réparation express de smartphones, tablettes, PC et consoles à Toulouse.
+        Pièces premium, devis gratuit, confidentialité totale garantie.
+      </p>
+      <div class="hero-ctas fade-in delay-3">
+        <a href="boutique.html" class="btn btn-primary btn-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:20px;height:20px"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"/></svg>
+          Voir les accessoires
+        </a>
+        <a href="rdv.html" class="btn btn-outline btn-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:20px;height:20px"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 9v7.5"/></svg>
+          Prendre un RDV
+        </a>
+      </div>
+      <div class="hero-trust fade-in delay-4">
+        <span class="trust-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+          Devis gratuit
+        </span>
+        <span class="trust-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+          Réparation 1h
+        </span>
+        <span class="trust-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+          7 ans d'expérience
+        </span>
+      </div>
+    </div>
+    <div class="hero-visual fade-in-right delay-2">
+      <div class="floating-badge floating-badge-1"><span class="badge-green">✓</span> +2000 appareils réparés</div>
+      <div class="hero-card">
+        <div class="hero-card-header">
+          <span class="hero-card-title">🔧 Réparations du jour</span>
+          <span class="hero-card-badge">Express 1h</span>
+        </div>
+        <div class="hero-service-list">
+          <div class="hero-service-item"><span class="hero-service-icon">📱</span><span class="hero-service-name">Écran iPhone 15 Pro</span><span class="hero-service-price">159€</span></div>
+          <div class="hero-service-item"><span class="hero-service-icon">🔋</span><span class="hero-service-name">Batterie Samsung S24</span><span class="hero-service-price">45€</span></div>
+          <div class="hero-service-item"><span class="hero-service-icon">💻</span><span class="hero-service-name">Dalle PC / nettoyage</span><span class="hero-service-price">dès 39€</span></div>
+          <div class="hero-service-item"><span class="hero-service-icon">🎮</span><span class="hero-service-name">Joystick PS5 drift</span><span class="hero-service-price">45€</span></div>
+        </div>
+        <div class="hero-card-footer">
+          <span>221 Rte de Seysses, Toulouse</span>
+          <span class="hero-qualirepar-badge">✓ QualiRépar</span>
+        </div>
+      </div>
+      <div class="floating-badge floating-badge-2">⭐ 5/5 · Google</div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-item fade-in">
+      <div class="stat-number" data-target="5" data-prefix="⭐ " data-suffix="/5">⭐ 5/5</div>
+      <div class="stat-label">Avis clients Google</div>
+    </div>
+    <div class="stat-item fade-in delay-2">
+      <div class="stat-number" data-target="2000" data-prefix="+" data-suffix="">+2 000</div>
+      <div class="stat-label">Appareils réparés</div>
+    </div>
+    <div class="stat-item fade-in delay-3">
+      <div class="stat-number" data-target="1" data-suffix="h">1h</div>
+      <div class="stat-label">Réparation express</div>
+    </div>
+    <div class="stat-item fade-in delay-4">
+      <div class="stat-number" data-target="7" data-suffix=" ans">7 ans</div>
+      <div class="stat-label">D'expérience</div>
+    </div>
+  </div>
+</section>
+
+<!-- NOS ENGAGEMENTS -->
+<section class="section services-section">
+  <div class="section-inner">
+    <div class="section-header fade-in">
+      <div class="section-tag">💎 Nos engagements</div>
+      <h2 class="section-title">Pourquoi choisir <span class="highlight-cyan">i-Mobile Service</span> ?</h2>
+      <p class="section-subtitle">Tout l'univers du mobile réuni dans une seule boutique à Toulouse.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card fade-in delay-1">
+        <div class="service-icon-wrap">🏆</div>
+        <h3>Pièces haute qualité</h3>
+        <p class="service-desc">Nous utilisons exclusivement des pièces détachées de la plus haute qualité pour garantir la durabilité de votre appareil.</p>
+        <div class="service-footer"><span class="service-price">Garanti 3 mois</span><span class="service-delay">✅ OEM</span></div>
+      </div>
+      <div class="service-card fade-in delay-2">
+        <div class="service-icon-wrap">💰</div>
+        <h3>Devis gratuit</h3>
+        <p class="service-desc">Évaluation gratuite des coûts avant toute intervention. Pas de surprise sur la facture — devis écrit et validé.</p>
+        <div class="service-footer"><span class="service-price">100% gratuit</span><span class="service-delay">⚡ Sur place</span></div>
+      </div>
+      <div class="service-card fade-in delay-3">
+        <div class="service-icon-wrap">🔒</div>
+        <h3>Confidentialité totale</h3>
+        <p class="service-desc">Aucune donnée contenue dans votre appareil ne sera transmise à un tiers. Votre vie privée est sacrée.</p>
+        <div class="service-footer"><span class="service-price">0 donnée partagée</span><span class="service-delay">🔐 Sécurisé</span></div>
+      </div>
+      <div class="service-card fade-in delay-1">
+        <div class="service-icon-wrap">🏅</div>
+        <h3>Certifié QualiRépar</h3>
+        <p class="service-desc">Label officiel reconnu par l'État. Bénéficiez de la TVA réduite à 5,5% sur vos réparations.</p>
+        <div class="service-footer"><span class="service-price">TVA 5,5%</span><span class="service-delay">🌿 Éco-responsable</span></div>
+      </div>
+      <div class="service-card fade-in delay-2">
+        <div class="service-icon-wrap">⚡</div>
+        <h3>Réparation express</h3>
+        <p class="service-desc">La plupart des réparations sont effectuées en moins d'une heure sur place. Vous attendez ou repassez.</p>
+        <div class="service-footer"><span class="service-price">dès 1h</span><span class="service-delay">🚀 Express</span></div>
+      </div>
+      <div class="service-card fade-in delay-3">
+        <div class="service-icon-wrap">📱</div>
+        <h3>Toutes marques</h3>
+        <p class="service-desc">iPhone, Samsung, Xiaomi, Huawei, Google, iPad, PC, consoles... Nous réparons tout type d'appareil.</p>
+        <div class="service-footer"><span class="service-price">Toutes marques</span><span class="service-delay">🔧 Techniciens certifiés</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;" class="fade-in">
+      <a href="reparation.html" class="btn btn-primary">Voir tous les tarifs de réparation →</a>
+    </div>
+  </div>
+</section>
+
+<!-- QUALIREPAR -->
+<section class="qualirepar-section">
+  <div class="section-inner">
+    <div class="qualirepar-card fade-in">
+      <div class="qualirepar-logo-big">🏅</div>
+      <div class="qualirepar-content">
+        <h3>Certifié Label QualiRépar — Partenaires Ecologic &amp; Ecosystem</h3>
+        <p>
+          i-Mobile Service est un réparateur agréé <strong>Label QualiRépar</strong>, le label national officiel de la réparation.
+          Ce label vous garantit une TVA réduite à <strong>5,5%</strong> sur toutes vos réparations d'appareils électroniques.
+          Nous travaillons avec <a href="https://www.ecologic-france.com/" target="_blank" rel="noopener" class="qr-link">Ecologic</a> et <a href="https://www.ecosystem.eco/" target="_blank" rel="noopener" class="qr-link">Ecosystem</a> pour un traitement responsable des appareils.
+          <br><br>
+          <a href="https://www.label-qualirepar.fr/faq/" target="_blank" rel="noopener" class="qr-link">En savoir plus sur le Label QualiRépar →</a>
+        </p>
+      </div>
+      <div class="qualirepar-tva">
+        <div class="tva-number">5,5%</div>
+        <div class="tva-label">TVA réduite<br>réparations</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TÉMOIGNAGES -->
+<section class="section" style="background:white;">
+  <div class="section-inner">
+    <div class="section-header fade-in">
+      <div class="section-tag">⭐ Avis clients</div>
+      <h2 class="section-title">Ce que disent nos clients</h2>
+      <p class="section-subtitle">Plus de 2000 appareils réparés depuis 2018 — la satisfaction avant tout.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card fade-in delay-1">
+        <div class="stars">
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+        </div>
+        <p class="testimonial-text">"Écran de mon iPhone 14 remplacé en 45 minutes chrono ! Qualité impeccable et prix très correct. Je recommande vivement."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">KB</div>
+          <div class="author-info"><div class="author-name">Karim B.</div><div class="author-meta">Toulouse · Réparation iPhone 14</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card fade-in delay-2">
+        <div class="stars">
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+        </div>
+        <p class="testimonial-text">"Super équipe, très professionnelle. Ma PS5 avait un problème HDMI, réparé le jour même. Merci i-Mobile !"</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">LM</div>
+          <div class="author-info"><div class="author-name">Léa M.</div><div class="author-meta">Tournefeuille · Réparation PS5</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card fade-in delay-3">
+        <div class="stars">
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+          <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z"/></svg>
+        </div>
+        <p class="testimonial-text">"J'ai acheté une coque et un verre trempé pour mon Samsung S24. Livraison rapide et produits de qualité."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">TR</div>
+          <div class="author-info"><div class="author-name">Thomas R.</div><div class="author-meta">Colomiers · Boutique accessoires</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="section" style="background:linear-gradient(135deg,var(--color-cyan-light) 0%,var(--color-bordeaux-light) 100%);">
+  <div class="section-inner" style="text-align:center;">
+    <div class="fade-in">
+      <div class="section-tag">🚀 Commençons</div>
+      <h2 class="section-title" style="margin-bottom:1rem;">Votre appareil mérite le meilleur soin</h2>
+      <p class="section-subtitle" style="margin-bottom:2.5rem;">Prenez rendez-vous en ligne ou venez directement au 221 Route de Seysses, Toulouse.</p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <a href="rdv.html" class="btn btn-primary btn-lg">📅 Prendre RDV en ligne</a>
+        <a href="reparation.html" class="btn btn-outline btn-lg">💰 Voir les tarifs</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">i-Mobile <span class="accent">Service</span></div>
+        <p>Tout l'univers du mobile réuni dans une seule boutique. Réparation &amp; accessoires à Toulouse depuis 2018.</p>
+        <div class="footer-social">
+          <a href="https://www.facebook.com/imservice31/" target="_blank" rel="noopener" class="social-btn" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a href="https://www.snapchat.com/add/i-mobileservice" target="_blank" rel="noopener" class="social-btn" aria-label="Snapchat">👻</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="reparation.html">Réparation smartphones</a></li>
+          <li><a href="reparation.html">Réparation PC / Mac</a></li>
+          <li><a href="reparation.html">Réparation tablettes</a></li>
+          <li><a href="reparation.html">Réparation consoles</a></li>
+          <li><a href="boutique.html">Accessoires &amp; pièces</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Informations</h4>
+        <ul>
+          <li><a href="about.html">À propos</a></li>
+          <li><a href="rdv.html">Prendre RDV</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="https://www.label-qualirepar.fr/faq/" target="_blank" rel="noopener">Label QualiRépar</a></li>
+          <li><a href="https://imobileservice.fr/mentions-legales/" target="_blank" rel="noopener">Mentions légales</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Horaires &amp; Contact</h4>
+        <div class="footer-hours">
+          <div class="footer-hour-row"><span class="day">Lundi</span><span class="closed">Fermé</span></div>
+          <div class="footer-hour-row"><span class="day">Mar – Jeu</span><span class="time">10h–12h / 14h–19h</span></div>
+          <div class="footer-hour-row"><span class="day">Vendredi</span><span class="time">10h–12h / 15h–19h</span></div>
+          <div class="footer-hour-row"><span class="day">Samedi</span><span class="time">10h–12h / 14h–18h</span></div>
+          <div class="footer-hour-row"><span class="day">Dimanche</span><span class="closed">Fermé</span></div>
+        </div>
+        <div style="margin-top:1rem;">
+          <a href="tel:0531217138" style="color:white;font-weight:700;font-size:1rem;">📞 05 31 21 71 38</a>
+          <a href="mailto:ims.tlse@gmail.com" style="color:rgba(255,255,255,.65);font-size:.85rem;margin-top:.3rem;display:block;">✉ ims.tlse@gmail.com</a>
+          <p style="font-size:.82rem;color:rgba(255,255,255,.45);margin-top:.4rem;">📍 221 Route de Seysses, 31100 Toulouse</p>
+        </div>
+        <div class="footer-partners">
+          <span class="partner-pill">🏅 QualiRépar</span>
+          <span class="partner-pill">♻️ Ecologic</span>
+          <span class="partner-pill">🌿 Ecosystem</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2018-2025 i-Mobile Service · Aucune donnée transmise à des tiers.</p>
+      <div class="footer-legal">
+        <a href="https://imobileservice.fr/mentions-legales/" target="_blank" rel="noopener">Mentions légales</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+<script src="js/main.js"></script>
+</body>
+</html>

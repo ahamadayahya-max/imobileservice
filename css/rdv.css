@@ -1,0 +1,551 @@
+/* ============================================================
+   i-Mobile Service — Styles spécifiques à la page RDV
+   ============================================================ */
+
+/* ---------- Header RDV ------------------------------------- */
+.rdv-hero {
+  background: linear-gradient(135deg, var(--color-bordeaux-dim) 0%, white 100%);
+  padding: 4rem 1.5rem 3rem;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+}
+.rdv-hero h1 { margin-bottom: 0.75rem; }
+.rdv-hero p { color: var(--color-text-secondary); font-size: 1.05rem; max-width: 500px; margin: 0 auto; }
+
+/* ---------- Stepper --------------------------------------- */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 3rem;
+  padding: 0 1rem;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+.step-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  transition: all var(--transition);
+  z-index: 1;
+}
+.step-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  transition: color var(--transition);
+}
+.step-item.active .step-circle {
+  border-color: var(--color-cyan);
+  background: var(--color-cyan);
+  color: white;
+  box-shadow: 0 4px 14px rgba(0,188,212,0.35);
+}
+.step-item.active .step-label { color: var(--color-cyan-dark); }
+.step-item.done .step-circle {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: white;
+}
+.step-item.done .step-label { color: var(--color-success); }
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--color-border);
+  margin: 0 0.25rem;
+  margin-bottom: 1.5rem;
+  min-width: 40px;
+  max-width: 100px;
+  transition: background var(--transition);
+  position: relative;
+  top: -12px;
+}
+.step-line.done { background: var(--color-success); }
+.step-line.active { background: var(--color-cyan); }
+
+/* ---------- Étapes du formulaire -------------------------- */
+.step-content {
+  display: none;
+  animation: stepIn 0.35s ease;
+}
+.step-content.active { display: block; }
+@keyframes stepIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.step-title {
+  font-size: 1.3rem;
+  font-family: var(--font-title);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: var(--color-text);
+}
+.step-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 0.93rem;
+  margin-bottom: 2rem;
+}
+
+/* ---------- Sélection type appareil ----------------------- */
+.device-type-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+.device-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.1rem 0.5rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.device-type-btn:hover {
+  border-color: var(--color-cyan);
+  color: var(--color-cyan-dark);
+  background: var(--color-cyan-light);
+  transform: translateY(-2px);
+}
+.device-type-btn.selected {
+  border-color: var(--color-cyan);
+  background: var(--color-cyan);
+  color: white;
+  box-shadow: var(--shadow-glow-cyan);
+}
+.device-type-icon { font-size: 1.8rem; }
+
+/* Sélection marque */
+.brand-selector {
+  margin-bottom: 1.75rem;
+  display: none;
+  animation: fadeUp 0.25s ease;
+}
+.brand-selector.visible { display: block; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.brand-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.6rem;
+}
+.brand-grid {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.brand-btn {
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-text-secondary);
+}
+.brand-btn:hover { border-color: var(--color-cyan); color: var(--color-cyan-dark); }
+.brand-btn.selected {
+  background: var(--color-cyan);
+  border-color: var(--color-cyan);
+  color: white;
+}
+
+/* Problèmes (checkboxes) */
+.issues-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 1.75rem;
+}
+.issue-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.issue-checkbox:hover { border-color: var(--color-cyan); background: var(--color-cyan-light); }
+.issue-checkbox:has(input:checked) {
+  border-color: var(--color-cyan);
+  background: var(--color-cyan-light);
+  color: var(--color-cyan-dark);
+  font-weight: 600;
+}
+.issue-checkbox input { accent-color: var(--color-cyan); width: 16px; height: 16px; }
+.issue-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+/* Textarea description */
+.rdv-textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  background: white;
+  color: var(--color-text);
+  resize: vertical;
+  min-height: 110px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  line-height: 1.6;
+}
+.rdv-textarea:focus {
+  outline: none;
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 0 3px rgba(0,188,212,0.1);
+}
+
+/* ---------- Calendrier interactif ------------------------- */
+.calendar-wrapper {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--color-border);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+.calendar-month {
+  font-family: var(--font-title);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.calendar-nav {
+  display: flex;
+  gap: 0.4rem;
+}
+.cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  color: var(--color-text-secondary);
+}
+.cal-nav-btn:hover { border-color: var(--color-cyan); color: var(--color-cyan); }
+.cal-nav-btn svg { width: 16px; height: 16px; }
+
+.calendar-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  padding: 0.5rem 0.75rem 0;
+}
+.calendar-day-name {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  padding: 0.4rem 0;
+  text-transform: uppercase;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding: 0.75rem;
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xs);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1.5px solid transparent;
+}
+.cal-day:hover:not(.disabled):not(.other-month) {
+  background: var(--color-cyan-light);
+  border-color: var(--color-cyan);
+  color: var(--color-cyan-dark);
+  font-weight: 600;
+}
+.cal-day.selected {
+  background: var(--color-cyan);
+  color: white;
+  font-weight: 700;
+  border-color: var(--color-cyan);
+  box-shadow: 0 2px 8px rgba(0,188,212,0.35);
+}
+.cal-day.today {
+  border-color: var(--color-bordeaux);
+  color: var(--color-bordeaux);
+  font-weight: 700;
+}
+.cal-day.today.selected { border-color: var(--color-cyan); color: white; }
+.cal-day.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.cal-day.other-month { opacity: 0.25; cursor: default; }
+.cal-day.sunday { color: var(--color-bordeaux); }
+.cal-day.sunday.disabled { color: var(--color-bordeaux); }
+
+/* ---------- Créneaux horaires ----------------------------- */
+.slots-section {
+  margin-bottom: 2rem;
+  display: none;
+  animation: fadeUp 0.3s ease;
+}
+.slots-section.visible { display: block; }
+.slots-date-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.slots-date-label svg { width: 16px; height: 16px; color: var(--color-cyan); }
+.slots-period { margin-bottom: 1.25rem; }
+.slots-period-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.6rem;
+}
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+}
+.slot-btn {
+  padding: 0.5rem;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+  color: var(--color-text);
+}
+.slot-btn:hover:not(.full) {
+  border-color: var(--color-cyan);
+  background: var(--color-cyan-light);
+  color: var(--color-cyan-dark);
+}
+.slot-btn.selected {
+  background: var(--color-cyan);
+  border-color: var(--color-cyan);
+  color: white;
+  font-weight: 700;
+}
+.slot-btn.full {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  background: var(--color-bg);
+}
+
+/* ---------- Étape 3 — Coordonnées ------------------------- */
+.rdv-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.rdv-form .form-group { margin-bottom: 1rem; }
+.rdv-form .form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.4rem;
+}
+.rdv-form .form-label .required { color: var(--color-bordeaux); margin-left: 2px; }
+.rdv-form .form-input {
+  width: 100%;
+  padding: 0.7rem 0.95rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  background: white;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.rdv-form .form-input:focus {
+  outline: none;
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 0 3px rgba(0,188,212,0.1);
+}
+.rdv-form .form-input.error { border-color: var(--color-error); }
+.rdv-form .form-error { font-size: 0.78rem; color: var(--color-error); margin-top: 0.25rem; display: none; }
+.rdv-form .form-error.visible { display: block; }
+
+/* Récapitulatif avant confirmation */
+.rdv-recap {
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+  border: 1.5px solid var(--color-border);
+}
+.rdv-recap-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.9rem;
+}
+.rdv-recap-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+.rdv-recap-row {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+}
+.rdv-recap-key { color: var(--color-text-muted); min-width: 90px; font-weight: 500; }
+.rdv-recap-val { color: var(--color-text); font-weight: 600; }
+
+/* RGPD checkbox */
+.rgpd-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+.rgpd-checkbox:has(input:checked) { border-color: var(--color-cyan); background: var(--color-cyan-light); }
+.rgpd-checkbox input { accent-color: var(--color-cyan); width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+.rgpd-text { font-size: 0.83rem; color: var(--color-text-secondary); line-height: 1.5; }
+
+/* ---------- Navigation entre étapes ----------------------- */
+.step-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+.step-nav.first { justify-content: flex-end; }
+
+/* ---------- Page de confirmation RDV ----------------------- */
+.confirmation-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 3rem 2.5rem;
+  text-align: center;
+  max-width: 520px;
+  margin: 4rem auto;
+  border: 1.5px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+  display: none;
+}
+.confirmation-card.visible { display: block; animation: confirmIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes confirmIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+.confirmation-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--color-success-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2rem;
+}
+.confirmation-card h2 { margin-bottom: 0.6rem; }
+.confirmation-card p { color: var(--color-text-secondary); font-size: 0.97rem; margin-bottom: 1.5rem; }
+.rdv-number {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  background: var(--color-cyan-light);
+  color: var(--color-cyan-dark);
+  border-radius: var(--radius-full);
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.75rem;
+}
+.confirmation-details {
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+.confirmation-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+.confirmation-row:last-child { margin-bottom: 0; }
+.confirmation-row span:first-child { color: var(--color-text-muted); }
+.confirmation-row span:last-child { font-weight: 600; }
+
+/* ---------- Responsive ------------------------------------- */
+@media (max-width: 768px) {
+  .device-type-grid { grid-template-columns: repeat(3, 1fr); }
+  .issues-grid { grid-template-columns: 1fr; }
+  .rdv-form .form-row { grid-template-columns: 1fr; }
+  .stepper { gap: 0; }
+  .step-label { display: none; }
+  .step-line { min-width: 20px; }
+}
+@media (max-width: 480px) {
+  .device-type-grid { grid-template-columns: repeat(2, 1fr); }
+  .slots-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+  .confirmation-card { padding: 2rem 1.25rem; margin: 2rem 0; }
+}

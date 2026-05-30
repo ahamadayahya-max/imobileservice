@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>📸 Checklist Photos — i-Mobile Service</title>
+  <style>
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --bg-card:   #111118;
+      --bg-input:  #1a1a26;
+      --bg-hover:  #1e1e2e;
+      --border:    rgba(255,255,255,.08);
+      --border-s:  rgba(255,255,255,.14);
+      --cyan:      #00bcd4;
+      --cyan-dim:  rgba(0,188,212,.12);
+      --cyan-dark: #0097a7;
+      --red:       #8b1a1a;
+      --red-dim:   rgba(139,26,26,.18);
+      --green:     #22c55e;
+      --green-dim: rgba(34,197,94,.15);
+      --text:      #f0f0f8;
+      --text-s:    #9999b8;
+      --text-m:    #5a5a7a;
+      --radius:    14px;
+      --radius-s:  8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+
+    html { background: var(--bg); color: var(--text); font-size: 16px; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      padding-bottom: calc(80px + var(--safe-bot));
+    }
+
+    /* ============================================================
+       HEADER STICKY
+       ============================================================ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: calc(12px + var(--safe-top)) 16px 12px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .header-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+
+    .header-title span { color: var(--cyan); }
+
+    .counter-pill {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border: 1px solid rgba(0,188,212,.3);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-size: .82rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Barre de progression */
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan-dark), var(--cyan));
+      border-radius: 100px;
+      transition: width .3s ease;
+      width: 0%;
+    }
+
+    .progress-pct {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--text-s);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* ============================================================
+       BOUTONS HEADER
+       ============================================================ */
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 9px 10px;
+      border-radius: var(--radius-s);
+      border: 1px solid var(--border-s);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background .15s, border-color .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active { background: var(--bg-hover); }
+
+    .btn-cyan {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border-color: rgba(0,188,212,.3);
+    }
+    .btn-cyan:active { background: rgba(0,188,212,.22); }
+
+    .btn-red {
+      background: var(--red-dim);
+      color: #f87171;
+      border-color: rgba(139,26,26,.4);
+    }
+    .btn-red:active { background: rgba(139,26,26,.3); }
+
+    .btn-green {
+      background: var(--green-dim);
+      color: var(--green);
+      border-color: rgba(34,197,94,.3);
+    }
+    .btn-green:active { background: rgba(34,197,94,.25); }
+
+    /* ============================================================
+       CONTENU PRINCIPAL
+       ============================================================ */
+    .main { padding: 12px 12px 0; }
+
+    /* ============================================================
+       GROUPE / CATÉGORIE
+       ============================================================ */
+    .group { margin-bottom: 10px; }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      transition: background .15s, border-color .15s;
+    }
+
+    .group-header:active { background: var(--bg-hover); }
+
+    .group-header.open {
+      border-radius: var(--radius) var(--radius) 0 0;
+      border-bottom-color: transparent;
+      background: var(--bg-hover);
+    }
+
+    .group-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .group-emoji { font-size: 1.2rem; }
+
+    .group-title {
+      font-size: .92rem;
+      font-weight: 700;
+    }
+
+    .group-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-count {
+      font-size: .75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 100px;
+      background: var(--bg-input);
+      color: var(--text-s);
+    }
+
+    .badge-count.done {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .chevron {
+      font-size: .75rem;
+      color: var(--text-m);
+      transition: transform .2s;
+    }
+    .group-header.open .chevron { transform: rotate(180deg); }
+
+    /* Corps du groupe */
+    .group-body {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+    }
+
+    .group-body.open { display: block; }
+
+    /* ============================================================
+       ITEM PHOTO
+       ============================================================ */
+    .photo-item {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+
+    .photo-item:last-child { border-bottom: none; }
+
+    .photo-item.checked { background: rgba(34,197,94,.04); }
+
+    .photo-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 14px 10px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Checkbox personnalisée */
+    .custom-checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border-s);
+      border-radius: 6px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+      background: var(--bg-input);
+    }
+
+    .photo-item.checked .custom-checkbox {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .check-icon {
+      display: none;
+      color: white;
+      font-size: .75rem;
+      font-weight: 900;
+    }
+
+    .photo-item.checked .check-icon { display: block; }
+
+    .photo-info { flex: 1; min-width: 0; }
+
+    .photo-num {
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--text-m);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 2px;
+    }
+
+    .photo-desc {
+      font-size: .9rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .photo-item.checked .photo-desc {
+      color: var(--text-m);
+      text-decoration: line-through;
+      text-decoration-color: var(--text-m);
+    }
+
+    /* Champ note */
+    .note-row {
+      padding: 0 14px 12px calc(14px + 24px + 12px);
+    }
+
+    .note-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      color: var(--text-s);
+      font-size: .78rem;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      transition: border-color .15s;
+      min-height: 32px;
+    }
+
+    .note-input:focus { border-color: var(--cyan); color: var(--text); }
+    .note-input::placeholder { color: var(--text-m); }
+
+    /* ============================================================
+       TOAST
+       ============================================================ */
+    .toast {
+      position: fixed;
+      bottom: calc(80px + var(--safe-bot) + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--bg-card);
+      border: 1px solid var(--border-s);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 100px;
+      font-size: .85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      transition: all .25s;
+      z-index: 200;
+      pointer-events: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ============================================================
+       BOTTOM BAR FIXE
+       ============================================================ */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10,10,15,.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 10px 12px calc(10px + var(--safe-bot));
+    }
+
+    .btn-export {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--cyan);
+      color: #000;
+      font-size: .95rem;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: -.01em;
+      transition: background .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-export:active { background: var(--cyan-dark); }
+
+    /* ============================================================
+       MODAL EXPORT
+       ============================================================ */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 300;
+      align-items: flex-end;
+    }
+
+    .modal-bg.open { display: flex; }
+
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-s);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 20px 16px calc(20px + var(--safe-bot));
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-close {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-s);
+      border-radius: 6px;
+      width: 30px;
+      height: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .export-content {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-s);
+      padding: 14px;
+      font-size: .78rem;
+      color: var(--text-s);
+      line-height: 1.8;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      max-height: 50vh;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+
+    .btn-copy {
+      width: 100%;
+      padding: 13px;
+      border-radius: var(--radius-s);
+      border: 1px solid rgba(0,188,212,.3);
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       ÉTAT COMPLET
+       ============================================================ */
+    .all-done {
+      text-align: center;
+      padding: 32px 20px;
+      display: none;
+    }
+
+    .all-done.show { display: block; }
+    .all-done-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+    .all-done-title { font-size: 1.2rem; font-weight: 800; color: var(--green); margin-bottom: 6px; }
+    .all-done-sub { font-size: .85rem; color: var(--text-s); }
+
+    /* Scrollbar discrète */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-s); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-top">
+    <div class="header-title">📸 Photos <span>i-Mobile</span></div>
+    <div class="counter-pill" id="counter">0 / 38</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-pct" id="progress-pct">0%</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-cyan" onclick="checkAll()">✅ Tout cocher</button>
+    <button class="btn btn-red" onclick="confirmReset()">🗑️ Réinitialiser</button>
+    <button class="btn" onclick="toggleAllGroups()">↕️ Tout plier</button>
+  </div>
+</header>
+
+<!-- ===== CONTENU ===== -->
+<main class="main" id="main-content"></main>
+
+<!-- Message tout terminé -->
+<div class="all-done" id="all-done">
+  <div class="all-done-emoji">🎉</div>
+  <div class="all-done-title">Toutes les photos sont prises !</div>
+  <div class="all-done-sub">Renomme-les et envoie-les à Claude Code pour les intégrer au site.</div>
+</div>
+
+<!-- ===== BOTTOM BAR ===== -->
+<div class="bottom-bar">
+  <button class="btn-export" onclick="openExport()">📋 Exporter — voir les photos restantes</button>
+</div>
+
+<!-- ===== MODAL EXPORT ===== -->
+<div class="modal-bg" id="modal-bg" onclick="closeExportIfOutside(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <span>📋 Résumé export</span>
+      <button class="modal-close" onclick="closeExport()">✕</button>
+    </div>
+    <div class="export-content" id="export-content"></div>
+    <button class="btn-copy" onclick="copyExport()">📋 Copier dans le presse-papiers</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   DONNÉES — 38 photos en 6 catégories
+   ============================================================ */
+const CATEGORIES = [
+  {
+    id: 'exterieur',
+    emoji: '🏪',
+    title: 'Boutique extérieure',
+    photos: [
+      { n: 1,  desc: 'Façade complète de la boutique avec l\'enseigne visible' },
+      { n: 2,  desc: 'Vitrine de la boutique (close-up sur les produits en vitrine)' },
+      { n: 3,  desc: 'Entrée de la boutique (porte + panneau horaires)' },
+      { n: 4,  desc: 'Panneau de signalisation / rue (pour aider les clients à trouver)' },
+      { n: 5,  desc: 'Parking Espace des Glières depuis la boutique' },
+    ],
+  },
+  {
+    id: 'interieur',
+    emoji: '🛋️',
+    title: 'Intérieur boutique',
+    photos: [
+      { n: 6,  desc: 'Vue générale de l\'intérieur (panoramique)' },
+      { n: 7,  desc: 'Comptoir d\'accueil avec l\'équipe (sourire !)' },
+      { n: 8,  desc: 'Présentoir accessoires (coques, câbles, chargeurs)' },
+      { n: 9,  desc: 'Vitrine des produits en vente' },
+      { n: 10, desc: 'Espace atelier / réparation (plan de travail propre)' },
+      { n: 11, desc: 'Mur ou panneau avec le logo i-Mobile Service' },
+    ],
+  },
+  {
+    id: 'reparations',
+    emoji: '🔧',
+    title: 'Réparations en action',
+    photos: [
+      { n: 12, desc: 'Technicien en train de réparer un iPhone (gros plan mains + outil)' },
+      { n: 13, desc: 'Ouverture d\'un smartphone (tournevis, pinces)' },
+      { n: 14, desc: 'Remplacement d\'un écran iPhone' },
+      { n: 15, desc: 'Remplacement d\'une batterie' },
+      { n: 16, desc: 'Appareil avant / après réparation (côte à côte)' },
+      { n: 17, desc: 'Table d\'outils propre et organisée' },
+      { n: 18, desc: 'Pièces détachées rangées (batteries, écrans)' },
+      { n: 19, desc: 'Test de l\'appareil après réparation' },
+    ],
+  },
+  {
+    id: 'produits',
+    emoji: '📱',
+    title: 'Produits accessoires',
+    photos: [
+      { n: 20, desc: 'Coques variées sur présentoir tournant' },
+      { n: 21, desc: 'Verres trempés en sachet / boîte' },
+      { n: 22, desc: 'Chargeurs rapides (45W, sans fil)' },
+      { n: 23, desc: 'Câbles USB-C et Lightning rangés' },
+      { n: 24, desc: 'Écouteurs TWS dans leur boîtier' },
+      { n: 25, desc: 'Power banks alignés' },
+      { n: 26, desc: 'Support voiture magnétique' },
+      { n: 27, desc: 'Adaptateurs USB-C → HDMI, jack' },
+      { n: 28, desc: 'Batteries de rechange (iPhones, Samsung)' },
+      { n: 29, desc: 'Kit nettoyage écran' },
+      { n: 30, desc: 'Accessoires gaming (pour consoles)' },
+      { n: 31, desc: 'Fond neutre blanc/gris — produit posé dessus (style e-commerce)' },
+    ],
+  },
+  {
+    id: 'equipe',
+    emoji: '🤝',
+    title: 'Équipe & Ambiance',
+    photos: [
+      { n: 32, desc: 'Portrait technicien(s) en uniforme / t-shirt i-Mobile' },
+      { n: 33, desc: 'Technicien qui accueille un client au comptoir' },
+      { n: 34, desc: 'Client satisfait qui repart avec son téléphone réparé' },
+      { n: 35, desc: 'Ambiance générale boutique avec clients (si accord)' },
+    ],
+  },
+  {
+    id: 'livraison',
+    emoji: '📦',
+    title: 'Livraison & Emballage',
+    photos: [
+      { n: 36, desc: 'Colis prêt à être expédié avec logo i-Mobile' },
+      { n: 37, desc: 'Bulle d\'emballage et produit protégé' },
+      { n: 38, desc: 'Boîte fermée avec étiquette d\'envoi' },
+    ],
+  },
+];
+
+const TOTAL = 38;
+const LS_KEY = 'ims_checklist_v1';
+
+/* ============================================================
+   ÉTAT
+   ============================================================ */
+let state = loadState();
+let allOpen = true;
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  /* État par défaut */
+  const s = {};
+  CATEGORIES.forEach(cat => {
+    cat.photos.forEach(p => {
+      s[p.n] = { checked: false, note: '' };
+    });
+  });
+  return s;
+}
+
+function saveState() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+/* ============================================================
+   RENDU
+   ============================================================ */
+function render() {
+  const container = document.getElementById('main-content');
+  container.innerHTML = '';
+
+  CATEGORIES.forEach((cat, idx) => {
+    const checkedCount = cat.photos.filter(p => state[p.n]?.checked).length;
+    const allDone = checkedCount === cat.photos.length;
+
+    const group = document.createElement('div');
+    group.className = 'group';
+    group.id = 'group-' + cat.id;
+
+    /* Header du groupe */
+    const header = document.createElement('div');
+    header.className = 'group-header open';
+    header.innerHTML = `
+      <div class="group-left">
+        <span class="group-emoji">${cat.emoji}</span>
+        <span class="group-title">${cat.title}</span>
+      </div>
+      <div class="group-badge">
+        <span class="badge-count ${allDone ? 'done' : ''}">${checkedCount}/${cat.photos.length}</span>
+        <span class="chevron">▼</span>
+      </div>
+    `;
+    header.addEventListener('click', () => toggleGroup(cat.id));
+    group.appendChild(header);
+
+    /* Corps */
+    const body = document.createElement('div');
+    body.className = 'group-body open';
+    body.id = 'body-' + cat.id;
+
+    cat.photos.forEach(photo => {
+      const checked = state[photo.n]?.checked || false;
+      const note    = state[photo.n]?.note    || '';
+
+      const item = document.createElement('div');
+      item.className = 'photo-item' + (checked ? ' checked' : '');
+      item.id = 'item-' + photo.n;
+
+      item.innerHTML = `
+        <div class="photo-row" onclick="toggleCheck(${photo.n})">
+          <div class="custom-checkbox">
+            <span class="check-icon">✓</span>
+          </div>
+          <div class="photo-info">
+            <div class="photo-num">Photo ${String(photo.n).padStart(2,'0')}</div>
+            <div class="photo-desc">${escHtml(photo.desc)}</div>
+          </div>
+        </div>
+        <div class="note-row">
+          <textarea
+            class="note-input"
+            placeholder="Note… (ex: floue, à refaire)"
+            rows="1"
+            data-n="${photo.n}"
+            onclick="event.stopPropagation()"
+            oninput="handleNoteInput(this)"
+          >${escHtml(note)}</textarea>
+        </div>
+      `;
+
+      body.appendChild(item);
+    });
+
+    group.appendChild(body);
+    container.appendChild(group);
+  });
+
+  updateProgress();
+  checkAllDone();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ============================================================
+   INTERACTIONS
+   ============================================================ */
+function toggleCheck(n) {
+  state[n].checked = !state[n].checked;
+  saveState();
+  /* Mise à jour partielle (sans re-render complet pour fluidité) */
+  const item = document.getElementById('item-' + n);
+  if (item) {
+    item.classList.toggle('checked', state[n].checked);
+  }
+  updateGroupBadge(n);
+  updateProgress();
+  checkAllDone();
+}
+
+function handleNoteInput(el) {
+  const n = parseInt(el.dataset.n);
+  state[n].note = el.value;
+  saveState();
+  /* Resize automatique */
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function toggleGroup(id) {
+  const header = document.querySelector('#group-' + id + ' .group-header');
+  const body   = document.getElementById('body-' + id);
+  if (!header || !body) return;
+  header.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+function toggleAllGroups() {
+  allOpen = !allOpen;
+  CATEGORIES.forEach(cat => {
+    const header = document.querySelector('#group-' + cat.id + ' .group-header');
+    const body   = document.getElementById('body-' + cat.id);
+    if (!header || !body) return;
+    header.classList.toggle('open', allOpen);
+    body.classList.toggle('open', allOpen);
+  });
+}
+
+function checkAll() {
+  CATEGORIES.forEach(cat => {
+    cat.photos.forEach(p => { state[p.n].checked = true; });
+  });
+  saveState();
+  render();
+  showToast('Toutes les photos cochées ✅');
+}
+
+function confirmReset() {
+  if (confirm('Réinitialiser toute la checklist ? Cette action est irréversible.')) {
+    CATEGORIES.forEach(cat => {
+      cat.photos.forEach(p => { state[p.n] = { checked: false, note: '' }; });
+    });
+    saveState();
+    render();
+    showToast('Checklist réinitialisée 🔄');
+  }
+}
+
+/* ============================================================
+   MISE À JOUR UI
+   ============================================================ */
+function countChecked() {
+  return Object.values(state).filter(v => v.checked).length;
+}
+
+function updateProgress() {
+  const done = countChecked();
+  const pct  = Math.round(done / TOTAL * 100);
+  document.getElementById('counter').textContent       = `${done} / ${TOTAL}`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent  = pct + '%';
+}
+
+function updateGroupBadge(n) {
+  /* Trouver la catégorie */
+  const cat = CATEGORIES.find(c => c.photos.some(p => p.n === n));
+  if (!cat) return;
+  const checkedCount = cat.photos.filter(p => state[p.n]?.checked).length;
+  const allDone = checkedCount === cat.photos.length;
+  const badge = document.querySelector('#group-' + cat.id + ' .badge-count');
+  if (badge) {
+    badge.textContent = `${checkedCount}/${cat.photos.length}`;
+    badge.classList.toggle('done', allDone);
+  }
+}
+
+function checkAllDone() {
+  const done = countChecked();
+  document.getElementById('all-done').classList.toggle('show', done === TOTAL);
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function openExport() {
+  const done      = countChecked();
+  const remaining = TOTAL - done;
+  const date      = new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  let text = `📸 CHECKLIST PHOTOS — i-Mobile Service\n`;
+  text    += `Exporté le ${date}\n`;
+  text    += `═══════════════════════════════════════\n`;
+  text    += `✅ Prises    : ${done} / ${TOTAL}\n`;
+  text    += `⏳ Restantes : ${remaining}\n`;
+  text    += `═══════════════════════════════════════\n\n`;
+
+  /* Photos restantes */
+  const remainingPhotos = [];
+  CATEGORIES.forEach(cat => {
+    const notDone = cat.photos.filter(p => !state[p.n]?.checked);
+    if (notDone.length > 0) {
+      text += `${cat.emoji} ${cat.title.toUpperCase()}\n`;
+      notDone.forEach(p => {
+        const note = state[p.n]?.note ? ` ← ${state[p.n].note}` : '';
+        text += `  [ ] ${String(p.n).padStart(2,'0')} — ${p.desc}${note}\n`;
+      });
+      text += '\n';
+    }
+  });
+
+  /* Notes sur les photos cochées */
+  const withNotes = [];
+  CATEGORIES.forEach(cat => {
+    cat.photos.forEach(p => {
+      if (state[p.n]?.note) withNotes.push({ n: p.n, desc: p.desc, note: state[p.n].note });
+    });
+  });
+  if (withNotes.length) {
+    text += `═══════════════════════════════════════\n`;
+    text += `📝 NOTES\n\n`;
+    withNotes.forEach(p => {
+      const tick = state[p.n]?.checked ? '✅' : '⏳';
+      text += `  ${tick} ${String(p.n).padStart(2,'0')} — ${p.desc}\n     💬 ${p.note}\n\n`;
+    });
+  }
+
+  if (remaining === 0) {
+    text += `🎉 TOUTES LES PHOTOS ONT ÉTÉ PRISES !\n`;
+    text += `Renomme-les et envoie-les à Claude Code.\n`;
+  }
+
+  document.getElementById('export-content').textContent = text;
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function closeExport() {
+  document.getElementById('modal-bg').classList.remove('open');
+}
+
+function closeExportIfOutside(e) {
+  if (e.target === document.getElementById('modal-bg')) closeExport();
+}
+
+function copyExport() {
+  const text = document.getElementById('export-content').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Copié dans le presse-papiers 📋');
+      closeExport();
+    });
+  } else {
+    /* Fallback pour anciens navigateurs */
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copié 📋');
+    closeExport();
+  }
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+render();
+</script>
+</body>
+</html>
