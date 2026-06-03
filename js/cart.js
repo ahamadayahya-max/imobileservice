@@ -8,6 +8,18 @@ const CART_KEY = 'ims_cart';
 const SHIPPING_THRESHOLD = 50; /* Livraison offerte dès 50€ */
 const SHIPPING_PRICE = 4.90;
 
+/* ---------- Données Points Relais Pickup ------------------- */
+const POINTS_RELAIS = [
+  { id:'PR001', nom:'Carrefour Market Seysses',     adresse:'Route de Seysses, 31600 Seysses',           distance:'0.8 km', horaires:'Lun–Sam 8h–20h / Dim 9h–13h',      disponible:true },
+  { id:'PR002', nom:'Tabac Presse Les Pradettes',   adresse:'15 Rue des Pradettes, 31100 Toulouse',       distance:'1.2 km', horaires:'Lun–Sam 7h–20h / Dim 8h–13h',      disponible:true },
+  { id:'PR003', nom:'Supérette Casino',             adresse:'45 Route de Seysses, 31100 Toulouse',        distance:'1.5 km', horaires:'Lun–Dim 7h–22h',                    disponible:true },
+  { id:'PR004', nom:'Pressing Central',             adresse:'8 Allée des Glières, 31100 Toulouse',        distance:'0.3 km', horaires:'Lun–Sam 9h–19h',                    disponible:true },
+  { id:'PR005', nom:'Pharmacie des Glières',        adresse:'2 Place des Glières, 31100 Toulouse',        distance:'0.4 km', horaires:'Lun–Ven 9h–19h30 / Sam 9h–18h',    disponible:true },
+];
+
+/* Point relais actuellement sélectionné */
+let selectedRelais = null;
+
 /* ---------- Utilitaires localStorage ----------------------- */
 function getCart() {
   try {
@@ -92,6 +104,99 @@ function getDeliveryMode() {
   const checked = document.querySelector('.delivery-options input[name="delivery"]:checked');
   return checked ? checked.value : 'store';
 }
+
+/* ---------- Afficher / masquer section Points Relais ------- */
+function toggleRelaisSection(mode) {
+  const section  = document.getElementById('pickup-relais-section');
+  const subLabel = document.getElementById('pickup-sub-label');
+  if (!section) return;
+  if (mode === 'pickup') {
+    section.style.display = 'block';
+    /* Afficher la liste si un relais est déjà sélectionné */
+    if (selectedRelais) {
+      afficherRelaisSelectionne();
+    } else {
+      rechercherRelais();
+    }
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+/* ---------- Rechercher et afficher les points relais ------- */
+function rechercherRelais() {
+  const cp   = (document.getElementById('relais-cp')?.value || '31100').trim();
+  const list = document.getElementById('relais-list');
+  if (!list) return;
+
+  /* Animation de chargement */
+  list.innerHTML = '<div style="text-align:center;padding:.75rem;color:#888;font-size:.85rem;">🔍 Recherche en cours…</div>';
+
+  setTimeout(() => {
+    /* Filtrer les relais selon le CP (simulation) */
+    const relais = POINTS_RELAIS.filter(r =>
+      r.adresse.includes(cp) || cp.startsWith('31') || cp === ''
+    );
+
+    if (!relais.length) {
+      list.innerHTML = '<div style="text-align:center;padding:.75rem;color:#888;font-size:.85rem;">Aucun point relais trouvé pour ce code postal.</div>';
+      return;
+    }
+
+    list.innerHTML = relais.map(r => buildRelaisCard(r)).join('');
+  }, 400);
+}
+
+/* Construire une carte point relais */
+function buildRelaisCard(r) {
+  const isSelected = selectedRelais && selectedRelais.id === r.id;
+  return `
+    <div class="relais-card ${isSelected ? 'selected' : ''}" id="relais-card-${r.id}">
+      <div class="relais-info">
+        <div class="relais-nom">📦 ${r.nom}</div>
+        <div class="relais-adresse">📍 ${r.adresse}</div>
+        <div class="relais-meta">⏱️ ${r.distance} — ${r.horaires}</div>
+        ${r.disponible ? '<div class="relais-dispo">✅ Disponible</div>' : '<div style="font-size:.72rem;color:#dc2626;">❌ Indisponible</div>'}
+      </div>
+      ${isSelected
+        ? '<span class="relais-selected-badge">✓ Sélectionné</span>'
+        : `<button class="relais-select-btn" onclick="choisirRelais('${r.id}')" ${!r.disponible ? 'disabled' : ''}>Choisir</button>`
+      }
+    </div>`;
+}
+
+/* Sélectionner un point relais */
+function choisirRelais(id) {
+  const relais = POINTS_RELAIS.find(r => r.id === id);
+  if (!relais) return;
+  selectedRelais = relais;
+
+  /* Mettre à jour toutes les cartes affichées */
+  const list = document.getElementById('relais-list');
+  if (list) list.innerHTML = POINTS_RELAIS.filter(r => {
+    const cp = (document.getElementById('relais-cp')?.value || '31100').trim();
+    return r.adresse.includes(cp) || cp.startsWith('31') || cp === '';
+  }).map(r => buildRelaisCard(r)).join('');
+
+  /* Mettre à jour le sous-label de l'option pickup */
+  const subLabel = document.getElementById('pickup-sub-label');
+  if (subLabel) subLabel.textContent = relais.nom + ' (' + relais.distance + ')';
+
+  /* Mettre à jour les totaux */
+  updateTotals();
+
+  if (typeof showToast === 'function') showToast('Point relais sélectionné : ' + relais.nom, 'success');
+}
+
+function afficherRelaisSelectionne() {
+  const list = document.getElementById('relais-list');
+  if (!list) return;
+  rechercherRelais();
+}
+
+/* Exposer globalement (appelé depuis onclick HTML) */
+window.rechercherRelais = rechercherRelais;
+window.choisirRelais    = choisirRelais;
 
 /* ---------- Afficher les articles du panier dans le drawer - */
 function renderCartItems() {
@@ -204,6 +309,16 @@ function openOrderModal() {
     showToast('Votre panier est vide', 'error');
     return;
   }
+  /* Vérifier qu'un point relais est sélectionné si pickup */
+  const mode = getDeliveryMode();
+  if (mode === 'pickup' && !selectedRelais) {
+    showToast('⚠️ Veuillez choisir un point relais Pickup', 'error');
+    /* Ouvrir la section relais si nécessaire */
+    const section = document.getElementById('pickup-relais-section');
+    if (section) section.style.display = 'block';
+    rechercherRelais();
+    return;
+  }
 
   const deliveryMode = getDeliveryMode();
   const subtotal = getCartSubtotal(cart);
@@ -299,7 +414,9 @@ function confirmStorePickup() {
 
   const modeLabels = {
     store:    'Retrait en boutique — 221 Route de Seysses, Toulouse',
-    pickup:   'Retrait Point Relais Pickup',
+    pickup:   selectedRelais
+      ? `Point Relais Pickup — ${selectedRelais.nom}\nAdresse : ${selectedRelais.adresse}\nHoraires : ${selectedRelais.horaires}`
+      : 'Retrait Point Relais Pickup',
     vinted:   'Vinted Locker',
     delivery: `Livraison à domicile — ${addr} ${cp} ${ville}`,
   };
@@ -316,7 +433,10 @@ function confirmStorePickup() {
     id: orderNum, date: orderDate,
     client: { nom: nomClient, email, phone },
     articles: cart,
-    livraison: { mode, adresse: modeLabel },
+    livraison: {
+      mode, adresse: modeLabel,
+      relais: (mode === 'pickup' && selectedRelais) ? selectedRelais : null
+    },
     soustotal: subtotal.toFixed(2),
     frais: shipping.toFixed(2),
     total: total.toFixed(2),
@@ -505,9 +625,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* Synchroniser les totaux quand on change le mode de livraison */
+  /* Synchroniser les totaux + afficher section relais */
   document.querySelectorAll('.delivery-options input[name="delivery"]').forEach(radio => {
-    radio.addEventListener('change', updateTotals);
+    radio.addEventListener('change', () => {
+      updateTotals();
+      toggleRelaisSection(radio.value);
+      /* Réinitialiser le relais si on change de mode */
+      if (radio.value !== 'pickup') {
+        selectedRelais = null;
+        const subLabel = document.getElementById('pickup-sub-label');
+        if (subLabel) subLabel.textContent = 'Proche de chez vous';
+      }
+    });
   });
 
   /* Boutons d'ajout au panier */

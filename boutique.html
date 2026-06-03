@@ -61,6 +61,53 @@
       cursor: pointer; font-family: inherit; transition: background 0.2s;
     }
     .order-confirm-btn:hover { background: #6d1515; }
+
+    /* ── Points Relais Pickup ── */
+    #pickup-relais-section {
+      margin: .75rem 0 .25rem; border-top: 1px solid var(--color-border);
+      padding-top: .75rem;
+    }
+    .relais-search { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+    .relais-cp-input {
+      flex: 1; min-width: 120px; padding: .55rem .85rem;
+      border: 1.5px solid var(--color-border); border-radius: 8px;
+      font-size: .88rem; font-family: inherit;
+    }
+    .relais-cp-input:focus { outline: none; border-color: #8b1a1a; }
+    .relais-search-btn {
+      padding: .55rem 1rem; background: #8b1a1a; color: #fff;
+      border: none; border-radius: 8px; font-size: .83rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+      white-space: nowrap; transition: background .2s;
+    }
+    .relais-search-btn:hover { background: #6d1515; }
+    #relais-list { display: flex; flex-direction: column; gap: .5rem; }
+    .relais-card {
+      border: 1.5px solid var(--color-border); border-radius: 10px;
+      padding: .75rem .9rem; display: flex; align-items: center;
+      gap: .75rem; cursor: pointer; transition: all .2s;
+      background: #fff;
+    }
+    .relais-card:hover { border-color: #8b1a1a; background: #fff9f9; }
+    .relais-card.selected { border-color: #166534; background: #f0fdf4; }
+    .relais-card.selected .relais-select-btn { background: #166534; }
+    .relais-info { flex: 1; min-width: 0; }
+    .relais-nom { font-weight: 700; font-size: .88rem; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .relais-adresse { font-size: .78rem; color: #666; margin-top: 1px; }
+    .relais-meta { font-size: .74rem; color: #888; margin-top: 2px; }
+    .relais-dispo { font-size: .72rem; font-weight: 700; color: #166534; }
+    .relais-select-btn {
+      flex-shrink: 0; padding: .4rem .85rem; background: #8b1a1a;
+      color: #fff; border: none; border-radius: 6px; font-size: .78rem;
+      font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: background .2s; white-space: nowrap;
+    }
+    .relais-select-btn:hover { background: #6d1515; }
+    .relais-selected-badge {
+      flex-shrink: 0; color: #166534; font-size: .78rem;
+      font-weight: 700; padding: .4rem .7rem; background: #dcfce7;
+      border-radius: 6px;
+    }
   </style>
 <link rel="stylesheet" href="css/devis.css">
 <script type="application/ld+json">
@@ -270,13 +317,23 @@
           <span class="delivery-option-price free">Gratuit</span>
         </label>
         <label class="delivery-option">
-          <input type="radio" name="delivery" value="pickup">
+          <input type="radio" name="delivery" value="pickup" id="radio-pickup">
           <div class="delivery-option-label">
             <div class="delivery-option-title">📦 Retrait Point Relais Pickup</div>
-            <div class="delivery-option-sub">Proche de chez vous</div>
+            <div class="delivery-option-sub" id="pickup-sub-label">Proche de chez vous</div>
           </div>
           <span class="delivery-option-price free">Gratuit</span>
         </label>
+        <!-- Section sélection point relais — visible uniquement si pickup est coché -->
+        <div id="pickup-relais-section" style="display:none">
+          <div class="relais-search">
+            <input type="text" id="relais-cp" class="relais-cp-input" placeholder="Votre code postal (ex: 31100)" maxlength="5" value="31100">
+            <button type="button" class="relais-search-btn" onclick="rechercherRelais()">
+              🔍 Voir les points relais proches
+            </button>
+          </div>
+          <div id="relais-list"></div>
+        </div>
         <label class="delivery-option">
           <input type="radio" name="delivery" value="vinted">
           <div class="delivery-option-label">

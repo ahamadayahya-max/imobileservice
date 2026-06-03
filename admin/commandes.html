@@ -91,7 +91,11 @@
       const statut  = c.statut || 'en_attente';
       const badgeCls = statutBadges[statut] || 'badge-attente';
       const articles = Array.isArray(c.articles) ? c.articles.map(a => `${a.name} ×${a.qty}`).join(', ') : '—';
-      const livraison = livraisonLabels[c.livraison?.mode] || c.livraison?.mode || '—';
+      const relais  = c.livraison?.relais;
+      const livraisonBase = livraisonLabels[c.livraison?.mode] || c.livraison?.mode || '—';
+      const livraison = relais
+        ? `${livraisonBase}<br><small style="color:#8b1a1a;font-weight:600;">📍 ${relais.nom}</small><br><small style="color:#666;">${relais.adresse}</small><br><small style="color:#888;">${relais.horaires}</small>`
+        : livraisonBase;
       const sujet = encodeURIComponent(`Commande ${c.id} — i-Mobile Service`);
       const corps = encodeURIComponent(`Bonjour ${c.client?.nom},\n\nConcernant votre commande ${c.id}...\n\nCordialement,\ni-Mobile Service`);
       return `<tr>
