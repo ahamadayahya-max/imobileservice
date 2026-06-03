@@ -451,10 +451,8 @@ function confirmStorePickup() {
     modeLabel = 'Retrait en boutique — 221 Route de Seysses, Toulouse';
   } else if ((mode === 'pickup' || mode === 'vinted') && selectedRelais) {
     const typeLabel = selectedRelais.type === 'vinted' ? 'Vinted Locker' : 'Point Relais Pickup';
-    const horairesStr = Object.entries(selectedRelais.horaires).map(([j,h]) => j+': '+h).join(' / ');
-    modeLabel = typeLabel+' — '+selectedRelais.nom+'
-Adresse : '+selectedRelais.adresseComplete+'
-Horaires : '+horairesStr;
+    const horairesStr = Object.entries(selectedRelais.horaires).map(([j,h]) => j + ': ' + h).join(' / ');
+    modeLabel = typeLabel + ' — ' + selectedRelais.nom + '\nAdresse : ' + selectedRelais.adresseComplete + '\nHoraires : ' + horairesStr;
   } else if (mode === 'pickup') {
     modeLabel = 'Retrait Point Relais Pickup';
   } else if (mode === 'vinted') {
