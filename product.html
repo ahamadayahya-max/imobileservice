@@ -418,12 +418,18 @@ const BG_IMAGES = {
   accessoire: "url('https://images.unsplash.com/photo-1512054502232-10a0a035d672?w=600&q=80&auto=format&fit=crop')",
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (typeof CATALOGUE === 'undefined') return;
 
   const params = new URLSearchParams(window.location.search);
   const id = parseInt(params.get('id'));
-  const produit = CATALOGUE.find(p => p.id === id);
+  let produit = CATALOGUE.find(p => p.id === id);
+
+  /* Produit Mobilax : absent du catalogue statique, on attend la réponse de l'API */
+  if (!produit && window.CATALOGUE_PRET) {
+    await window.CATALOGUE_PRET;
+    produit = CATALOGUE.find(p => p.id === id);
+  }
 
   if (!produit) {
     document.getElementById('product-detail-content').innerHTML =
@@ -490,7 +496,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* Image produit : IMAGES map par id, sinon BG_IMAGES catégorie, sinon emoji */
-  const imgData = (typeof IMAGES !== 'undefined' && IMAGES[produit.id]) || null;
+  const imgData = (typeof IMAGES !== 'undefined' && IMAGES[produit.id])
+    || (produit.image ? { src: produit.image, alt: produit.nom } : null);
   const isContain = produit.categorie === 'telephone' || produit.categorie === 'pc';
   let visualHTML;
   if (imgData) {
@@ -553,7 +560,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     gridSimilaire.innerHTML = similaires.map(p => {
       const prixF = p.prix.toFixed(2).replace('.',',') + '€';
-      const relImg = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) || null;
+      const relImg = (typeof IMAGES !== 'undefined' && IMAGES[p.id])
+        || (p.image ? { src: p.image, alt: p.nom } : null);
       const relIsContain = p.categorie === 'telephone' || p.categorie === 'pc';
       const relImgHTML = relImg
         ? `<img src="${relImg.src}" alt="${relImg.alt}" loading="lazy"

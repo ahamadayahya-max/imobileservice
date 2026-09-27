@@ -6,46 +6,46 @@
 const CATALOGUE = [
 
   /* ---- TÉLÉPHONES RECONDITIONNÉS — Apple iPhone ----------- */
-  { id: 1,  nom: "iPhone 11 64Go Noir",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 179, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
-  { id: 2,  nom: "iPhone 11 128Go Blanc",         categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 199, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
-  { id: 3,  nom: "iPhone 12 64Go Noir",           categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 219, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
-  { id: 4,  nom: "iPhone 12 128Go Bleu",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 249, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
-  { id: 5,  nom: "iPhone 13 128Go Minuit",        categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 299, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
-  { id: 6,  nom: "iPhone 13 256Go Rose",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 339, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
-  { id: 7,  nom: "iPhone 14 128Go Noir",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 389, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
-  { id: 8,  nom: "iPhone 14 Plus 128Go Bleu",     categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 429, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
-  { id: 9,  nom: "iPhone 15 128Go Noir",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 479, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: false },
+  { id: 1,  nom: "iPhone 11 64Go Noir",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 179, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
+  { id: 2,  nom: "iPhone 11 128Go Blanc",         categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 199, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
+  { id: 3,  nom: "iPhone 12 64Go Noir",           categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 219, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
+  { id: 4,  nom: "iPhone 12 128Go Bleu",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 249, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
+  { id: 5,  nom: "iPhone 13 128Go Minuit",        categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 299, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
+  { id: 6,  nom: "iPhone 13 256Go Rose",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 339, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
+  { id: 7,  nom: "iPhone 14 128Go Noir",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 389, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
+  { id: 8,  nom: "iPhone 14 Plus 128Go Bleu",     categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 429, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
+  { id: 9,  nom: "iPhone 15 128Go Noir",          categorie: "telephone", marque: "Apple",   emoji: "📱", prix: 479, badge: null,          grade: "A",    neuf: false, description: "iPhone reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur 20W.", disponible: true },
 
   /* ---- TÉLÉPHONES RECONDITIONNÉS — Samsung Galaxy --------- */
-  { id: 10, nom: "Samsung Galaxy A34 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 149, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: false },
-  { id: 11, nom: "Samsung Galaxy A54 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 169, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: false },
-  { id: 12, nom: "Samsung Galaxy A55 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 199, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: false },
-  { id: 13, nom: "Samsung Galaxy S22 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 259, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: false },
-  { id: 14, nom: "Samsung Galaxy S23 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 329, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: false },
-  { id: 15, nom: "Samsung Galaxy S23 FE 128Go",   categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 279, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: false },
-  { id: 16, nom: "Samsung Galaxy S24 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 399, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: false },
+  { id: 10, nom: "Samsung Galaxy A34 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 149, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: true },
+  { id: 11, nom: "Samsung Galaxy A54 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 169, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: true },
+  { id: 12, nom: "Samsung Galaxy A55 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 199, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: true },
+  { id: 13, nom: "Samsung Galaxy S22 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 259, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: true },
+  { id: 14, nom: "Samsung Galaxy S23 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 329, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: true },
+  { id: 15, nom: "Samsung Galaxy S23 FE 128Go",   categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 279, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: true },
+  { id: 16, nom: "Samsung Galaxy S24 128Go",      categorie: "telephone", marque: "Samsung", emoji: "📱", prix: 399, badge: null,          grade: "A",    neuf: false, description: "Samsung reconditionné Grade A — Comme neuf, testé 100 points de contrôle. Batterie > 85 %. Livré avec câble USB-C + chargeur.", disponible: true },
 
   /* ---- TÉLÉPHONES — Autres marques ------------------------ */
-  { id: 17, nom: "Xiaomi Redmi Note 13 128Go",    categorie: "telephone", marque: "Xiaomi",  emoji: "📱", prix: 149, badge: null,          grade: null,   neuf: true,  description: "Smartphone neuf sous scellé. Garantie constructeur 12 mois. MIUI 14, écran AMOLED 120 Hz.", disponible: false },
-  { id: 18, nom: "Xiaomi Redmi Note 13 Pro 256Go",categorie: "telephone", marque: "Xiaomi",  emoji: "📱", prix: 199, badge: null,          grade: null,   neuf: true,  description: "Smartphone neuf sous scellé. Garantie constructeur 12 mois. Appareil photo 200 Mpx, charge 67W.", disponible: false },
-  { id: 19, nom: "Google Pixel 7a 128Go",         categorie: "telephone", marque: "Google",  emoji: "📱", prix: 259, badge: null,          grade: "A",    neuf: false, description: "Google Pixel reconditionné Grade A — Testé 100 points. Batterie > 85 %. Puce Tensor G2, 5 ans de mises à jour Android garanties.", disponible: false },
-  { id: 20, nom: "OnePlus Nord CE3 Lite 128Go",   categorie: "telephone", marque: "OnePlus", emoji: "📱", prix: 179, badge: null,          grade: null,   neuf: true,  description: "Smartphone neuf sous scellé. Garantie constructeur 12 mois. Charge SuperVOOC 67W, écran 120 Hz.", disponible: false },
+  { id: 17, nom: "Xiaomi Redmi Note 13 128Go",    categorie: "telephone", marque: "Xiaomi",  emoji: "📱", prix: 149, badge: null,          grade: null,   neuf: true,  description: "Smartphone neuf sous scellé. Garantie constructeur 12 mois. MIUI 14, écran AMOLED 120 Hz.", disponible: true },
+  { id: 18, nom: "Xiaomi Redmi Note 13 Pro 256Go",categorie: "telephone", marque: "Xiaomi",  emoji: "📱", prix: 199, badge: null,          grade: null,   neuf: true,  description: "Smartphone neuf sous scellé. Garantie constructeur 12 mois. Appareil photo 200 Mpx, charge 67W.", disponible: true },
+  { id: 19, nom: "Google Pixel 7a 128Go",         categorie: "telephone", marque: "Google",  emoji: "📱", prix: 259, badge: null,          grade: "A",    neuf: false, description: "Google Pixel reconditionné Grade A — Testé 100 points. Batterie > 85 %. Puce Tensor G2, 5 ans de mises à jour Android garanties.", disponible: true },
+  { id: 20, nom: "OnePlus Nord CE3 Lite 128Go",   categorie: "telephone", marque: "OnePlus", emoji: "📱", prix: 179, badge: null,          grade: null,   neuf: true,  description: "Smartphone neuf sous scellé. Garantie constructeur 12 mois. Charge SuperVOOC 67W, écran 120 Hz.", disponible: true },
 
   /* ---- PC PORTABLES --------------------------------------- */
-  { id: 21, nom: "Lenovo ThinkPad L14 i5 16Go 256Go",  categorie: "pc", marque: "Lenovo", emoji: "💻", prix: 349, badge: null, grade: "A", neuf: false, description: "PC portable reconditionné Grade A. Intel Core i5 11e gen, 16 Go RAM DDR4, SSD 256 Go NVMe. Windows 11 Pro inclus. Garantie 6 mois.", disponible: false },
-  { id: 22, nom: "Dell Latitude 5420 i5 16Go 512Go",   categorie: "pc", marque: "Dell",   emoji: "💻", prix: 369, badge: null, grade: "A", neuf: false, description: "PC portable reconditionné Grade A. Intel Core i5 11e gen, 16 Go RAM DDR4, SSD 512 Go. Écran 14\" Full HD. Windows 11 Pro inclus.", disponible: false },
-  { id: 23, nom: "HP EliteBook 840 G8 i5 16Go 512Go",  categorie: "pc", marque: "HP",     emoji: "💻", prix: 359, badge: null, grade: "A", neuf: false, description: "PC portable reconditionné Grade A. Intel Core i5 11e gen, 16 Go RAM DDR4, SSD 512 Go. Certifié MIL-STD. Windows 11 Pro inclus.", disponible: false },
-  { id: 24, nom: "MacBook Air M1 8Go 256Go",            categorie: "pc", marque: "Apple",  emoji: "💻", prix: 679, badge: null, grade: "A", neuf: false, description: "MacBook Air reconditionné Grade A. Puce Apple M1, 8 Go RAM unifiée, SSD 256 Go. Autonomie 18h. macOS Ventura inclus.", disponible: false },
-  { id: 25, nom: "MacBook Air M2 8Go 256Go",            categorie: "pc", marque: "Apple",  emoji: "💻", prix: 799, badge: null, grade: "A", neuf: false, description: "MacBook Air reconditionné Grade A. Puce Apple M2, 8 Go RAM unifiée, SSD 256 Go. Écran Liquid Retina. Autonomie 18h.", disponible: false },
+  { id: 21, nom: "Lenovo ThinkPad L14 i5 16Go 256Go",  categorie: "pc", marque: "Lenovo", emoji: "💻", prix: 349, badge: null, grade: "A", neuf: false, description: "PC portable reconditionné Grade A. Intel Core i5 11e gen, 16 Go RAM DDR4, SSD 256 Go NVMe. Windows 11 Pro inclus. Garantie 6 mois.", disponible: true },
+  { id: 22, nom: "Dell Latitude 5420 i5 16Go 512Go",   categorie: "pc", marque: "Dell",   emoji: "💻", prix: 369, badge: null, grade: "A", neuf: false, description: "PC portable reconditionné Grade A. Intel Core i5 11e gen, 16 Go RAM DDR4, SSD 512 Go. Écran 14\" Full HD. Windows 11 Pro inclus.", disponible: true },
+  { id: 23, nom: "HP EliteBook 840 G8 i5 16Go 512Go",  categorie: "pc", marque: "HP",     emoji: "💻", prix: 359, badge: null, grade: "A", neuf: false, description: "PC portable reconditionné Grade A. Intel Core i5 11e gen, 16 Go RAM DDR4, SSD 512 Go. Certifié MIL-STD. Windows 11 Pro inclus.", disponible: true },
+  { id: 24, nom: "MacBook Air M1 8Go 256Go",            categorie: "pc", marque: "Apple",  emoji: "💻", prix: 679, badge: null, grade: "A", neuf: false, description: "MacBook Air reconditionné Grade A. Puce Apple M1, 8 Go RAM unifiée, SSD 256 Go. Autonomie 18h. macOS Ventura inclus.", disponible: true },
+  { id: 25, nom: "MacBook Air M2 8Go 256Go",            categorie: "pc", marque: "Apple",  emoji: "💻", prix: 799, badge: null, grade: "A", neuf: false, description: "MacBook Air reconditionné Grade A. Puce Apple M2, 8 Go RAM unifiée, SSD 256 Go. Écran Liquid Retina. Autonomie 18h.", disponible: true },
 
   /* ---- TABLETTES ------------------------------------------ */
-  { id: 26, nom: "iPad 9e génération 64Go WiFi",        categorie: "pc", marque: "Apple",   emoji: "📲", prix: 229, badge: null, grade: "A", neuf: false, description: "iPad reconditionné Grade A. Puce A13 Bionic, écran 10,2\" Retina. Batterie > 85 %. Livré avec câble USB-C.", disponible: false },
-  { id: 27, nom: "iPad 10e génération 64Go WiFi",       categorie: "pc", marque: "Apple",   emoji: "📲", prix: 279, badge: null, grade: "A", neuf: false, description: "iPad reconditionné Grade A. Puce A14 Bionic, écran 10,9\" Liquid Retina. Connecteur USB-C. Batterie > 85 %.", disponible: false },
-  { id: 28, nom: "iPad Air 5 64Go WiFi",                categorie: "pc", marque: "Apple",   emoji: "📲", prix: 359, badge: null, grade: "A", neuf: false, description: "iPad Air reconditionné Grade A. Puce M1, écran 10,9\" True Tone. Bouton Touch ID. Compatible Apple Pencil 2.", disponible: false },
-  { id: 29, nom: "iPad mini 6 64Go WiFi",               categorie: "pc", marque: "Apple",   emoji: "📲", prix: 319, badge: null, grade: "A", neuf: false, description: "iPad mini reconditionné Grade A. Puce A15 Bionic, écran 8,3\" Liquid Retina. Ultra compact, idéal en déplacement.", disponible: false },
-  { id: 30, nom: "Samsung Galaxy Tab A8 64Go",          categorie: "pc", marque: "Samsung", emoji: "📲", prix: 159, badge: null, grade: "A", neuf: false, description: "Samsung Tab reconditionné Grade A. Écran 10,5\" TFT, 3 Go RAM. Batterie > 85 %. Idéal navigation et multimédia.", disponible: false },
-  { id: 31, nom: "Samsung Galaxy Tab S7 FE 64Go",       categorie: "pc", marque: "Samsung", emoji: "📲", prix: 249, badge: null, grade: "A", neuf: false, description: "Samsung Tab reconditionné Grade A. Grand écran 12,4\" TFT. Batterie 10 090 mAh. Compatible S Pen.", disponible: false },
-  { id: 32, nom: "Samsung Galaxy Tab S9 FE 128Go",      categorie: "pc", marque: "Samsung", emoji: "📲", prix: 299, badge: null, grade: "A", neuf: false, description: "Samsung Tab reconditionné Grade A. Écran 10,9\" LCD, IP68. Compatible S Pen inclus. Batterie > 85 %.", disponible: false },
+  { id: 26, nom: "iPad 9e génération 64Go WiFi",        categorie: "pc", marque: "Apple",   emoji: "📲", prix: 229, badge: null, grade: "A", neuf: false, description: "iPad reconditionné Grade A. Puce A13 Bionic, écran 10,2\" Retina. Batterie > 85 %. Livré avec câble USB-C.", disponible: true },
+  { id: 27, nom: "iPad 10e génération 64Go WiFi",       categorie: "pc", marque: "Apple",   emoji: "📲", prix: 279, badge: null, grade: "A", neuf: false, description: "iPad reconditionné Grade A. Puce A14 Bionic, écran 10,9\" Liquid Retina. Connecteur USB-C. Batterie > 85 %.", disponible: true },
+  { id: 28, nom: "iPad Air 5 64Go WiFi",                categorie: "pc", marque: "Apple",   emoji: "📲", prix: 359, badge: null, grade: "A", neuf: false, description: "iPad Air reconditionné Grade A. Puce M1, écran 10,9\" True Tone. Bouton Touch ID. Compatible Apple Pencil 2.", disponible: true },
+  { id: 29, nom: "iPad mini 6 64Go WiFi",               categorie: "pc", marque: "Apple",   emoji: "📲", prix: 319, badge: null, grade: "A", neuf: false, description: "iPad mini reconditionné Grade A. Puce A15 Bionic, écran 8,3\" Liquid Retina. Ultra compact, idéal en déplacement.", disponible: true },
+  { id: 30, nom: "Samsung Galaxy Tab A8 64Go",          categorie: "pc", marque: "Samsung", emoji: "📲", prix: 159, badge: null, grade: "A", neuf: false, description: "Samsung Tab reconditionné Grade A. Écran 10,5\" TFT, 3 Go RAM. Batterie > 85 %. Idéal navigation et multimédia.", disponible: true },
+  { id: 31, nom: "Samsung Galaxy Tab S7 FE 64Go",       categorie: "pc", marque: "Samsung", emoji: "📲", prix: 249, badge: null, grade: "A", neuf: false, description: "Samsung Tab reconditionné Grade A. Grand écran 12,4\" TFT. Batterie 10 090 mAh. Compatible S Pen.", disponible: true },
+  { id: 32, nom: "Samsung Galaxy Tab S9 FE 128Go",      categorie: "pc", marque: "Samsung", emoji: "📲", prix: 299, badge: null, grade: "A", neuf: false, description: "Samsung Tab reconditionné Grade A. Écran 10,9\" LCD, IP68. Compatible S Pen inclus. Batterie > 85 %.", disponible: true },
 
   /* ---- PROTECTION ÉCRAN ----------------------------------- */
   { id: 33, nom: "Verre Trempé Standard",                categorie: "protection", marque: "", emoji: "🛡️", prix: 10, badge: null,          description: "Compatible iPhone 11 / Samsung A. Protection 9H anti-rayures. Pose offerte en boutique.", disponible: true },
@@ -117,3 +117,43 @@ const CATALOGUE = [
 
 /* Exposer globalement */
 window.CATALOGUE = CATALOGUE;
+
+/* ============================================================
+   Chargement Mobilax (preprod) via le proxy /api/mobilax
+   Le tableau statique ci-dessus sert de fallback : il reste affiché
+   tel quel si l'API ne répond pas. En cas de succès, les catégories
+   renvoyées par Mobilax remplacent leurs équivalents statiques ;
+   les autres (ex : accessoires) restent inchangées.
+   Le tableau est muté en place car boutique.js / product.html
+   gardent une référence directe à CATALOGUE.
+   ============================================================ */
+const MOBILAX_TIMEOUT_MS = 6000;
+
+window.CATALOGUE_SOURCE = 'statique';
+
+window.CATALOGUE_PRET = (async () => {
+  /* Les pages admin travaillent sur les IDs statiques (prix, photos) */
+  if (location.pathname.includes('/admin/')) return CATALOGUE;
+
+  const controleur = new AbortController();
+  const minuteur = setTimeout(() => controleur.abort(), MOBILAX_TIMEOUT_MS);
+
+  try {
+    const res = await fetch('/api/mobilax?action=catalogue', { signal: controleur.signal });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const { produits, categoriesChargees } = await res.json();
+    if (!Array.isArray(produits) || !produits.length) throw new Error('catalogue vide');
+
+    const conserves = CATALOGUE.filter(p => !categoriesChargees.includes(p.categorie));
+    CATALOGUE.length = 0;
+    CATALOGUE.push(...produits, ...conserves);
+    window.CATALOGUE_SOURCE = 'mobilax';
+    document.dispatchEvent(new CustomEvent('catalogue:charge', { detail: { source: 'mobilax' } }));
+  } catch (err) {
+    console.warn('[catalogue] API Mobilax indisponible, catalogue statique conservé :', err.message);
+  } finally {
+    clearTimeout(minuteur);
+  }
+  return CATALOGUE;
+})();

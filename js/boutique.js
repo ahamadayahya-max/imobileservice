@@ -88,7 +88,8 @@ function buildCarteHTML(produit) {
   const customPhotos = (() => { try { return JSON.parse(localStorage.getItem('ims_photos') || '{}'); } catch { return {}; } })();
   const imgData = customPhotos[produit.id]
     ? { src: customPhotos[produit.id], alt: produit.nom }
-    : (typeof IMAGES !== 'undefined' && IMAGES[produit.id]) || null;
+    : (typeof IMAGES !== 'undefined' && IMAGES[produit.id])
+      || (produit.image ? { src: produit.image, alt: produit.nom } : null);
   const isContain = produit.categorie === 'telephone' || produit.categorie === 'pc';
   const imgHTML = imgData
     ? `<img
@@ -235,3 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Premier rendu */
   afficherProduits();
 });
+
+/* Re-rendu quand le catalogue Mobilax remplace le catalogue statique */
+document.addEventListener('catalogue:charge', afficherProduits);

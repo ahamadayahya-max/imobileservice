@@ -4,8 +4,9 @@
     {
       "name": "imobileservice",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", ".", "--listen", "3333", "--no-clipboard"],
-      "port": 3333
+      "runtimeArgs": ["serve", ".", "--listen", "4567"],
+      "port": 4567,
+      "autoPort": false
     }
   ]
 }

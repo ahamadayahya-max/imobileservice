@@ -1,5 +1,12 @@
 {
   "version": 2,
   "cleanUrls": false,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "routes": [
+    {
+      "src": "/api/ping",
+      "dest": "/api/ping/index.json",
+      "headers": { "Content-Type": "application/json" }
+    }
+  ]
 }

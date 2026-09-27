@@ -77,11 +77,6 @@ function goToStep(step) {
   if (step < 1 || step > 3) return;
   rdvState.step = step;
 
-  /* Mettre à jour les cercles */
-  document.querySelectorAll('.step-item').forEach((el, i) => {
-    const n = i + 1; /* Note : la structure est step + line, donc on filtre */
-  });
-
   const stepItems = document.querySelectorAll('.step-item');
   const stepLines = document.querySelectorAll('.step-line');
 
