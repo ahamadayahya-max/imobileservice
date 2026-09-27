@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Factures — Admin i-Mobile Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+  <style>
+    .fac-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .75rem; }
+    .fac-grid label { display: flex; flex-direction: column; gap: .3rem; font-size: .82rem; font-weight: 600; }
+    .fac-grid .admin-input, .fac-lignes .admin-input { width: 100%; }
+    .fac-lignes { width: 100%; border-collapse: collapse; margin-top: .5rem; }
+    .fac-lignes td { padding: .3rem .25rem; }
+    .fac-total { text-align: right; font-size: 1.05rem; margin-top: .75rem; }
+    .fac-alerte { background: #fff7e6; border: 1px solid #f0c36d; color: #7a5200; border-radius: 8px; padding: .7rem 1rem; font-size: .85rem; margin-bottom: 1rem; }
+    textarea.admin-input { min-height: 90px; font-family: inherit; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">🔧 i-Mobile Service<span>Administration</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="produits.html"><span class="nav-icon">📦</span> Produits</a>
+      <a href="photos.html"><span class="nav-icon">🖼️</span> Photos</a>
+      <a href="prix.html"><span class="nav-icon">💰</span> Prix</a>
+      <a href="commandes.html"><span class="nav-icon">📋</span> Commandes</a>
+      <a href="factures.html" class="active"><span class="nav-icon">🧾</span> Factures</a>
+      <a href="devis.html"><span class="nav-icon">📩</span> Devis reçus</a>
+    </nav>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="adminLogout()">🚪 Déconnexion</button></div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">🧾 Factures</div>
+      <div class="topbar-right">
+        <button class="btn-admin btn-ghost btn-sm" onclick="exporterSauvegarde()">💾 Sauvegarder</button>
+        <label class="btn-admin btn-ghost btn-sm" style="cursor:pointer;">📂 Restaurer
+          <input type="file" accept="application/json" onchange="importerSauvegarde(this)" hidden>
+        </label>
+        <button class="btn-admin btn-secondary btn-sm" onclick="exporterCSV()">📊 Export comptable (CSV)</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div class="fac-alerte" id="alerte-registre"></div>
+
+      <!-- ---------------- Nouvelle facture ---------------- -->
+      <div class="data-card" style="margin-bottom:1.5rem;">
+        <div class="card-header"><span class="card-title">➕ Nouvelle facture</span></div>
+        <div style="padding:1rem 1.25rem;">
+
+          <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.3rem;">
+            Gagner du temps : collez ici l'email « NOUVELLE COMMANDE » reçu (facultatif)
+          </label>
+          <textarea id="email-commande" class="admin-input" style="width:100%;" placeholder="Collez le contenu de l'email de commande…"></textarea>
+          <div style="margin:.5rem 0 1.25rem;">
+            <button class="btn-admin btn-secondary btn-sm" onclick="remplirDepuisEmail()">✨ Remplir automatiquement</button>
+          </div>
+
+          <div class="fac-grid">
+            <label>Nom du client *<input id="f-nom" class="admin-input" required></label>
+            <label>Email<input id="f-email" class="admin-input" type="email"></label>
+            <label>Téléphone<input id="f-tel" class="admin-input"></label>
+            <label>Adresse (facultative)<input id="f-adresse" class="admin-input"></label>
+            <label>Réf. commande<input id="f-commande" class="admin-input" placeholder="IMS-XXXXX"></label>
+            <label>Date de paiement *<input id="f-date" class="admin-input" type="date" required></label>
+            <label>Mode de paiement *
+              <select id="f-paiement" class="admin-input">
+                <option>Carte bancaire</option><option>Espèces</option><option>Virement</option><option>Chèque</option>
+              </select>
+            </label>
+          </div>
+
+          <table class="fac-lignes">
+            <thead><tr><th style="text-align:left;">Désignation</th><th style="width:80px;">Qté</th><th style="width:130px;">Prix unit. TTC (€)</th><th style="width:40px;"></th></tr></thead>
+            <tbody id="f-lignes"></tbody>
+          </table>
+          <button class="btn-admin btn-ghost btn-sm" onclick="ajouterLigne()">+ Ajouter une ligne</button>
+
+          <div class="fac-total" id="f-total"></div>
+
+          <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap;">
+            <button class="btn-admin btn-ghost" onclick="reinitialiser()">Effacer</button>
+            <button class="btn-admin btn-primary" id="btn-emettre" onclick="emettreFacture()">🧾 Émettre la facture</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------- Registre ---------------- -->
+      <div class="data-card">
+        <div class="card-header">
+          <span class="card-title">📚 Registre des factures émises</span>
+          <input type="text" id="search-fac" class="admin-input" placeholder="🔍 N°, client…" oninput="afficherRegistre()" style="width:200px;">
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Commande</th><th>Paiement</th><th>Total TTC</th><th></th></tr></thead>
+            <tbody id="registre-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="auth.js"></script>
+<script src="../js/entreprise.js"></script>
+<script>
+  requireAuth();
+
+  /* ------------------------------------------------------------------
+     Registre des factures : stocké dans CE navigateur (ims_factures).
+     Une facture émise est figée : jamais modifiée ni supprimée (obligation
+     légale) ; une erreur se corrige par un avoir. D'où l'absence de bouton
+     « supprimer », et la sauvegarde JSON à faire régulièrement.
+     ------------------------------------------------------------------ */
+  const REGISTRE_KEY = 'ims_factures';
+
+  function lireRegistre() {
+    try { return JSON.parse(localStorage.getItem(REGISTRE_KEY) || '[]'); } catch { return []; }
+  }
+  function ecrireRegistre(r) { localStorage.setItem(REGISTRE_KEY, JSON.stringify(r)); }
+
+  /* Numérotation continue par année : F-2026-0001, F-2026-0002… */
+  function prochainNumero(registre, annee) {
+    const max = registre
+      .map(f => /^F-(\d{4})-(\d{4,})$/.exec(f.numero))
+      .filter(m => m && Number(m[1]) === annee)
+      .reduce((m, x) => Math.max(m, Number(x[2])), 0);
+    return `F-${annee}-${String(max + 1).padStart(4, '0')}`;
+  }
+
+  /* ------------------------- Lignes ------------------------------- */
+  function ajouterLigne(designation = '', qte = 1, pu = '') {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="admin-input l-des" placeholder="Ex : Verre trempé iPhone 13"></td>
+      <td><input class="admin-input l-qte" type="number" min="1" step="1"></td>
+      <td><input class="admin-input l-pu" type="number" min="0" step="0.01"></td>
+      <td><button class="btn-admin btn-danger btn-sm" title="Retirer">✕</button></td>`;
+    tr.querySelector('.l-des').value = designation;
+    tr.querySelector('.l-qte').value = qte;
+    tr.querySelector('.l-pu').value = pu;
+    tr.querySelector('button').onclick = () => { tr.remove(); majTotal(); };
+    tr.querySelectorAll('input').forEach(i => i.addEventListener('input', majTotal));
+    document.getElementById('f-lignes').appendChild(tr);
+    majTotal();
+  }
+
+  function lireLignes() {
+    return [...document.querySelectorAll('#f-lignes tr')].map(tr => ({
+      designation: tr.querySelector('.l-des').value.trim(),
+      qte: Math.floor(Number(tr.querySelector('.l-qte').value)),
+      pu: Math.round(Number(tr.querySelector('.l-pu').value) * 100) / 100,
+    })).filter(l => l.designation || l.pu);
+  }
+
+  function majTotal() {
+    const total = lireLignes().reduce((s, l) => s + (l.qte > 0 ? l.qte * l.pu : 0), 0);
+    const v = ventilerTTC(total);
+    document.getElementById('f-total').innerHTML = ENTREPRISE.tvaApplicable
+      ? `HT ${formatEuro(v.ht)} · TVA ${formatEuro(v.tva)} · <strong>Total TTC ${formatEuro(v.ttc)}</strong>`
+      : `<strong>Total ${formatEuro(v.ttc)}</strong>`;
+  }
+
+  /* ---------------- Pré-remplissage depuis l'email ---------------- */
+  /* Format produit par cart.js (corpsMail / order_items) */
+  function remplirDepuisEmail() {
+    const t = document.getElementById('email-commande').value;
+    if (!t.trim()) return adminToast('Collez d\'abord le contenu de l\'email', 'error');
+
+    const champ = (re) => { const m = re.exec(t); return m ? m[1].trim() : ''; };
+    const nom = champ(/Nom\s*:\s*(.+)/i) || champ(/Client\s*:\s*(.+)/i);
+    const email = champ(/Email\s*:\s*(\S+@\S+)/i);
+    const tel = champ(/T[ée]l\s*:\s*(.+)/i);
+    const num = champ(/(IMS-[A-Z0-9]+)/);
+    const frais = champ(/Livraison\s*:\s*([\d.,]+)\s*€/i);
+
+    const lignes = [...t.matchAll(/•\s*(.+?)\s*[×x]\s*(\d+)\s*=\s*([\d\s.,]+)\s*€/g)];
+    if (!lignes.length) return adminToast('Aucun article reconnu dans ce texte', 'error');
+
+    if (nom) document.getElementById('f-nom').value = nom;
+    if (email) document.getElementById('f-email').value = email;
+    if (tel) document.getElementById('f-tel').value = tel;
+    if (num) document.getElementById('f-commande').value = num;
+
+    document.getElementById('f-lignes').innerHTML = '';
+    lignes.forEach(m => {
+      const qte = Number(m[2]);
+      const totalLigne = Number(m[3].replace(/\s/g, '').replace(',', '.'));
+      ajouterLigne(m[1], qte, Math.round((totalLigne / qte) * 100) / 100);
+    });
+    if (frais) ajouterLigne('Frais de livraison', 1, Number(frais.replace(',', '.')));
+    adminToast(`${lignes.length} article(s) importé(s) — vérifiez avant d'émettre`, 'success');
+  }
+
+  /* ------------------------- Émission ----------------------------- */
+  function emettreFacture() {
+    const nom = document.getElementById('f-nom').value.trim();
+    const date = document.getElementById('f-date').value;
+    const lignes = lireLignes();
+
+    if (!nom) return adminToast('Le nom du client est obligatoire', 'error');
+    if (!date) return adminToast('La date de paiement est obligatoire', 'error');
+    if (!lignes.length) return adminToast('Ajoutez au moins une ligne', 'error');
+    if (lignes.some(l => !l.designation || !(l.qte > 0) || !(l.pu >= 0))) {
+      return adminToast('Chaque ligne doit avoir une désignation, une quantité ≥ 1 et un prix', 'error');
+    }
+
+    const registre = lireRegistre();
+    const annee = Number(date.slice(0, 4));
+    const numero = prochainNumero(registre, annee);
+    const total = lignes.reduce((s, l) => s + l.qte * l.pu, 0);
+
+    if (!confirm(`Émettre la facture ${numero} pour ${nom} (${formatEuro(total)}) ?\n\nUne facture émise ne peut plus être modifiée ni supprimée.`)) return;
+
+    const facture = {
+      numero,
+      dateEmission: new Date().toISOString().slice(0, 10),
+      datePaiement: date,
+      modePaiement: document.getElementById('f-paiement').value,
+      commande: document.getElementById('f-commande').value.trim(),
+      client: {
+        nom,
+        email: document.getElementById('f-email').value.trim(),
+        tel: document.getElementById('f-tel').value.trim(),
+        adresse: document.getElementById('f-adresse').value.trim(),
+      },
+      lignes,
+      /* Figé à l'émission : un changement ultérieur de config n'altère pas la facture */
+      emetteur: { ...ENTREPRISE },
+      ...ventilerTTC(total),
+    };
+
+    registre.unshift(facture);
+    ecrireRegistre(registre);
+    reinitialiser();
+    afficherRegistre();
+    adminToast('Facture ' + numero + ' émise', 'success');
+    window.open('facture-voir.html?n=' + encodeURIComponent(numero), '_blank');
+  }
+
+  function reinitialiser() {
+    ['f-nom', 'f-email', 'f-tel', 'f-adresse', 'f-commande', 'email-commande'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('f-lignes').innerHTML = '';
+    ajouterLigne();
+  }
+
+  /* ------------------------- Registre ----------------------------- */
+  function afficherRegistre() {
+    const registre = lireRegistre();
+    const q = (document.getElementById('search-fac').value || '').toLowerCase();
+    const liste = registre.filter(f =>
+      !q || f.numero.toLowerCase().includes(q) || (f.client.nom || '').toLowerCase().includes(q) || (f.commande || '').toLowerCase().includes(q));
+
+    const alerte = document.getElementById('alerte-registre');
+    alerte.innerHTML = registre.length
+      ? `⚠️ Le registre est enregistré <strong>dans ce navigateur uniquement</strong>. Cliquez régulièrement sur <strong>💾 Sauvegarder</strong> et gardez le fichier (clé USB, Drive…).`
+      : `⚠️ Aucune facture dans ce navigateur. <strong>Si vous avez déjà émis des factures ailleurs, cliquez d'abord sur 📂 Restaurer</strong> : sinon la numérotation repartirait de 0001.`;
+    if (!ENTREPRISE.numeroTva && ENTREPRISE.tvaApplicable) {
+      alerte.innerHTML += `<br>ℹ️ Numéro de TVA intracommunautaire non renseigné (fichier js/entreprise.js) — à compléter avec votre comptable.`;
+    }
+
+    const e = echapperHTML;
+    document.getElementById('registre-tbody').innerHTML = liste.length
+      ? liste.map(f => `<tr>
+          <td><strong>${e(f.numero)}</strong></td>
+          <td>${e(f.datePaiement)}</td>
+          <td>${e(f.client.nom)}</td>
+          <td>${e(f.commande || '—')}</td>
+          <td>${e(f.modePaiement)}</td>
+          <td><strong>${formatEuro(f.ttc)}</strong></td>
+          <td><a class="btn-admin btn-ghost btn-sm" href="facture-voir.html?n=${encodeURIComponent(f.numero)}" target="_blank">📄 Voir / imprimer</a></td>
+        </tr>`).join('')
+      : '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">Aucune facture émise.</td></tr>';
+  }
+
+  /* ------------------ Sauvegarde / restauration ------------------- */
+  function telecharger(nomFichier, contenu, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([contenu], { type }));
+    a.download = nomFichier;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function exporterSauvegarde() {
+    const date = new Date().toISOString().slice(0, 10);
+    telecharger(`factures-imobile-${date}.json`, JSON.stringify(lireRegistre(), null, 2), 'application/json');
+  }
+
+  function importerSauvegarde(input) {
+    const fichier = input.files[0];
+    if (!fichier) return;
+    fichier.text().then(txt => {
+      const importees = JSON.parse(txt);
+      if (!Array.isArray(importees)) throw new Error('format');
+      /* Fusion par numéro : une restauration n'écrase jamais une facture existante */
+      const registre = lireRegistre();
+      const connus = new Set(registre.map(f => f.numero));
+      const nouvelles = importees.filter(f => f && f.numero && !connus.has(f.numero));
+      const fusion = [...registre, ...nouvelles].sort((a, b) => b.numero.localeCompare(a.numero));
+      ecrireRegistre(fusion);
+      afficherRegistre();
+      adminToast(`${nouvelles.length} facture(s) restaurée(s)`, 'success');
+    }).catch(() => adminToast('Fichier de sauvegarde invalide', 'error'))
+      .finally(() => { input.value = ''; });
+  }
+
+  /* Export pour le comptable : une ligne par facture, séparateur « ; » (Excel FR) */
+  function exporterCSV() {
+    const registre = lireRegistre().slice().reverse();
+    const cellule = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const nombre = n => Number(n).toFixed(2).replace('.', ',');
+    const lignes = [['Numéro', 'Date paiement', 'Client', 'Commande', 'Mode paiement', 'Total HT', 'TVA', 'Total TTC'].map(cellule).join(';')]
+      .concat(registre.map(f => [f.numero, f.datePaiement, f.client.nom, f.commande, f.modePaiement, nombre(f.ht), nombre(f.tva), nombre(f.ttc)].map(cellule).join(';')));
+    telecharger(`registre-factures-${new Date().toISOString().slice(0, 10)}.csv`, '﻿' + lignes.join('\r\n'), 'text/csv;charset=utf-8');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    reinitialiser();
+    afficherRegistre();
+  });
+</script>
+</body>
+</html>

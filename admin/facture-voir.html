@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Facture — i-Mobile Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/document.css">
+</head>
+<body>
+
+<div class="doc-toolbar">
+  <a href="factures.html" class="secondaire">← Registre des factures</a>
+  <a href="#" id="btn-mail" class="secondaire">✉️ Préparer l'email au client</a>
+  <button type="button" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+</div>
+
+<main id="doc"></main>
+
+<script src="auth.js"></script>
+<script src="../js/entreprise.js"></script>
+<script>
+  requireAuth();
+
+  (function () {
+    const numero = new URLSearchParams(location.search).get('n');
+    let registre = [];
+    try { registre = JSON.parse(localStorage.getItem('ims_factures') || '[]'); } catch { /* registre illisible */ }
+    const f = registre.find(x => x.numero === numero);
+    const conteneur = document.getElementById('doc');
+
+    if (!f) {
+      conteneur.innerHTML = '<div class="doc-vide"><h1>Facture introuvable</h1><p>Elle n\'est pas dans le registre de ce navigateur. Restaurez votre sauvegarde depuis la page Factures.</p></div>';
+      document.querySelector('.doc-toolbar button').style.display = 'none';
+      document.getElementById('btn-mail').style.display = 'none';
+      return;
+    }
+
+    /* On affiche l'émetteur tel qu'il était à l'émission, pas la config actuelle */
+    const emetteurActuel = { ...ENTREPRISE };
+    Object.assign(ENTREPRISE, f.emetteur || {});
+
+    const e = echapperHTML;
+    const dateFr = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('fr-FR') : '';
+    document.title = `Facture ${f.numero} — i-Mobile Service`;
+
+    const lignes = f.lignes.map(l => `
+      <tr>
+        <td>${e(l.designation)}</td>
+        <td class="num">${formatEuro(l.pu)}</td>
+        <td class="num">${l.qte}</td>
+        <td class="num">${formatEuro(l.qte * l.pu)}</td>
+      </tr>`).join('');
+
+    conteneur.innerHTML = `
+      <article class="doc-page">
+        <header class="doc-entete">
+          <div>
+            <div class="doc-logo"><span class="i">i-Mobile</span><span class="s">Service</span></div>
+            <div class="doc-emetteur">${blocEmetteurHTML()}</div>
+          </div>
+          <div class="doc-titre">
+            <h1>FACTURE</h1>
+            <div class="numero">N° ${e(f.numero)}</div>
+            <div class="date">Émise le ${dateFr(f.dateEmission)}</div>
+            ${f.commande ? `<div class="date">Commande ${e(f.commande)}</div>` : ''}
+          </div>
+        </header>
+
+        <section class="doc-parties">
+          <div class="doc-bloc">
+            <h2>Facturé à</h2>
+            <strong>${e(f.client.nom)}</strong>
+            ${f.client.adresse ? '<br>' + e(f.client.adresse) : ''}
+            ${f.client.email ? '<br>' + e(f.client.email) : ''}
+            ${f.client.tel ? '<br>' + e(f.client.tel) : ''}
+          </div>
+          <div class="doc-bloc">
+            <h2>Règlement</h2>
+            <strong>Payée</strong> le ${dateFr(f.datePaiement)}<br>
+            Mode : ${e(f.modePaiement)}
+          </div>
+        </section>
+
+        <table class="doc-table">
+          <thead><tr><th>Désignation</th><th class="num">Prix unit. TTC</th><th class="num">Qté</th><th class="num">Total TTC</th></tr></thead>
+          <tbody>${lignes}</tbody>
+        </table>
+
+        <div class="doc-totaux">
+          ${ENTREPRISE.tvaApplicable ? `
+            <div><span>Total HT</span><span>${formatEuro(f.ht)}</span></div>
+            <div><span>TVA ${Math.round(ENTREPRISE.tauxTva * 100)} %</span><span>${formatEuro(f.tva)}</span></div>` : ''}
+          <div class="total"><span>Total TTC</span><span>${formatEuro(f.ttc)}</span></div>
+          <div><span>Déjà réglé</span><span>${formatEuro(f.ttc)}</span></div>
+          <div><strong>Reste à payer</strong><strong>${formatEuro(0)}</strong></div>
+        </div>
+
+        <footer class="doc-pied">
+          ${mentionTvaHTML()} Facture acquittée. Pas d'escompte pour paiement anticipé.
+          Garantie légale de conformité (art. L217-3 et suivants du Code de la consommation).
+          <br>${ENTREPRISE.forme} ${ENTREPRISE.nom} · ${ENTREPRISE.adresse}, ${ENTREPRISE.cpVille} · SIRET ${ENTREPRISE.siret}
+        </footer>
+      </article>`;
+
+    Object.assign(ENTREPRISE, emetteurActuel);
+
+    /* Email pré-rempli : le PDF est à joindre à la main (enregistré via Imprimer) */
+    const sujet = encodeURIComponent(`Votre facture ${f.numero} — i-Mobile Service`);
+    const corps = encodeURIComponent(
+      `Bonjour ${f.client.nom},\n\nVeuillez trouver ci-joint votre facture ${f.numero}` +
+      `${f.commande ? ' correspondant à votre commande ' + f.commande : ''}, d'un montant de ${formatEuro(f.ttc)}.\n\n` +
+      `Merci pour votre confiance.\n\ni-Mobile Service\n${emetteurActuel.adresse}, ${emetteurActuel.cpVille}\n${emetteurActuel.telephone}`);
+    const btnMail = document.getElementById('btn-mail');
+    if (f.client.email) btnMail.href = `mailto:${encodeURIComponent(f.client.email)}?subject=${sujet}&body=${corps}`;
+    else btnMail.style.display = 'none';
+  })();
+</script>
+</body>
+</html>

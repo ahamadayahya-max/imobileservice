@@ -637,6 +637,9 @@ function afficherConfirmation(orderNum, nomClient, total, date, email, corpsMail
       <p class="order-confirm-note" id="confirm-note">
         Nous vous contacterons pour finaliser votre commande.
       </p>
+      <a href="bon-commande.html?id=${encodeURIComponent(orderNum)}" target="_blank" rel="noopener" class="order-confirm-mailto">
+        📄 Télécharger mon bon de commande
+      </a>
       <a href="${mailtoHref}" id="order-confirm-mail-btn" class="order-confirm-mailto">
         📧 Envoyer la confirmation par email
       </a>

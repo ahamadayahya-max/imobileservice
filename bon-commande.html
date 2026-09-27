@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Bon de commande — i-Mobile Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/document.css">
+</head>
+<body>
+
+<div class="doc-toolbar">
+  <a href="boutique.html" class="secondaire">← Retour à la boutique</a>
+  <button type="button" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+</div>
+
+<main id="doc"></main>
+
+<script src="js/entreprise.js"></script>
+<script>
+/* ============================================================
+   Bon de commande : relu depuis le navigateur du client (ims_commandes),
+   là où cart.js enregistre la commande. Ce n'est PAS une facture :
+   la facture est émise par la boutique après paiement.
+   ============================================================ */
+(function () {
+  const id = new URLSearchParams(location.search).get('id');
+  let commandes = [];
+  try { commandes = JSON.parse(localStorage.getItem('ims_commandes') || '[]'); } catch { /* stockage illisible */ }
+  const cmd = commandes.find(c => c.id === id);
+  const conteneur = document.getElementById('doc');
+
+  if (!cmd) {
+    conteneur.innerHTML = `
+      <div class="doc-vide">
+        <h1>Bon de commande introuvable</h1>
+        <p>Il n'est disponible que sur l'appareil qui a passé la commande.
+        Pour toute question : ${ENTREPRISE.telephone} · ${ENTREPRISE.email}</p>
+      </div>`;
+    document.querySelector('.doc-toolbar button').style.display = 'none';
+    return;
+  }
+
+  const e = echapperHTML;
+  const total = Number(cmd.total);
+  const frais = Number(cmd.frais) || 0;
+  const v = ventilerTTC(total);
+
+  const lignes = (cmd.articles || []).map(a => `
+    <tr>
+      <td>${e(a.name)}</td>
+      <td class="num">${formatEuro(a.price)}</td>
+      <td class="num">${Number(a.qty)}</td>
+      <td class="num">${formatEuro(a.price * a.qty)}</td>
+    </tr>`).join('');
+
+  conteneur.innerHTML = `
+    <article class="doc-page">
+      <header class="doc-entete">
+        <div>
+          <div class="doc-logo"><span class="i">i-Mobile</span><span class="s">Service</span></div>
+          <div class="doc-emetteur">${blocEmetteurHTML()}</div>
+        </div>
+        <div class="doc-titre">
+          <h1>BON DE COMMANDE</h1>
+          <div class="numero">N° ${e(cmd.id)}</div>
+          <div class="date">du ${e(cmd.date)}</div>
+        </div>
+      </header>
+
+      <div class="doc-avertissement">
+        Ce document récapitule votre commande. <strong>Il ne vaut pas facture</strong> :
+        votre facture vous sera remise après le paiement.
+      </div>
+
+      <section class="doc-parties">
+        <div class="doc-bloc">
+          <h2>Client</h2>
+          ${e(cmd.client && cmd.client.nom)}<br>
+          ${e(cmd.client && cmd.client.email)}<br>
+          ${e(cmd.client && cmd.client.phone)}
+        </div>
+        <div class="doc-bloc">
+          <h2>Réception</h2>
+          ${e(cmd.livraison && cmd.livraison.adresse).replace(/\n/g, '<br>')}
+        </div>
+      </section>
+
+      <table class="doc-table">
+        <thead><tr><th>Désignation</th><th class="num">Prix unit. TTC</th><th class="num">Qté</th><th class="num">Total TTC</th></tr></thead>
+        <tbody>
+          ${lignes}
+          ${frais > 0 ? `<tr><td>Frais de livraison</td><td class="num">${formatEuro(frais)}</td><td class="num">1</td><td class="num">${formatEuro(frais)}</td></tr>` : ''}
+        </tbody>
+      </table>
+
+      <div class="doc-totaux">
+        ${ENTREPRISE.tvaApplicable ? `
+          <div><span>Total HT</span><span>${formatEuro(v.ht)}</span></div>
+          <div><span>TVA ${Math.round(ENTREPRISE.tauxTva * 100)} %</span><span>${formatEuro(v.tva)}</span></div>` : ''}
+        <div class="total"><span>Total TTC</span><span>${formatEuro(v.ttc)}</span></div>
+      </div>
+
+      <footer class="doc-pied">
+        ${mentionTvaHTML()} Paiement à effectuer en boutique ou selon les modalités convenues avec i-Mobile Service.
+        Sous réserve de disponibilité des produits. Conservez ce document jusqu'à réception de votre facture.
+      </footer>
+    </article>`;
+})();
+</script>
+</body>
+</html>
