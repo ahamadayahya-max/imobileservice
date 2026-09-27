@@ -11,6 +11,10 @@
 /* Preprod par défaut ; passer MOBILAX_BASE_URL en prod le jour venu */
 const BASE_URL = process.env.MOBILAX_BASE_URL || 'https://apiv2.mobilax.pro/v1.0/external';
 
+/* Le stockage d'images de la preprod est vide (« key does not exist ») ;
+   les IDs d'images sont partagés avec la prod, dont les assets sont publics */
+const ASSETS_URL = process.env.MOBILAX_ASSETS_URL || 'https://apiv2.mobilax.fr/v1.0/assets';
+
 /* TVA appliquée au prix d'achat HT avant d'afficher un prix TTC */
 const TVA = 1.20;
 
@@ -120,9 +124,8 @@ function versProduitSite(p, conf) {
     grade: null,
     neuf: true,
     description: p.name,
-    /* Les images Mobilax exigent le token : elles transitent par ce proxy */
     image: p.main_image && p.main_image.image_id
-      ? `/api/mobilax?action=image&id=${p.main_image.image_id}`
+      ? `${ASSETS_URL}/images/products/id-image/${p.main_image.image_id}?size=sm`
       : null,
     disponible: Number(p.quantity) > 0,
     source: 'mobilax',
@@ -177,24 +180,6 @@ module.exports = async (req, res) => {
     if (action === 'categories') {
       const ref = await appelMobilax('/catalog/categories', { id_lang: 1 });
       return res.status(200).json({ status: 'OK', data: ref.data || [] });
-    }
-
-    if (action === 'image') {
-      const id = String(req.query.id || '');
-      const taille = ['th', 'sm', 'bg'].includes(req.query.size) ? req.query.size : 'sm';
-      if (!/^\d+$/.test(id)) return res.status(400).json({ status: 'ERROR', message: 'ID image invalide' });
-
-      /* Les assets sont servis hors du préfixe /external de l'API */
-      const url = `${BASE_URL.replace(/\/external\/?$/, '')}/assets/images/products/id-image/${id}?size=${taille}`;
-      const recuperer = async (token) => fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      let img = await recuperer(await obtenirToken());
-      if (img.status === 401) img = await recuperer(await obtenirToken(true));
-      if (!img.ok) return res.status(404).end();
-
-      /* Image immuable par ID : cache CDN long pour ne pas solliciter Mobilax */
-      res.setHeader('Content-Type', img.headers.get('content-type') || 'image/jpeg');
-      res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800, immutable');
-      return res.status(200).send(Buffer.from(await img.arrayBuffer()));
     }
 
     if (action === 'catalogue') {
