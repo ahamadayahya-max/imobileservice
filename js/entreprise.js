@@ -1,7 +1,7 @@
 /* ============================================================
    i-Mobile Service — Informations légales de l'entreprise
    Source unique pour le bon de commande et les factures.
-   ⚠️ À faire valider par le comptable : TVA et numéro intracom.
+   Numéro de TVA intracom. vérifié (clé 08 = SIREN 842 299 240).
    ============================================================ */
 
 const ENTREPRISE = {
@@ -14,14 +14,14 @@ const ENTREPRISE = {
   siret:     '842 299 240 00015',
   /* RCS déduit du SIREN et du siège — à vérifier sur le Kbis */
   rcs:       'RCS Toulouse 842 299 240',
-  /* Mention obligatoire pour une SASU ; laissée vide tant qu'elle n'est pas connue */
-  capital:   '',
+  /* Mention obligatoire pour une SASU */
+  capital:   '100 €',
 
   /* true = TVA 20 % facturée ; false = franchise en base (art. 293 B du CGI) */
   tvaApplicable: true,
   tauxTva:       0.20,
   /* Numéro de TVA intracommunautaire (FR…), obligatoire si tvaApplicable */
-  numeroTva:     '',
+  numeroTva:     'FR08842299240',
 };
 
 /* Les prix du site sont TTC : on en déduit HT et TVA au centime près */
