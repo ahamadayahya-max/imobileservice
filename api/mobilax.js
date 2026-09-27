@@ -14,24 +14,42 @@ const BASE_URL = process.env.MOBILAX_BASE_URL || 'https://apiv2.mobilax.pro/v1.0
 /* TVA appliquée au prix d'achat HT avant d'afficher un prix TTC */
 const TVA = 1.20;
 
-/* Nombre de produits chargés par catégorie (max API : 100) */
+/* Nombre de produits chargés par catégorie Mobilax (max API : 100) */
 const LIMITE_PAR_CATEGORIE = 24;
 
 /* Seuil d'achat HT sous lequel une coque / un verre est vendu 10€ (sinon 15€) */
 const SEUIL_PRIX_FIXE_HT = 3;
 
-/* Catégories du site → recherche Mobilax.
-   `motifCategorie` sert à retrouver l'ID dans /catalog/categories ;
-   à défaut on se rabat sur une recherche texte `search`. */
+/* Marge des accessoires sans règle dédiée (supports, bracelets, objets pratiques) */
+const MARGE_ACCESSOIRES = 0.50;
+
+/* Catégories Mobilax INTERDITES sur la boutique — garde-fou : le proxy
+   refuse de démarrer une requête si l'une d'elles se glisse dans la liste blanche */
+const CATEGORIES_EXCLUES = new Set([
+  6,    // Pièces Détachées (et tous ses enfants)
+  260,  // Équipement (outillage, machines)
+  1149, // E-Mobility (trottinettes)
+  1077, // Magasin
+]);
+
+/* Liste blanche : seules ces catégories Mobilax sont interrogées.
+   On cible les sous-catégories quand elles existent, car rien ne garantit
+   que categoryId d'un parent inclut ses enfants. */
 const CATEGORIES_SITE = [
-  { categorie: 'coque',      emoji: '🎨', motifCategorie: /coque|housse|etui/i,               search: 'coque',        regle: { type: 'fixe' } },
-  { categorie: 'protection', emoji: '🛡️', motifCategorie: /verre|protection|film/i,           search: 'verre trempe', regle: { type: 'fixe' } },
-  { categorie: 'cable',      emoji: '🔗', motifCategorie: /c[aâ]ble/i,                         search: 'cable',        regle: { type: 'marge', taux: 0.80 } },
-  { categorie: 'chargeur',   emoji: '⚡', motifCategorie: /chargeur|alimentation/i,            search: 'chargeur',     regle: { type: 'marge', taux: 0.60 } },
-  { categorie: 'audio',      emoji: '🎧', motifCategorie: /audio|[ée]couteur|casque|enceinte/i, search: 'ecouteurs',    regle: { type: 'marge', taux: 0.50 } },
-  { categorie: 'telephone',  emoji: '📱', motifCategorie: /t[ée]l[ée]phone|smartphone/i,       search: 'smartphone',   regle: { type: 'marge', taux: 0.25 } },
-  { categorie: 'pc',         emoji: '💻', motifCategorie: /ordinateur|pc portable|tablette/i,  search: 'tablette',     regle: { type: 'marge', taux: 0.20 } },
+  { categorie: 'protection', emoji: '🛡️', ids: [54],            regle: { type: 'fixe' } },                 // Protection › Verre Trempé
+  { categorie: 'coque',      emoji: '🎨', ids: [409],           regle: { type: 'fixe' } },                 // Protection › Coques
+  { categorie: 'audio',      emoji: '🎧', ids: [410, 429],      regle: { type: 'marge', taux: 0.50 } },    // Écouteurs, Enceintes
+  { categorie: 'cable',      emoji: '🔗', ids: [424, 425],      regle: { type: 'marge', taux: 0.80 } },    // Câbles, Adaptateurs
+  { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122], regle: { type: 'marge', taux: 0.60 } },   // Secteur, Sans fil, Power Bank
+  { categorie: 'accessoire', emoji: '🔧', ids: [372, 1114, 1115], regle: { type: 'marge', taux: MARGE_ACCESSOIRES } }, // Supports, Bracelets Apple Watch, Objets pratiques
+  { categorie: 'telephone',  emoji: '📱', ids: [408],           regle: { type: 'marge', taux: 0.25 } },    // Smartphones
+  { categorie: 'pc',         emoji: '💻', ids: [405, 204],      regle: { type: 'marge', taux: 0.20 } },    // Tablettes, PC & Informatique
 ];
+
+for (const conf of CATEGORIES_SITE) {
+  const interdit = conf.ids.find(id => CATEGORIES_EXCLUES.has(id));
+  if (interdit) throw new Error(`Catégorie Mobilax ${interdit} interdite dans la liste blanche`);
+}
 
 /* Décalage d'ID pour ne jamais entrer en collision avec le catalogue statique (1–87) */
 const ID_OFFSET = 1000000;
@@ -109,25 +127,19 @@ function versProduitSite(p, conf) {
 }
 
 async function chargerCatalogue() {
-  let categoriesMobilax = [];
-  try {
-    const ref = await appelMobilax('/catalog/categories', { id_lang: 1 });
-    categoriesMobilax = Array.isArray(ref.data) ? ref.data : [];
-  } catch {
-    /* Référentiel indisponible : on continue en recherche texte */
-  }
-
   const resultats = await Promise.allSettled(CATEGORIES_SITE.map(async (conf) => {
-    const cat = categoriesMobilax.find(c => conf.motifCategorie.test(c.name || ''));
-    const params = {
-      inStock: 'true',
-      limit: LIMITE_PAR_CATEGORIE,
-      id_lang: 1,
-      ...(cat ? { categoryId: cat.id } : { search: conf.search }),
-    };
-    const json = await appelMobilax('/products/search', params);
-    const produits = (json.data && json.data.products) || [];
-    return produits
+    /* Une sous-catégorie en échec ne fait pas tomber les autres de la même famille */
+    const lots = await Promise.allSettled(conf.ids.map(categoryId =>
+      appelMobilax('/products/search', {
+        categoryId,
+        inStock: 'true',
+        limit: LIMITE_PAR_CATEGORIE,
+        id_lang: 1,
+      })
+    ));
+    return lots
+      .filter(l => l.status === 'fulfilled')
+      .flatMap(l => (l.value.data && l.value.data.products) || [])
       .filter(p => Number(p.price) > 0)
       .map(p => versProduitSite(p, conf));
   }));

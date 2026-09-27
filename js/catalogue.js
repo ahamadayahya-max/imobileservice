@@ -121,9 +121,11 @@ window.CATALOGUE = CATALOGUE;
 /* ============================================================
    Chargement Mobilax (preprod) via le proxy /api/mobilax
    Le tableau statique ci-dessus sert de fallback : il reste affiché
-   tel quel si l'API ne répond pas. En cas de succès, les catégories
-   renvoyées par Mobilax remplacent leurs équivalents statiques ;
-   les autres (ex : accessoires) restent inchangées.
+   tel quel si l'API ne répond pas. En cas de succès, chaque catégorie
+   renvoyée par Mobilax (liste blanche d'IDs dans api/mobilax.js :
+   accessoires, smartphones, tablettes, PC — jamais de pièces détachées)
+   remplace son équivalent statique ; une catégorie vide côté Mobilax
+   garde ses produits statiques.
    Le tableau est muté en place car boutique.js / product.html
    gardent une référence directe à CATALOGUE.
    ============================================================ */
