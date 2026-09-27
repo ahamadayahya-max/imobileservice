@@ -239,9 +239,12 @@
 
     registre.unshift(facture);
     ecrireRegistre(registre);
+    /* Sauvegarde automatique : le registre ne vit que dans ce navigateur,
+       un fichier à jour part dans « Téléchargements » à chaque émission */
+    exporterSauvegarde(true);
     reinitialiser();
     afficherRegistre();
-    adminToast('Facture ' + numero + ' émise', 'success');
+    adminToast('Facture ' + numero + ' émise et sauvegardée dans Téléchargements', 'success');
     window.open('facture-voir.html?n=' + encodeURIComponent(numero), '_blank');
   }
 
@@ -260,8 +263,11 @@
       !q || f.numero.toLowerCase().includes(q) || (f.client.nom || '').toLowerCase().includes(q) || (f.commande || '').toLowerCase().includes(q));
 
     const alerte = document.getElementById('alerte-registre');
+    const jours = joursDepuisSauvegarde();
+    const derniere = jours === null ? 'jamais' : jours === 0 ? "aujourd'hui" : `il y a ${jours} jour${jours > 1 ? 's' : ''}`;
     alerte.innerHTML = registre.length
-      ? `⚠️ Le registre est enregistré <strong>dans ce navigateur uniquement</strong>. Cliquez régulièrement sur <strong>💾 Sauvegarder</strong> et gardez le fichier (clé USB, Drive…).`
+      ? `💾 <strong>Sauvegarde automatique</strong> dans votre dossier « Téléchargements » à chaque facture émise (dernière : ${derniere}).`
+        + (jours === null || jours > 7 ? ` <strong>Cliquez sur 💾 Sauvegarder maintenant.</strong>` : '')
       : `⚠️ Aucune facture dans ce navigateur. <strong>Si vous avez déjà émis des factures ailleurs, cliquez d'abord sur 📂 Restaurer</strong> : sinon la numérotation repartirait de 0001.`;
     if (!ENTREPRISE.numeroTva && ENTREPRISE.tvaApplicable) {
       alerte.innerHTML += `<br>ℹ️ Numéro de TVA intracommunautaire non renseigné (fichier js/entreprise.js) — à compléter avec votre comptable.`;
@@ -290,9 +296,20 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  function exporterSauvegarde() {
+  const DERNIERE_SAUVEGARDE_KEY = 'ims_factures_derniere_sauvegarde';
+
+  function exporterSauvegarde(auto = false) {
+    const registre = lireRegistre();
+    if (auto && !registre.length) return;
     const date = new Date().toISOString().slice(0, 10);
-    telecharger(`factures-imobile-${date}.json`, JSON.stringify(lireRegistre(), null, 2), 'application/json');
+    telecharger(`factures-imobile-${date}.json`, JSON.stringify(registre, null, 2), 'application/json');
+    localStorage.setItem(DERNIERE_SAUVEGARDE_KEY, String(Date.now()));
+    afficherRegistre();
+  }
+
+  function joursDepuisSauvegarde() {
+    const t = Number(localStorage.getItem(DERNIERE_SAUVEGARDE_KEY) || 0);
+    return t ? Math.floor((Date.now() - t) / 86400000) : null;
   }
 
   function importerSauvegarde(input) {
