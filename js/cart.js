@@ -336,12 +336,68 @@ window.closeCart = function () {
 };
 
 /* ---------- Modal récapitulatif commande ------------------- */
-function openOrderModal() {
+/* ---------- Vérification stock Mobilax avant commande ------ */
+/* Le catalogue affiché peut dater de 10 min (cache) : on revérifie le stock
+   fournisseur en temps réel et on ajuste le panier si un article est épuisé.
+   Retourne true si la commande peut continuer. */
+async function verifierStockPanier() {
+  const cart = getCart();
+  const items = cart
+    .filter(item => Number(item.id) > 1000000)
+    .map(item => ({ id: Number(item.id), qty: item.qty }));
+  if (!items.length) return true;
+
+  let resultat;
+  try {
+    const res = await fetch('/api/mobilax?action=check-stock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    resultat = await res.json();
+  } catch (err) {
+    /* Vérification impossible : on laisse passer, la boutique confirme
+       chaque commande manuellement avant de commander chez Mobilax */
+    console.warn('[panier] vérification stock indisponible :', err.message);
+    return true;
+  }
+
+  const problemes = (resultat.items || []).filter(it => !it.ok);
+  if (!problemes.length) return true;
+
+  const noms = [];
+  problemes.forEach(p => {
+    const idx = cart.findIndex(item => Number(item.id) === p.id);
+    if (idx < 0) return;
+    noms.push(cart[idx].name);
+    if (p.disponible > 0) cart[idx].qty = p.disponible;
+    else cart.splice(idx, 1);
+  });
+  saveCart(cart);
+  updateBadge();
+  renderCartItems();
+
+  showToast(
+    'Stock modifié chez notre fournisseur, votre panier a été ajusté : ' + noms.join(', '),
+    'error',
+    'Stock insuffisant'
+  );
+  return false;
+}
+
+async function openOrderModal() {
   const cart = getCart();
   if (cart.length === 0) {
     showToast('Votre panier est vide', 'error');
     return;
   }
+
+  const checkoutBtn = document.getElementById('cart-checkout-btn');
+  if (checkoutBtn) checkoutBtn.disabled = true;
+  const stockOk = await verifierStockPanier();
+  if (checkoutBtn) checkoutBtn.disabled = false;
+  if (!stockOk) return;
   /* Vérifier qu'un point relais est sélectionné si pickup */
   const mode = getDeliveryMode();
   if ((mode === 'pickup' || mode === 'vinted') && !selectedRelais) {
@@ -422,9 +478,20 @@ function genOrderNumber() {
 }
 
 /* ---------- Valider et confirmer la commande ---------- */
-function confirmStorePickup() {
+async function confirmStorePickup() {
   const form = document.getElementById('order-form');
   if (!validateOrderForm(form)) return;
+
+  /* Seconde vérification : le client a pu rester longtemps sur le formulaire */
+  const storePayBtn = document.getElementById('btn-pay-store');
+  if (storePayBtn) storePayBtn.disabled = true;
+  const stockOk = await verifierStockPanier();
+  if (storePayBtn) storePayBtn.disabled = false;
+  if (!stockOk) {
+    closeOrderModal();
+    openCart();
+    return;
+  }
 
   const cart     = getCart();
   const mode     = getDeliveryMode();

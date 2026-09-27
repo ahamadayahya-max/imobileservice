@@ -50,6 +50,14 @@ const CATEGORIES_SITE = [
   { categorie: 'pc',         emoji: '💻', ids: [405, 204],      regle: { type: 'marge', taux: 0.20 } },    // Tablettes, PC & Informatique
 ];
 
+/* Prix d'achat HT minimum crédible par catégorie Mobilax : en dessous, le prix
+   est jugé aberrant (erreur de saisie, donnée de test) et le produit est masqué
+   plutôt que vendu à perte. Ex : Redmi Note 7 à 16 € HT en preprod. */
+const PRIX_ACHAT_MIN_HT = {
+  408: 40, // Smartphones
+  405: 40, // Tablettes
+};
+
 for (const conf of CATEGORIES_SITE) {
   const interdit = conf.ids.find(id => CATEGORIES_EXCLUES.has(id));
   if (interdit) throw new Error(`Catégorie Mobilax ${interdit} interdite dans la liste blanche`);
@@ -95,12 +103,14 @@ async function obtenirToken(forcer = false) {
   return tokenCache.token;
 }
 
-async function appelMobilax(chemin, params = {}) {
+async function appelMobilax(chemin, params = {}, corps = null) {
   const url = new URL(BASE_URL + chemin);
   Object.entries(params).forEach(([k, v]) => v !== undefined && url.searchParams.set(k, v));
 
   const executer = async (token) => fetch(url, {
+    method: corps ? 'POST' : 'GET',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    ...(corps ? { body: JSON.stringify(corps) } : {}),
   });
 
   let res = await executer(await obtenirToken());
@@ -143,11 +153,13 @@ async function chargerCatalogue() {
         id_lang: 1,
       })
     ));
-    return lots
-      .filter(l => l.status === 'fulfilled')
-      .flatMap(l => (l.value.data && l.value.data.products) || [])
-      .filter(p => Number(p.price) > 0)
-      .map(p => versProduitSite(p, conf));
+    return lots.flatMap((l, i) => {
+      if (l.status !== 'fulfilled') return [];
+      const plancher = PRIX_ACHAT_MIN_HT[conf.ids[i]] || 0.01;
+      return ((l.value.data && l.value.data.products) || [])
+        .filter(p => Number(p.price) >= plancher)
+        .map(p => versProduitSite(p, conf));
+    });
   }));
 
   const produits = [];
@@ -166,17 +178,43 @@ async function chargerCatalogue() {
 
 /* ---------- Handler Vercel --------------------------------- */
 module.exports = async (req, res) => {
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET');
+  const action = (req.query && req.query.action) || 'catalogue';
+  const methodeAttendue = action === 'check-stock' ? 'POST' : 'GET';
+
+  if (req.method !== methodeAttendue) {
+    res.setHeader('Allow', methodeAttendue);
     return res.status(405).json({ status: 'ERROR', message: 'Méthode non autorisée' });
   }
   if (!process.env.MOBILAX_API_KEY) {
     return res.status(503).json({ status: 'ERROR', message: 'API Mobilax non configurée' });
   }
 
-  const action = (req.query && req.query.action) || 'catalogue';
-
   try {
+    if (action === 'check-stock') {
+      /* Corps : { items: [{ id, qty }] } avec les IDs du site (décalés de ID_OFFSET).
+         Seuls les produits Mobilax sont vérifiés ; le stock boutique n'est pas concerné. */
+      const items = (req.body && Array.isArray(req.body.items) ? req.body.items : [])
+        .map(it => ({ id: Number(it.id), qty: Math.max(1, Math.floor(Number(it.qty) || 1)) }))
+        .filter(it => Number.isInteger(it.id) && it.id > ID_OFFSET)
+        .slice(0, 100);
+      if (!items.length) return res.status(200).json({ status: 'OK', items: [] });
+
+      const verif = await appelMobilax('/products/check-stock', {}, {
+        products: items.map(it => ({ id_product: it.id - ID_OFFSET, quantity: it.qty })),
+      });
+      const parId = new Map((verif.products || []).map(p => [Number(p.id_product), p]));
+
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(200).json({
+        status: 'OK',
+        items: items.map(it => {
+          const p = parId.get(it.id - ID_OFFSET);
+          const disponible = p ? Number(p.available_quantity) || 0 : 0;
+          return { id: it.id, demande: it.qty, disponible, ok: disponible >= it.qty };
+        }),
+      });
+    }
+
     if (action === 'categories') {
       const ref = await appelMobilax('/catalog/categories', { id_lang: 1 });
       return res.status(200).json({ status: 'OK', data: ref.data || [] });
