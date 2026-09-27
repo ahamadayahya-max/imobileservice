@@ -165,6 +165,10 @@ function afficherProduits() {
     if (span) span.textContent = count;
   });
 
+  /* Bandeau d'en-tête : suit le catalogue réel (statique ou Mobilax) */
+  const heroCountEl = document.getElementById('hero-product-count');
+  if (heroCountEl) heroCountEl.textContent = CATALOGUE.length;
+
   /* Résultats */
   const compteurEl = document.getElementById('results-count');
   if (compteurEl) {
