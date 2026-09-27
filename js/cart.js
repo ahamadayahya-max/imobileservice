@@ -393,6 +393,13 @@ async function openOrderModal() {
     return;
   }
 
+  /* Le formulaire de commande (et la sélection point relais) n'existe que sur
+     la boutique : depuis une autre page, on y renvoie avec le panier ouvert */
+  if (!document.getElementById('modal-overlay')) {
+    location.href = 'boutique.html?panier=1';
+    return;
+  }
+
   const checkoutBtn = document.getElementById('cart-checkout-btn');
   if (checkoutBtn) checkoutBtn.disabled = true;
   const stockOk = await verifierStockPanier();
@@ -789,6 +796,13 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Fermer le drawer via bouton */
   const cartCloseBtn = document.getElementById('cart-close-btn');
   if (cartCloseBtn) cartCloseBtn.addEventListener('click', closeCart);
+
+  /* Arrivée depuis une fiche produit via « Commander » : on rouvre le panier
+     pour que le client choisisse son mode de réception avant de valider */
+  if (new URLSearchParams(location.search).get('panier') === '1') {
+    history.replaceState(null, '', location.pathname);
+    openCart();
+  }
 });
 
 /* Exposer les fonctions globalement */
