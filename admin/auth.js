@@ -1,50 +1,37 @@
 /* ============================================================
    i-Mobile Service — Auth Admin (partagé toutes les pages admin)
+   Aucun identifiant ici : la vérification se fait côté serveur
+   (/api/admin-auth) et chaque page /admin/* est gardée par middleware.js.
    ============================================================ */
 
-const ADMIN_EMAIL    = 'admin@imobileservice.fr';
-const ADMIN_PWD_B64  = 'aU1vYmlsZTIwMjYh'; /* btoa('iMobile2026!') */
-const SESSION_KEY    = 'ims_admin_token';
-const EXPIRY_KEY     = 'ims_admin_expiry';
-const SESSION_MS     = 8 * 60 * 60 * 1000; /* 8 heures */
-const LOCK_KEY       = 'ims_admin_lock';
-const ATTEMPT_KEY    = 'ims_admin_attempts';
-
-/* Vérifier si la session est valide */
-function isAdminLoggedIn() {
-  const token  = sessionStorage.getItem(SESSION_KEY);
-  const expiry = sessionStorage.getItem(EXPIRY_KEY);
-  if (!token || !expiry) return false;
-  if (Date.now() > parseInt(expiry)) {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(EXPIRY_KEY);
-    return false;
-  }
-  return true;
-}
-
-/* Rediriger vers login si non connecté */
+/* Les pages admin ne sont servies qu'avec une session valide (middleware.js) :
+   rien à vérifier côté navigateur. Conservée pour les pages qui l'appellent. */
 function requireAuth() {
-  if (!isAdminLoggedIn()) {
-    window.location.replace('login.html');
-    return false;
-  }
   return true;
 }
 
-/* Créer une session */
-function createSession() {
-  const token = Array.from(crypto.getRandomValues(new Uint8Array(24)))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
-  sessionStorage.setItem(SESSION_KEY, token);
-  sessionStorage.setItem(EXPIRY_KEY, String(Date.now() + SESSION_MS));
+/* Connexion : renvoie { ok, message?, restant? } */
+async function adminLogin(email, password) {
+  try {
+    const res = await fetch('/api/admin-auth?action=login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ email, password }),
+    });
+    return await res.json();
+  } catch {
+    return { ok: false, message: 'Serveur injoignable, réessayez.' };
+  }
 }
 
-/* Déconnexion */
-function adminLogout() {
-  sessionStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(EXPIRY_KEY);
-  window.location.replace('login.html');
+/* Déconnexion : le cookie HttpOnly ne peut être effacé que par le serveur */
+async function adminLogout() {
+  try {
+    await fetch('/api/admin-auth?action=logout', { method: 'POST', credentials: 'same-origin' });
+  } finally {
+    window.location.replace('login.html');
+  }
 }
 
 /* Toast partagé */
@@ -60,29 +47,4 @@ function adminToast(msg, type = 'success') {
   t.textContent = msg;
   container.appendChild(t);
   setTimeout(() => t.remove(), 3000);
-}
-
-/* Vérifier le blocage (3 tentatives → 5 min) */
-function isLocked() {
-  const lockUntil = parseInt(localStorage.getItem(LOCK_KEY) || '0');
-  return Date.now() < lockUntil;
-}
-
-function getLockRemaining() {
-  const lockUntil = parseInt(localStorage.getItem(LOCK_KEY) || '0');
-  return Math.ceil((lockUntil - Date.now()) / 1000);
-}
-
-function recordFailedAttempt() {
-  let attempts = parseInt(localStorage.getItem(ATTEMPT_KEY) || '0') + 1;
-  localStorage.setItem(ATTEMPT_KEY, String(attempts));
-  if (attempts >= 3) {
-    localStorage.setItem(LOCK_KEY, String(Date.now() + 5 * 60 * 1000));
-    localStorage.setItem(ATTEMPT_KEY, '0');
-  }
-}
-
-function clearAttempts() {
-  localStorage.removeItem(LOCK_KEY);
-  localStorage.removeItem(ATTEMPT_KEY);
 }

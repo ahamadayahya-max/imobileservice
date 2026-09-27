@@ -39,11 +39,11 @@
     </div>
 
     <div class="lock-msg" id="lock-msg"></div>
-    <div class="error-msg" id="error-msg">Identifiants incorrects. Essais restants : <span id="attempts-left">3</span></div>
+    <div class="error-msg" id="error-msg">Identifiants incorrects. Essais restants : <span id="attempts-left">5</span></div>
 
     <div class="form-group">
       <label class="form-label" for="email">Email</label>
-      <input type="email" id="email" class="form-input" placeholder="admin@imobileservice.fr" autocomplete="email">
+      <input type="email" id="email" class="form-input" placeholder="Votre email administrateur" autocomplete="email">
     </div>
     <div class="form-group">
       <label class="form-label" for="password">Mot de passe</label>
@@ -58,64 +58,38 @@
 
 <script src="auth.js"></script>
 <script>
-  /* Si déjà connecté → dashboard */
-  if (isAdminLoggedIn()) window.location.replace('dashboard.html');
-
-  function seConnecter() {
-    /* Vérifier blocage */
-    if (isLocked()) {
-      afficherBlocage(); return;
-    }
-
+  /* Vérification côté serveur (/api/admin-auth) : aucun mot de passe dans cette page */
+  async function seConnecter() {
     const email = document.getElementById('email').value.trim();
     const pwd   = document.getElementById('password').value;
     const btn   = document.getElementById('btn-login');
+    const errorEl = document.getElementById('error-msg');
+    const lockEl  = document.getElementById('lock-msg');
 
+    errorEl.classList.remove('visible');
+    lockEl.classList.remove('visible');
     btn.disabled = true;
     btn.textContent = 'Vérification…';
 
-    /* Délai anti-brute-force */
-    setTimeout(() => {
-      if (email === ADMIN_EMAIL && btoa(pwd) === ADMIN_PWD_B64) {
-        clearAttempts();
-        createSession();
-        window.location.replace('dashboard.html');
-      } else {
-        recordFailedAttempt();
-        const errorEl = document.getElementById('error-msg');
-        const attemptsLeft = Math.max(0, 3 - parseInt(localStorage.getItem(ATTEMPT_KEY) || '0'));
-        document.getElementById('attempts-left').textContent = attemptsLeft;
-        errorEl.classList.add('visible');
-        btn.disabled = false;
-        btn.textContent = 'Se connecter →';
-        document.getElementById('password').value = '';
-        if (isLocked()) afficherBlocage();
-      }
-    }, 600);
-  }
+    const r = await adminLogin(email, pwd);
 
-  function afficherBlocage() {
-    const lockEl = document.getElementById('lock-msg');
-    const btn    = document.getElementById('btn-login');
-    const sec    = getLockRemaining();
-    const min    = Math.ceil(sec / 60);
-    lockEl.textContent = `⛔ Trop de tentatives. Réessayez dans ${min} minute${min > 1 ? 's' : ''}.`;
-    lockEl.classList.add('visible');
-    document.getElementById('error-msg').classList.remove('visible');
-    btn.disabled = true;
+    if (r.ok) {
+      window.location.replace('dashboard.html');
+      return;
+    }
 
-    /* Décompte */
-    const timer = setInterval(() => {
-      if (!isLocked()) {
-        clearInterval(timer);
-        lockEl.classList.remove('visible');
-        btn.disabled = false;
-      } else {
-        const s = getLockRemaining();
-        const m = Math.ceil(s / 60);
-        lockEl.textContent = `⛔ Trop de tentatives. Réessayez dans ${m} minute${m > 1 ? 's' : ''}.`;
-      }
-    }, 5000);
+    document.getElementById('password').value = '';
+    btn.disabled = false;
+    btn.textContent = 'Se connecter →';
+
+    if (typeof r.restant === 'number') {
+      document.getElementById('attempts-left').textContent = r.restant;
+      errorEl.classList.add('visible');
+    } else {
+      /* Blocage temporaire, configuration manquante ou serveur injoignable */
+      lockEl.textContent = '⛔ ' + (r.message || 'Connexion impossible');
+      lockEl.classList.add('visible');
+    }
   }
 </script>
 </body>

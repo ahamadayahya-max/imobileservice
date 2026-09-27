@@ -185,16 +185,6 @@
 </head>
 <body>
 
-<!-- ===== ÉCRAN DE CONNEXION ===== -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">i-Mobile <span>Service</span></div>
-    <div class="login-sub">Administration — Gestion des photos</div>
-    <input type="password" id="login-pass" placeholder="Mot de passe" autocomplete="current-password">
-    <button class="login-btn" onclick="doLogin()">Se connecter</button>
-    <div class="login-error" id="login-error">Mot de passe incorrect</div>
-  </div>
-</div>
 
 <!-- ===== APP ADMIN ===== -->
 <div id="admin-app">
@@ -238,39 +228,17 @@
    Admin photos — gestion des photos produits via localStorage
    ============================================================ */
 
-/* Mot de passe admin (modifiable ici) */
-const ADMIN_PASSWORD = 'iMobile2026!';
-const SESSION_KEY    = 'ims_admin_session';
 const PHOTOS_KEY     = 'ims_photos';
 
-/* ---- Authentification ---- */
-function doLogin() {
-  const pass = document.getElementById('login-pass').value;
-  if (pass === ADMIN_PASSWORD) {
-    sessionStorage.setItem(SESSION_KEY, 'ok');
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-app').style.display = 'block';
-    buildGrid();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-pass').value = '';
-    document.getElementById('login-pass').focus();
-  }
-}
+/* ---- Authentification ----
+   La page n'est servie qu'aux admins connectés (middleware.js) :
+   plus d'écran de mot de passe local, on affiche directement l'app. */
 
-document.getElementById('login-pass').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
+document.getElementById('admin-app').style.display = 'block';
 
 function logout() {
-  sessionStorage.removeItem(SESSION_KEY);
-  location.reload();
-}
-
-/* Vérifier la session au chargement */
-if (sessionStorage.getItem(SESSION_KEY) === 'ok') {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('admin-app').style.display = 'block';
+  fetch('/api/admin-auth?action=logout', { method: 'POST', credentials: 'same-origin' })
+    .finally(() => location.replace('login.html'));
 }
 
 /* ---- Photos personnalisées (localStorage) ---- */
@@ -498,7 +466,7 @@ function showToast(msg, type = 'success') {
 }
 
 /* ---- Init si déjà connecté ---- */
-if (sessionStorage.getItem(SESSION_KEY) === 'ok') buildGrid();
+buildGrid();
 </script>
 <script src="../js/devis.js"></script>
 </body>
