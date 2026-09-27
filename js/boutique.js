@@ -90,7 +90,8 @@ function buildCarteHTML(produit) {
     ? { src: customPhotos[produit.id], alt: produit.nom }
     : (typeof IMAGES !== 'undefined' && IMAGES[produit.id])
       || (produit.image ? { src: produit.image, alt: produit.nom } : null);
-  const isContain = produit.categorie === 'telephone' || produit.categorie === 'pc';
+  /* Photos fournisseur (fond blanc, cadrage serré) : affichées entières, jamais recadrées */
+  const isContain = produit.source === 'mobilax' || produit.categorie === 'telephone' || produit.categorie === 'pc';
   const imgHTML = imgData
     ? `<img
          src="${imgData.src}"

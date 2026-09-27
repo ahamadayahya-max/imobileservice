@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* Image produit : IMAGES map par id, sinon BG_IMAGES catégorie, sinon emoji */
   const imgData = (typeof IMAGES !== 'undefined' && IMAGES[produit.id])
     || (produit.image ? { src: produit.image, alt: produit.nom } : null);
-  const isContain = produit.categorie === 'telephone' || produit.categorie === 'pc';
+  const isContain = produit.source === 'mobilax' || produit.categorie === 'telephone' || produit.categorie === 'pc';
   let visualHTML;
   if (imgData) {
     visualHTML = `<img
@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const prixF = p.prix.toFixed(2).replace('.',',') + '€';
       const relImg = (typeof IMAGES !== 'undefined' && IMAGES[p.id])
         || (p.image ? { src: p.image, alt: p.nom } : null);
-      const relIsContain = p.categorie === 'telephone' || p.categorie === 'pc';
+      const relIsContain = p.source === 'mobilax' || p.categorie === 'telephone' || p.categorie === 'pc';
       const relImgHTML = relImg
         ? `<img src="${relImg.src}" alt="${relImg.alt}" loading="lazy"
              class="product-img${relIsContain ? ' product-img-contain' : ''}"
