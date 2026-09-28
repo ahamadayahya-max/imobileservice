@@ -215,6 +215,22 @@ module.exports = async (req, res) => {
       });
     }
 
+    if (action === 'compter') {
+      /* Diagnostic du mapping : nombre de produits en stock par catégorie
+         (ex : ?action=compter&ids=54,409). Aucun prix ni donnée sensible. */
+      const ids = String(req.query.ids || '').split(',').map(Number)
+        .filter(n => Number.isInteger(n) && n > 0 && !CATEGORIES_EXCLUES.has(n)).slice(0, 25);
+      const totaux = await Promise.all(ids.map(async categoryId => {
+        try {
+          const json = await appelMobilax('/products/search', { categoryId, inStock: 'true', limit: 1, id_lang: 1 });
+          return [categoryId, (json.data && json.data.total) || 0];
+        } catch {
+          return [categoryId, null];
+        }
+      }));
+      return res.status(200).json({ status: 'OK', data: Object.fromEntries(totaux) });
+    }
+
     if (action === 'categories') {
       const ref = await appelMobilax('/catalog/categories', { id_lang: 1 });
       return res.status(200).json({ status: 'OK', data: ref.data || [] });
