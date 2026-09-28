@@ -150,32 +150,20 @@
   <div class="promo-banner-track">
     <span class="promo-banner-text">⚡ Meilleurs prix garantis</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Coques dès 10€</span>
+    <span class="promo-banner-text">🏪 Retrait boutique gratuit</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Verre trempé dès 10€</span>
+    <span class="promo-banner-text">📦 Point Relais &amp; Vinted Locker 1,90€</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Livraison offerte dès 50€</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">🏪 Retrait gratuit — 221 Route de Seysses, Toulouse</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">📱 Téléphones reconditionnés Grade A dès 149€</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">💻 PC portables reconditionnés dès 349€</span>
+    <span class="promo-banner-text">🚚 Livraison offerte dès 50€</span>
     <span class="promo-banner-sep">·</span>
     <!-- Duplication pour boucle infinie fluide -->
     <span class="promo-banner-text">⚡ Meilleurs prix garantis</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Coques dès 10€</span>
+    <span class="promo-banner-text">🏪 Retrait boutique gratuit</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Verre trempé dès 10€</span>
+    <span class="promo-banner-text">📦 Point Relais &amp; Vinted Locker 1,90€</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Livraison offerte dès 50€</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">🏪 Retrait gratuit — 221 Route de Seysses, Toulouse</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">📱 Téléphones reconditionnés Grade A dès 149€</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">💻 PC portables reconditionnés dès 349€</span>
+    <span class="promo-banner-text">🚚 Livraison offerte dès 50€</span>
     <span class="promo-banner-sep">·</span>
   </div>
 </div>
@@ -292,8 +280,8 @@
     <div style="margin-bottom:3rem;padding:1.5rem 2rem;background:var(--color-cyan-light);border-radius:var(--radius-lg);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;border:1.5px solid rgba(0,188,212,0.2);" class="fade-in">
       <span style="font-size:2rem;">🚚</span>
       <div>
-        <strong style="font-family:var(--font-title);font-size:1rem;">Livraison offerte dès 50€ · Retrait gratuit en boutique · Point Relais · Vinted Locker</strong>
-        <p style="font-size:0.88rem;color:var(--color-text-secondary);margin-top:0.2rem;">Sinon 4,90€ · 221 Route de Seysses, Toulouse · Réservation téléphones sous 24h via Mobilax</p>
+        <strong style="font-family:var(--font-title);font-size:1rem;">Retrait boutique gratuit · Point Relais &amp; Vinted Locker 1,90€ (offert dès 40€) · Livraison à domicile 4,90€ (offerte dès 50€)</strong>
+        <p style="font-size:0.88rem;color:var(--color-text-secondary);margin-top:0.2rem;">Retrait le jour même au 221 Route de Seysses, Toulouse (Mar-Ven 10h-19h / Sam 10h-18h) · Colissimo 2-3 jours ouvrés · Réservation téléphones sous 24h via Mobilax</p>
       </div>
     </div>
 
@@ -333,17 +321,17 @@
           <input type="radio" name="delivery" value="store" checked>
           <div class="delivery-option-label">
             <div class="delivery-option-title">🏪 Retrait en boutique</div>
-            <div class="delivery-option-sub">Disponible le jour même · 221 Route de Seysses</div>
+            <div class="delivery-option-sub">Gratuit — Disponible le jour même · 221 Route de Seysses, Toulouse · Mar-Ven 10h-19h / Sam 10h-18h</div>
           </div>
-          <span class="delivery-option-price free">Gratuit</span>
+          <span class="delivery-option-price free" id="prix-livraison-store">Gratuit</span>
         </label>
         <label class="delivery-option">
           <input type="radio" name="delivery" value="pickup" id="radio-pickup">
           <div class="delivery-option-label">
             <div class="delivery-option-title">📦 Retrait Point Relais Pickup</div>
-            <div class="delivery-option-sub" id="pickup-sub-label">Proche de chez vous</div>
+            <div class="delivery-option-sub" id="pickup-sub-label">1,90€ — Offert dès 40€ — 24/48h</div>
           </div>
-          <span class="delivery-option-price free">Gratuit</span>
+          <span class="delivery-option-price" id="prix-livraison-pickup">+1,90€</span>
         </label>
         <!-- Section sélection Point Relais Pickup -->
         <div id="pickup-relais-section" style="display:none">
@@ -361,9 +349,9 @@
           <input type="radio" name="delivery" value="vinted" id="radio-vinted">
           <div class="delivery-option-label">
             <div class="delivery-option-title">🔁 Vinted Locker</div>
-            <div class="delivery-option-sub" id="vinted-sub-label">Consigne automatique 24h/24</div>
+            <div class="delivery-option-sub" id="vinted-sub-label">1,90€ — Offert dès 40€ — 24h/24 7j/7</div>
           </div>
-          <span class="delivery-option-price free">Gratuit</span>
+          <span class="delivery-option-price" id="prix-livraison-vinted">+1,90€</span>
         </label>
         <!-- Section sélection Vinted Locker -->
         <div id="vinted-relais-section" style="display:none">
@@ -381,9 +369,9 @@
           <input type="radio" name="delivery" value="delivery">
           <div class="delivery-option-label">
             <div class="delivery-option-title">🚚 Livraison à domicile</div>
-            <div class="delivery-option-sub">Offerte dès 50€ d'achats</div>
+            <div class="delivery-option-sub">4,90€ — Offerte dès 50€ — Colissimo 2-3j</div>
           </div>
-          <span class="delivery-option-price" id="shipping-price-label">+4,90€</span>
+          <span class="delivery-option-price" id="prix-livraison-delivery">+4,90€</span>
         </label>
       </div>
       <div class="address-field" id="address-field">
@@ -403,6 +391,7 @@
         <span>Livraison</span>
         <span id="cart-shipping">—</span>
       </div>
+      <div id="cart-shipping-hint" style="display:none;font-size:.82rem;font-weight:600;color:#0097a7;text-align:right;margin:-.15rem 0 .35rem;"></div>
       <div class="cart-total-row total">
         <span>Total</span>
         <span id="cart-total">0,00€</span>

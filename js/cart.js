@@ -5,8 +5,19 @@
 
 /* Clé de stockage localStorage */
 const CART_KEY = 'ims_cart';
-const SHIPPING_THRESHOLD = 50; /* Livraison offerte dès 50€ */
-const SHIPPING_PRICE = 4.90;
+/* Grille de livraison : source unique pour le panier, le récapitulatif,
+   les emails, la page de confirmation et l'admin. seuil = offert dès X €. */
+const LIVRAISON = {
+  store:    { label: 'Retrait en boutique',         emoji: '🏪', prix: 0,    seuil: null, delai: 'Disponible le jour même' },
+  pickup:   { label: 'Retrait Point Relais Pickup', emoji: '📦', prix: 1.90, seuil: 40,   delai: '24-48h' },
+  vinted:   { label: 'Vinted Locker',               emoji: '🔁', prix: 1.90, seuil: 40,   delai: 'Consigne automatique 24h/24 · 7j/7' },
+  delivery: { label: 'Livraison à domicile',        emoji: '🚚', prix: 4.90, seuil: 50,   delai: 'Colissimo 2-3 jours ouvrés' },
+};
+const BOUTIQUE_ADRESSE  = '221 Route de Seysses, 31100 Toulouse';
+const BOUTIQUE_HORAIRES = 'Mar-Ven 10h-19h / Sam 10h-18h';
+window.LIVRAISON = LIVRAISON;
+
+const prixPanier = n => n.toFixed(2).replace('.', ',') + '€';
 
 /* ---------- Base de données Points Relais & Vinted Lockers -- */
 const POINTS_RELAIS = [
@@ -43,10 +54,27 @@ function getCartSubtotal(cart) {
 }
 
 function getShippingCost(subtotal, deliveryMode) {
-  /* Retrait boutique, Point Relais et Vinted Locker = toujours gratuit */
-  if (deliveryMode === 'store' || deliveryMode === 'pickup' || deliveryMode === 'vinted') return 0;
-  /* Livraison domicile = gratuite dès 50€ */
-  return subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_PRICE;
+  const regle = LIVRAISON[deliveryMode] || LIVRAISON.store;
+  if (!regle.prix) return 0;
+  return regle.seuil != null && subtotal >= regle.seuil ? 0 : regle.prix;
+}
+
+/* Texte court du prix de livraison : « Gratuit », « Offerte ✓ » ou « 1,90€ » */
+function libelleFrais(deliveryMode, shipping) {
+  const regle = LIVRAISON[deliveryMode] || LIVRAISON.store;
+  if (!regle.prix) return 'Gratuit';
+  return shipping === 0 ? 'Offerte ✓' : prixPanier(shipping);
+}
+
+/* Met à jour le prix affiché sur chaque option de livraison du panier */
+function majPrixOptions(subtotal) {
+  Object.entries(LIVRAISON).forEach(([mode, regle]) => {
+    const el = document.getElementById('prix-livraison-' + mode);
+    if (!el) return;
+    const frais = getShippingCost(subtotal, mode);
+    el.textContent = !regle.prix ? 'Gratuit' : (frais === 0 ? 'Offert' : '+' + prixPanier(frais));
+    el.classList.toggle('free', frais === 0);
+  });
 }
 
 function getCartTotal(cart, deliveryMode) {
@@ -298,17 +326,24 @@ function updateTotals() {
   const shippingEl = document.getElementById('cart-shipping');
   const totalEl = document.getElementById('cart-total');
 
-  if (subtotalEl) subtotalEl.textContent = subtotal.toFixed(2).replace('.', ',') + '€';
-  if (shippingEl) {
-    if (deliveryMode === 'store' || deliveryMode === 'pickup' || deliveryMode === 'vinted') {
-      shippingEl.textContent = 'Gratuit';
-    } else if (shipping === 0) {
-      shippingEl.textContent = 'Offerte ✓';
+  if (subtotalEl) subtotalEl.textContent = prixPanier(subtotal);
+  if (shippingEl) shippingEl.textContent = libelleFrais(deliveryMode, shipping);
+  if (totalEl) totalEl.textContent = prixPanier(total);
+  majPrixOptions(subtotal);
+
+  /* Incitation : combien il manque pour la livraison offerte */
+  const hintEl = document.getElementById('cart-shipping-hint');
+  if (hintEl) {
+    const regle = LIVRAISON[deliveryMode] || LIVRAISON.store;
+    if (!regle.prix || regle.seuil == null) {
+      hintEl.textContent = '';
+    } else if (subtotal >= regle.seuil) {
+      hintEl.textContent = '🎉 Livraison offerte !';
     } else {
-      shippingEl.textContent = shipping.toFixed(2).replace('.', ',') + '€';
+      hintEl.textContent = `Plus que ${prixPanier(regle.seuil - subtotal)} pour la livraison offerte`;
     }
+    hintEl.style.display = hintEl.textContent ? '' : 'none';
   }
-  if (totalEl) totalEl.textContent = total.toFixed(2).replace('.', ',') + '€';
 
   /* Afficher/masquer le champ adresse */
   const addressField = document.getElementById('address-field');
@@ -434,13 +469,8 @@ async function openOrderModal() {
   }
 
   /* Mode de livraison résumé */
-  const deliveryLabels = {
-    store:    '🏪 Retrait en boutique (gratuit)',
-    pickup:   '📦 Retrait Point Relais Pickup (gratuit)',
-    vinted:   '🔁 Vinted Locker (gratuit)',
-    delivery: '🚚 Livraison à domicile',
-  };
-  const deliveryLabel = deliveryLabels[deliveryMode] || '🏪 Retrait en boutique';
+  const regleMode = LIVRAISON[deliveryMode] || LIVRAISON.store;
+  const deliveryLabel = `${regleMode.emoji} ${regleMode.label} — ${regleMode.delai}`;
   const deliveryResume = document.getElementById('modal-delivery-resume');
   if (deliveryResume) deliveryResume.textContent = deliveryLabel;
 
@@ -450,9 +480,7 @@ async function openOrderModal() {
   const modalTotal = document.getElementById('modal-grand-total');
   if (modalSubtotal) modalSubtotal.textContent = subtotal.toFixed(2).replace('.', ',') + '€';
   if (modalShipping) {
-    modalShipping.textContent = deliveryMode === 'store'
-      ? 'Gratuit'
-      : (shipping === 0 ? 'Offerte ✓' : shipping.toFixed(2).replace('.', ',') + '€');
+    modalShipping.textContent = libelleFrais(deliveryMode, shipping);
   }
   if (modalTotal) modalTotal.textContent = total.toFixed(2).replace('.', ',') + '€';
 
@@ -522,7 +550,7 @@ async function confirmStorePickup() {
   /* Label livraison avec détails relais si sélectionné */
   let modeLabel;
   if (mode === 'store') {
-    modeLabel = 'Retrait en boutique — 221 Route de Seysses, Toulouse';
+    modeLabel = 'Retrait en boutique — ' + BOUTIQUE_ADRESSE + ' (' + BOUTIQUE_HORAIRES + ')';
   } else if ((mode === 'pickup' || mode === 'vinted') && selectedRelais) {
     const typeLabel = selectedRelais.type === 'vinted' ? 'Vinted Locker' : 'Point Relais Pickup';
     const horairesStr = Object.entries(selectedRelais.horaires).map(([j,h]) => j + ': ' + h).join(' / ');
@@ -532,7 +560,7 @@ async function confirmStorePickup() {
   } else if (mode === 'vinted') {
     modeLabel = 'Vinted Locker';
   } else {
-    modeLabel = 'Livraison à domicile — '+addr+' '+cp+' '+ville;
+    modeLabel = 'Livraison à domicile (' + LIVRAISON.delivery.delai + ') — ' + addr + ' ' + cp + ' ' + ville;
   }
 
   /* Articles en texte */
@@ -742,8 +770,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* Synchroniser les totaux + afficher section relais */
+  /* Le mode choisi suit le client d'une page à l'autre (fiche produit → boutique) */
+  try {
+    const modeMemorise = localStorage.getItem('ims_livraison');
+    const radioMemorise = modeMemorise && LIVRAISON[modeMemorise]
+      && document.querySelector(`.delivery-options input[name="delivery"][value="${modeMemorise}"]`);
+    if (radioMemorise) { radioMemorise.checked = true; updateTotals(); toggleRelaisSection(modeMemorise); }
+  } catch { /* stockage indisponible : mode par défaut */ }
+
   document.querySelectorAll('.delivery-options input[name="delivery"]').forEach(radio => {
     radio.addEventListener('change', () => {
+      try { localStorage.setItem('ims_livraison', radio.value); } catch { /* sans effet */ }
       updateTotals();
       toggleRelaisSection(radio.value);
       /* Réinitialiser le relais si on change de mode */
@@ -751,8 +788,8 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedRelais = null;
         const subPickup = document.getElementById('pickup-sub-label');
         const subVinted = document.getElementById('vinted-sub-label');
-        if (subPickup) subPickup.textContent = 'Proche de chez vous';
-        if (subVinted) subVinted.textContent = 'Consigne automatique 24h/24';
+        if (subPickup) subPickup.textContent = '1,90€ — Offert dès 40€ — 24/48h';
+        if (subVinted) subVinted.textContent = '1,90€ — Offert dès 40€ — 24h/24 7j/7';
       }
     });
   });

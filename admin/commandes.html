@@ -58,7 +58,7 @@
 
   const statutLabels = { en_attente:'En attente', confirmee:'Confirmée', expediee:'Expédiée', livree:'Livrée', annulee:'Annulée' };
   const statutBadges = { en_attente:'badge-attente', confirmee:'badge-confirmee', expediee:'badge-expediee', livree:'badge-livree', annulee:'badge-annulee' };
-  const livraisonLabels = { store:'🏪 Retrait boutique', pickup:'📦 Point Relais', vinted:'🔁 Vinted Locker', delivery:'🚚 Domicile' };
+  const livraisonLabels = { store:'🏪 Retrait boutique', pickup:'📦 Point Relais', vinted:'🔁 Vinted Locker', delivery:'🚚 Livraison' };
 
   document.addEventListener('DOMContentLoaded', () => {
     afficherKPI();
@@ -93,9 +93,15 @@
       const badgeCls = statutBadges[statut] || 'badge-attente';
       const articles = Array.isArray(c.articles) ? c.articles.map(a => `${a.name} ×${a.qty}`).join(', ') : '—';
       const relais  = c.livraison?.relais;
-      const livraisonBase = livraisonLabels[c.livraison?.mode] || c.livraison?.mode || '—';
+      const modeLiv = c.livraison?.mode;
+      const livraisonBase = livraisonLabels[modeLiv]
+        ? `<span class="badge badge-livraison-${modeLiv}">${livraisonLabels[modeLiv]}</span>`
+        : (modeLiv || '—');
+      const horairesRelais = relais && relais.horaires && typeof relais.horaires === 'object'
+        ? Object.entries(relais.horaires).map(([j, h]) => j + ' ' + h).join(' · ')
+        : (relais && relais.horaires) || '';
       const livraison = relais
-        ? `${livraisonBase}<br><small style="color:#8b1a1a;font-weight:600;">📍 ${relais.nom}</small><br><small style="color:#666;">${relais.adresse}</small><br><small style="color:#888;">${relais.horaires}</small>`
+        ? `${livraisonBase}<br><small style="color:#8b1a1a;font-weight:600;">📍 ${relais.nom}</small><br><small style="color:#666;">${relais.adresse}</small><br><small style="color:#888;">${horairesRelais}</small>`
         : livraisonBase;
       const sujet = encodeURIComponent(`Commande ${c.id} — i-Mobile Service`);
       const corps = encodeURIComponent(`Bonjour ${c.client?.nom},\n\nConcernant votre commande ${c.id}...\n\nCordialement,\ni-Mobile Service`);

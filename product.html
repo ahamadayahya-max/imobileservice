@@ -227,28 +227,20 @@
   <div class="promo-banner-track">
     <span class="promo-banner-text">⚡ Meilleurs prix garantis</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Coques dès 10€</span>
+    <span class="promo-banner-text">🏪 Retrait boutique gratuit</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Verre trempé dès 10€</span>
+    <span class="promo-banner-text">📦 Point Relais &amp; Vinted Locker 1,90€</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Livraison offerte dès 50€</span>
+    <span class="promo-banner-text">🚚 Livraison offerte dès 50€</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">🏪 Retrait gratuit — 221 Route de Seysses Toulouse</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">📱 Téléphones Grade A dès 149€</span>
-    <span class="promo-banner-sep">·</span>
-    <!-- Dupliquer pour boucle infinie -->
+    <!-- Duplication pour boucle infinie fluide -->
     <span class="promo-banner-text">⚡ Meilleurs prix garantis</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Coques dès 10€</span>
+    <span class="promo-banner-text">🏪 Retrait boutique gratuit</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Verre trempé dès 10€</span>
+    <span class="promo-banner-text">📦 Point Relais &amp; Vinted Locker 1,90€</span>
     <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">Livraison offerte dès 50€</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">🏪 Retrait gratuit — 221 Route de Seysses Toulouse</span>
-    <span class="promo-banner-sep">·</span>
-    <span class="promo-banner-text">📱 Téléphones Grade A dès 149€</span>
+    <span class="promo-banner-text">🚚 Livraison offerte dès 50€</span>
     <span class="promo-banner-sep">·</span>
   </div>
 </div>
@@ -349,33 +341,33 @@
         <input type="radio" name="delivery" value="store" checked>
         <div class="delivery-option-label">
           <div class="delivery-option-title">🏪 Retrait en boutique</div>
-          <div class="delivery-option-sub">Disponible le jour même</div>
+          <div class="delivery-option-sub">Gratuit — Disponible le jour même · 221 Route de Seysses, Toulouse</div>
         </div>
-        <span class="delivery-option-price free">Gratuit</span>
+        <span class="delivery-option-price free" id="prix-livraison-store">Gratuit</span>
       </label>
       <label class="delivery-option">
         <input type="radio" name="delivery" value="pickup">
         <div class="delivery-option-label">
           <div class="delivery-option-title">📦 Point Relais Pickup</div>
-          <div class="delivery-option-sub">Proche de chez vous</div>
+          <div class="delivery-option-sub">1,90€ — Offert dès 40€ — 24/48h</div>
         </div>
-        <span class="delivery-option-price free">Gratuit</span>
+        <span class="delivery-option-price" id="prix-livraison-pickup">+1,90€</span>
       </label>
       <label class="delivery-option">
         <input type="radio" name="delivery" value="vinted">
         <div class="delivery-option-label">
           <div class="delivery-option-title">🔁 Vinted Locker</div>
-          <div class="delivery-option-sub">Consigne 24h/24</div>
+          <div class="delivery-option-sub">1,90€ — Offert dès 40€ — 24h/24 7j/7</div>
         </div>
-        <span class="delivery-option-price free">Gratuit</span>
+        <span class="delivery-option-price" id="prix-livraison-vinted">+1,90€</span>
       </label>
       <label class="delivery-option">
         <input type="radio" name="delivery" value="delivery">
         <div class="delivery-option-label">
           <div class="delivery-option-title">🚚 Livraison à domicile</div>
-          <div class="delivery-option-sub">Offerte dès 50€</div>
+          <div class="delivery-option-sub">4,90€ — Offerte dès 50€ — Colissimo 2-3j</div>
         </div>
-        <span class="delivery-option-price" id="shipping-price-label">+4,90€</span>
+        <span class="delivery-option-price" id="prix-livraison-delivery">+4,90€</span>
       </label>
     </div>
     <div class="address-field" id="address-field"></div>
@@ -384,6 +376,7 @@
     <div class="cart-totals">
       <div class="cart-total-row"><span>Sous-total</span><span id="cart-subtotal">0,00€</span></div>
       <div class="cart-total-row"><span>Livraison</span><span id="cart-shipping">—</span></div>
+      <div id="cart-shipping-hint" style="display:none;font-size:.82rem;font-weight:600;color:#0097a7;text-align:right;margin:-.15rem 0 .35rem;"></div>
       <div class="cart-total-row total"><span>Total</span><span id="cart-total">0,00€</span></div>
     </div>
     <button class="cart-checkout-btn" id="cart-checkout-btn">

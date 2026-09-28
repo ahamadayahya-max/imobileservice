@@ -78,10 +78,10 @@
       <div class="recap-row"><span>⏱️</span><div><strong>Délai estimé :</strong> <span id="recap-delai">Disponible dès réception de votre confirmation</span></div></div>
     </div>
 
-    <div class="pickup-box">
-      🏪 Venez nous rendre visite au<br>
+    <div class="pickup-box" id="recap-consigne">
+      🏪 Venez récupérer votre commande au :<br>
       <strong>221 Route de Seysses, 31100 Toulouse</strong><br>
-      Horaires : Mar–Ven 10h00–19h00 / Sam 10h00–18h00
+      Mar-Ven 10h-19h / Sam 10h-18h
     </div>
 
     <div class="btn-group">
@@ -123,15 +123,25 @@
 
     if (derniere) {
       const mode = derniere.livraison?.mode || 'store';
-      const modeLabels = {
-        store:    'Retrait en boutique — gratuit',
-        pickup:   'Point Relais Pickup — gratuit',
-        vinted:   'Vinted Locker — gratuit',
-        delivery: 'Livraison à domicile',
+      /* Mêmes libellés et délais que la grille de livraison du panier (js/cart.js) */
+      const modes = {
+        store:    { label: 'Retrait en boutique', delai: 'Disponible le jour même',
+                    consigne: '🏪 Venez récupérer votre commande au :<br><strong>221 Route de Seysses, 31100 Toulouse</strong><br>Mar-Ven 10h-19h / Sam 10h-18h' },
+        pickup:   { label: 'Retrait Point Relais Pickup', delai: '24-48h',
+                    consigne: '📦 Votre colis sera disponible dans <strong>24-48h</strong><br>au point relais choisi' },
+        vinted:   { label: 'Vinted Locker', delai: 'Consigne automatique 24h/24 · 7j/7',
+                    consigne: '🔁 Votre colis sera disponible en consigne<br><strong>Vinted Locker 24h/24 - 7j/7</strong>' },
+        delivery: { label: 'Livraison à domicile', delai: 'Colissimo 2-3 jours ouvrés',
+                    consigne: '🚚 Livraison Colissimo sous <strong>2-3 jours ouvrés</strong><br>Vous recevrez un email de suivi' },
       };
-      document.getElementById('recap-mode').textContent    = modeLabels[mode] || mode;
+      const m = modes[mode] || modes.store;
+      const frais = Number(derniere.frais) || 0;
+      const libelleFrais = mode === 'store' ? 'gratuit' : (frais === 0 ? 'offerte' : frais.toFixed(2).replace('.', ',') + '€');
+
+      document.getElementById('recap-mode').textContent    = m.label + ' — ' + libelleFrais;
       document.getElementById('recap-adresse').textContent = derniere.livraison?.adresse || '221 Route de Seysses, 31100 Toulouse';
-      document.getElementById('recap-delai').textContent   = mode === 'store' ? 'Disponible sous 24–48h — nous vous préviendrons par email' : '3–5 jours ouvrés';
+      document.getElementById('recap-delai').textContent   = m.delai;
+      document.getElementById('recap-consigne').innerHTML  = m.consigne;
     }
   });
 </script>
