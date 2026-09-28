@@ -310,6 +310,11 @@
     </div>
 
     <!-- Produits similaires -->
+    <div class="similar-section" id="crosssell-section" style="display:none">
+      <h2>🛡️ Complétez votre achat</h2>
+      <div class="similar-grid" id="crosssell-grid"></div>
+    </div>
+
     <div class="similar-section" id="similar-section" style="display:none">
       <h2>Vous aimerez aussi</h2>
       <div class="similar-grid" id="similar-grid"></div>
@@ -583,7 +588,85 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /* Ouvrir le panier */
   document.querySelectorAll('.cart-btn').forEach(b => b.addEventListener('click', openCart));
+
+  afficherVenteAdditionnelle(produit);
 });
+
+/* ---- Vente additionnelle : accessoires proposés avec un téléphone / une tablette ----
+   Le bénéfice d'une vente d'appareil se fait surtout sur la coque, le verre
+   et le chargeur : on les propose ici, compatibles avec le modèle si possible. */
+
+/* Extrait le modèle d'un nom Mobilax (« … Samsung Galaxy A17 5G … » → « Galaxy A17 ») */
+function extraireModele(nom) {
+  const motifs = [
+    /iPhone\s?(?:SE|\d{1,2})(?:\s?(?:Pro Max|Pro|Plus|Mini|e))?/i,
+    /Galaxy\s+(?:Tab\s+)?[A-Z]\d{1,3}[a-z]?(?:\s?(?:FE|Ultra|Plus|\+|Lite|Edge))?/i,
+    /(?:Redmi|Poco)\s+(?:Note\s+)?[A-Z]?\d{1,2}[A-Za-z]?(?:\s?Pro\+?)?/i,
+    /iPad\s+(?:Air|Pro|mini)?\s?\d{0,2}/i,
+    /Pixel\s\d{1,2}a?(?:\s?Pro)?/i,
+  ];
+  for (const m of motifs) {
+    const r = m.exec(nom);
+    if (r) return r[0].replace(/\s+/g, ' ').trim();
+  }
+  return '';
+}
+
+function carteAccessoireHTML(p) {
+  const prixF = p.prix.toFixed(2).replace('.', ',') + '€';
+  const img = p.image
+    ? `<img src="${p.image}" alt="" loading="lazy" class="product-img product-img-contain"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+       <span class="product-img-fallback" style="display:none">${p.emoji}</span>`
+    : `<span class="product-img-fallback">${p.emoji}</span>`;
+  const nom = String(p.nom).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  return `<div class="product-card" style="display:flex;flex-direction:column;" data-category="${p.categorie}">
+    <div class="product-image" data-category="${p.categorie}">${img}</div>
+    <div class="product-body">
+      <div class="product-name" style="font-size:.88rem;">${nom}</div>
+      <div class="product-footer">
+        <span class="product-price">${prixF}</span>
+        <button class="add-to-cart-btn xsell-btn" data-id="${p.id}" data-name="${nom}" data-price="${p.prix}" data-emoji="${p.emoji}">+ Ajouter</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function afficherVenteAdditionnelle(produit) {
+  if (produit.categorie !== 'telephone' && produit.categorie !== 'pc') return;
+  /* Pas de coque pour une carte mémoire : seulement tablettes, PC et écrans */
+  if (produit.categorie === 'pc' && !/tablette|ordinateur|moniteur|ipad/i.test(produit.nom)) return;
+
+  let suggestions = [];
+  const modele = extraireModele(produit.nom);
+  if (modele) {
+    try {
+      const res = await fetch('/api/mobilax?action=accessoires&modele=' + encodeURIComponent(modele));
+      if (res.ok) suggestions = ((await res.json()).produits || []).slice(0, 2);
+    } catch { /* suggestions compatibles indisponibles : on garde les génériques */ }
+  }
+
+  /* Complément universel pris dans le catalogue : chargeur (téléphone) ou carte mémoire (tablette/PC) */
+  const universel = produit.categorie === 'telephone'
+    ? CATALOGUE.find(p => p.categorie === 'chargeur' && /usb-c/i.test(p.nom) && /20W|25W/i.test(p.nom))
+    : CATALOGUE.find(p => /carte m[ée]moire|cl[ée] usb/i.test(p.nom));
+  if (universel) suggestions.push(universel);
+
+  suggestions = suggestions.filter((p, i, a) => a.findIndex(q => q.id === p.id) === i).slice(0, 3);
+  if (!suggestions.length) return;
+
+  const grille = document.getElementById('crosssell-grid');
+  grille.innerHTML = suggestions.map(carteAccessoireHTML).join('');
+  document.getElementById('crosssell-section').style.display = '';
+
+  grille.querySelectorAll('.xsell-btn').forEach(btn => btn.addEventListener('click', () => {
+    if (typeof addToCart === 'function') {
+      addToCart({ id: parseInt(btn.dataset.id), name: btn.dataset.name, price: parseFloat(btn.dataset.price), emoji: btn.dataset.emoji });
+    }
+    btn.textContent = '✓ Ajouté';
+    setTimeout(() => { btn.textContent = '+ Ajouter'; }, 1500);
+  }));
+}
 </script>
 <script src="js/devis.js"></script>
 </body>

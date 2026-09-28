@@ -30,6 +30,10 @@ const PRIX_VENTE_MIN_TTC = 5;
 /* Marge des accessoires sans règle dédiée (supports, bracelets, objets pratiques) */
 const MARGE_ACCESSOIRES = 0.50;
 
+/* Prix de vente max (TTC) des rayons accessoires et informatique : au-delà,
+   article de niche (NAS, serveur…) peu vendable en boutique */
+const PRIX_VENTE_MAX_VITRINE = 600;
+
 /* Catégories Mobilax INTERDITES sur la boutique — garde-fou : le proxy
    refuse de démarrer une requête si l'une d'elles se glisse dans la liste blanche */
 const CATEGORIES_EXCLUES = new Set([
@@ -48,7 +52,7 @@ const CATEGORIES_SITE = [
   { categorie: 'audio',      emoji: '🎧', ids: [139],                   regle: { type: 'marge', taux: 0.50 } },  // Accessoires Audio (écouteurs, casques, adaptateurs jack)
   { categorie: 'cable',      emoji: '🔗', ids: [424, 425],              regle: { type: 'marge', taux: 0.80 } },  // Câbles, Adaptateurs
   { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122, 2089],   regle: { type: 'marge', taux: 0.60 } },  // Secteur, Sans fil, Power Bank, Voiture
-  { categorie: 'accessoire', emoji: '🔧', ids: [2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES } }, // Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
+  { categorie: 'accessoire', emoji: '🔧', ids: [2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES }, prixMax: PRIX_VENTE_MAX_VITRINE }, // Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
   { categorie: 'telephone',  emoji: '📱', ids: [1986, 1988, 2003],       regle: { type: 'marge', taux: 0.25 } },  // Smartphone Neuf, Smartphone Occasion, Téléphone Neuf
   /* Informatique : PAS la racine 204, qui contient 529 pièces détachées PC.
      Marge faible sur le matériel cher (comparé en ligne), forte sur les petits accessoires. */
@@ -61,7 +65,7 @@ const CATEGORIES_SITE = [
       2118: { type: 'marge', taux: 0.80 },  // Hubs
       2121: { type: 'marge', taux: 0.80 },  // Réseau sans fil
       134:  { type: 'marge', taux: 0.60 },  // Chargeurs PC & MacBook
-    } },
+    }, prixMax: PRIX_VENTE_MAX_VITRINE },
 ];
 
 /* Prix d'achat HT minimum crédible par catégorie Mobilax : en dessous, le prix
@@ -176,7 +180,9 @@ async function chargerCatalogue() {
       const plancher = PRIX_ACHAT_MIN_HT[conf.ids[i]] || 0.01;
       return ((l.value.data && l.value.data.products) || [])
         .filter(p => Number(p.price) >= plancher)
-        .map(p => versProduitSite(p, conf, (conf.reglesParId && conf.reglesParId[conf.ids[i]]) || conf.regle));
+        .map(p => versProduitSite(p, conf, (conf.reglesParId && conf.reglesParId[conf.ids[i]]) || conf.regle))
+        /* Vitrine ciblée : un NAS à 685 € ne se vend pas en boutique de quartier */
+        .filter(p => !conf.prixMax || p.prix <= conf.prixMax);
     });
   }));
 
@@ -231,6 +237,24 @@ module.exports = async (req, res) => {
           return { id: it.id, demande: it.qty, disponible, ok: disponible >= it.qty };
         }),
       });
+    }
+
+    if (action === 'accessoires') {
+      /* Vente additionnelle : coques et verres trempés compatibles avec un modèle
+         (ex : ?action=accessoires&modele=Galaxy A17), cherchés chez Mobilax */
+      const modele = String(req.query.modele || '').replace(/[^\p{L}\p{N} +]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 40);
+      if (modele.length < 3) return res.status(200).json({ status: 'OK', produits: [] });
+
+      const familles = CATEGORIES_SITE.filter(c => c.categorie === 'coque' || c.categorie === 'protection');
+      const lots = await Promise.all(familles.map(conf =>
+        appelMobilax('/products/search', { categoryId: conf.ids[0], search: modele, inStock: 'true', limit: 2, id_lang: 1 })
+          .then(json => ((json.data && json.data.products) || [])
+            .filter(p => Number(p.price) > 0)
+            .map(p => versProduitSite(p, conf)))
+          .catch(() => [])
+      ));
+      res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
+      return res.status(200).json({ status: 'OK', produits: lots.flat() });
     }
 
     if (action === 'compter') {
