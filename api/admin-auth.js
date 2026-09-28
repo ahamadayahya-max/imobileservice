@@ -15,7 +15,10 @@ const crypto = require('crypto');
 
 const COOKIE = 'ims_admin';
 const DUREE_SESSION_S = 8 * 60 * 60;
-const EMAIL_ADMIN = (process.env.ADMIN_EMAIL || 'admin@imobileservice.fr').toLowerCase();
+/* Emails acceptés (séparés par des virgules dans ADMIN_EMAIL) : l'adresse admin
+   historique et l'email de la boutique, pour éviter les refus par simple confusion */
+const EMAILS_ADMIN = (process.env.ADMIN_EMAIL || 'admin@imobileservice.fr,ims.tlse@gmail.com')
+  .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
 /* Anti force brute : 5 échecs par IP → blocage 15 min (par instance, best effort) */
 const MAX_ECHECS = 5;
@@ -53,7 +56,8 @@ module.exports = async (req, res) => {
 
   if (action !== 'login') return res.status(400).json({ ok: false, message: 'Action inconnue' });
 
-  const motDePasse = process.env.ADMIN_PASSWORD;
+  /* trim : un espace ou retour à la ligne collé dans Vercel ne doit pas bloquer l'accès */
+  const motDePasse = (process.env.ADMIN_PASSWORD || '').trim();
   if (!motDePasse) {
     return res.status(503).json({ ok: false, message: "Connexion admin non configurée (ADMIN_PASSWORD manquant sur Vercel)" });
   }
@@ -67,12 +71,13 @@ module.exports = async (req, res) => {
 
   const corps = req.body || {};
   const email = String(corps.email || '').trim().toLowerCase();
-  const password = String(corps.password || '');
+  const password = String(corps.password || '').trim();
 
   /* Délai fixe pour ralentir les essais automatisés */
   await new Promise(r => setTimeout(r, 500));
 
-  const ok = egal(email, EMAIL_ADMIN) & egal(password, motDePasse);
+  const emailOk = EMAILS_ADMIN.reduce((ok, e) => ok | egal(email, e), 0);
+  const ok = emailOk & egal(password, motDePasse);
   if (!ok) {
     const n = (etat && etat.jusqua <= Date.now() ? 0 : (etat ? etat.n : 0)) + 1;
     echecs.set(ip, n >= MAX_ECHECS ? { n: 0, jusqua: Date.now() + BLOCAGE_MS } : { n, jusqua: 0 });

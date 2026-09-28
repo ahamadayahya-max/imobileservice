@@ -23,7 +23,7 @@ async function signer(exp, motDePasse) {
 }
 
 async function sessionValide(request) {
-  const motDePasse = process.env.ADMIN_PASSWORD;
+  const motDePasse = (process.env.ADMIN_PASSWORD || '').trim();
   if (!motDePasse) return false;
 
   const cookie = request.headers.get('cookie') || '';
