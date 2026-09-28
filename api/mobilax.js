@@ -37,25 +37,28 @@ const CATEGORIES_EXCLUES = new Set([
 ]);
 
 /* Liste blanche : seules ces catégories Mobilax sont interrogées.
-   On cible les sous-catégories quand elles existent, car rien ne garantit
-   que categoryId d'un parent inclut ses enfants. */
+   IDs de PRODUCTION (différents de la preprod) ; un categoryId parent inclut
+   ses sous-catégories. Vérifier le stock par ID : /api/mobilax?action=compter&ids=… */
 const CATEGORIES_SITE = [
-  { categorie: 'protection', emoji: '🛡️', ids: [54],            regle: { type: 'fixe' } },                 // Protection › Verre Trempé
-  { categorie: 'coque',      emoji: '🎨', ids: [409],           regle: { type: 'fixe' } },                 // Protection › Coques
-  { categorie: 'audio',      emoji: '🎧', ids: [410, 429],      regle: { type: 'marge', taux: 0.50 } },    // Écouteurs, Enceintes
-  { categorie: 'cable',      emoji: '🔗', ids: [424, 425],      regle: { type: 'marge', taux: 0.80 } },    // Câbles, Adaptateurs
-  { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122], regle: { type: 'marge', taux: 0.60 } },   // Secteur, Sans fil, Power Bank
-  { categorie: 'accessoire', emoji: '🔧', ids: [372, 1114, 1115], regle: { type: 'marge', taux: MARGE_ACCESSOIRES } }, // Supports, Bracelets Apple Watch, Objets pratiques
-  { categorie: 'telephone',  emoji: '📱', ids: [408],           regle: { type: 'marge', taux: 0.25 } },    // Smartphones
-  { categorie: 'pc',         emoji: '💻', ids: [405, 204],      regle: { type: 'marge', taux: 0.20 } },    // Tablettes, PC & Informatique
+  { categorie: 'protection', emoji: '🛡️', ids: [54],                    regle: { type: 'fixe' } },               // Protection › Verre Trempé
+  { categorie: 'coque',      emoji: '🎨', ids: [409],                   regle: { type: 'fixe' } },               // Protection › Coques
+  { categorie: 'audio',      emoji: '🎧', ids: [139],                   regle: { type: 'marge', taux: 0.50 } },  // Accessoires Audio (écouteurs, casques, adaptateurs jack)
+  { categorie: 'cable',      emoji: '🔗', ids: [424, 425],              regle: { type: 'marge', taux: 0.80 } },  // Câbles, Adaptateurs
+  { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122, 2089],   regle: { type: 'marge', taux: 0.60 } },  // Secteur, Sans fil, Power Bank, Voiture
+  { categorie: 'accessoire', emoji: '🔧', ids: [2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES } }, // Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
+  { categorie: 'telephone',  emoji: '📱', ids: [1986, 1988, 2003],       regle: { type: 'marge', taux: 0.25 } },  // Smartphone Neuf, Smartphone Occasion, Téléphone Neuf
+  { categorie: 'pc',         emoji: '💻', ids: [1997, 2136, 204],        regle: { type: 'marge', taux: 0.20 } },  // Tablette Occasion, Tablette Neuve, Informatique
 ];
 
 /* Prix d'achat HT minimum crédible par catégorie Mobilax : en dessous, le prix
    est jugé aberrant (erreur de saisie, donnée de test) et le produit est masqué
    plutôt que vendu à perte. Ex : Redmi Note 7 à 16 € HT en preprod. */
 const PRIX_ACHAT_MIN_HT = {
-  408: 40, // Smartphones
-  405: 40, // Tablettes
+  1986: 40, // Smartphone Neuf
+  1988: 40, // Smartphone Occasion
+  2003: 10, // Téléphone Neuf (portables simples, moins chers)
+  1997: 40, // Tablette Occasion
+  2136: 40, // Tablette Neuve
 };
 
 for (const conf of CATEGORIES_SITE) {
