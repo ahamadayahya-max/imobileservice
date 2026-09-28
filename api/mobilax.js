@@ -247,7 +247,7 @@ module.exports = async (req, res) => {
 
       const familles = CATEGORIES_SITE.filter(c => c.categorie === 'coque' || c.categorie === 'protection');
       const lots = await Promise.all(familles.map(conf =>
-        appelMobilax('/products/search', { categoryId: conf.ids[0], search: modele, inStock: 'true', limit: 2, id_lang: 1 })
+        appelMobilax('/products/search', { categoryId: conf.ids[0], search: modele, inStock: 'true', limit: 1, id_lang: 1 })
           .then(json => ((json.data && json.data.products) || [])
             .filter(p => Number(p.price) > 0)
             .map(p => versProduitSite(p, conf)))
