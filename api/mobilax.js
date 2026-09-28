@@ -24,6 +24,9 @@ const LIMITE_PAR_CATEGORIE = 24;
 /* Seuil d'achat HT sous lequel une coque / un verre est vendu 10€ (sinon 15€) */
 const SEUIL_PRIX_FIXE_HT = 3;
 
+/* Prix de vente minimum (TTC) pour les produits vendus avec marge */
+const PRIX_VENTE_MIN_TTC = 5;
+
 /* Marge des accessoires sans règle dédiée (supports, bracelets, objets pratiques) */
 const MARGE_ACCESSOIRES = 0.50;
 
@@ -74,8 +77,9 @@ function calculerPrixVente(prixAchatHT, regle) {
   if (regle.type === 'fixe') {
     return prixAchatHT <= SEUIL_PRIX_FIXE_HT ? 10 : 15;
   }
-  /* Marge appliquée sur le coût d'achat (coefficient), puis TVA ; arrondi à l'euro supérieur */
-  return Math.ceil(prixAchatHT * (1 + regle.taux) * TVA);
+  /* Marge appliquée sur le coût d'achat (coefficient), puis TVA ; arrondi à l'euro supérieur.
+     Plancher : un article à 2 € ne couvre pas le temps de vente et d'emballage */
+  return Math.max(PRIX_VENTE_MIN_TTC, Math.ceil(prixAchatHT * (1 + regle.taux) * TVA));
 }
 
 /* ---------- Authentification (JWT mis en cache) ------------ */
