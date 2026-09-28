@@ -119,7 +119,7 @@ const CATALOGUE = [
 window.CATALOGUE = CATALOGUE;
 
 /* ============================================================
-   Chargement Mobilax (preprod) via le proxy /api/mobilax
+   Chargement Mobilax (production) via le proxy /api/mobilax
    Le tableau statique ci-dessus sert de fallback : il reste affiché
    tel quel si l'API ne répond pas. En cas de succès, chaque catégorie
    renvoyée par Mobilax (liste blanche d'IDs dans api/mobilax.js :

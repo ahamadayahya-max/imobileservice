@@ -8,11 +8,11 @@
    GET /api/mobilax?action=categories  → référentiel catégories (debug mapping)
    ============================================================ */
 
-/* Preprod par défaut ; passer MOBILAX_BASE_URL en prod le jour venu */
-const BASE_URL = process.env.MOBILAX_BASE_URL || 'https://apiv2.mobilax.pro/v1.0/external';
+/* Production (vrais stocks et prix). Pour tester sur la preprod :
+   MOBILAX_BASE_URL=https://apiv2.mobilax.pro/v1.0/external avec une clé preprod */
+const BASE_URL = process.env.MOBILAX_BASE_URL || 'https://apiv2.mobilax.fr/v1.0/external';
 
-/* Le stockage d'images de la preprod est vide (« key does not exist ») ;
-   les IDs d'images sont partagés avec la prod, dont les assets sont publics */
+/* Assets publics de la prod (le stockage d'images de la preprod est vide) */
 const ASSETS_URL = process.env.MOBILAX_ASSETS_URL || 'https://apiv2.mobilax.fr/v1.0/assets';
 
 /* TVA appliquée au prix d'achat HT avant d'afficher un prix TTC */
