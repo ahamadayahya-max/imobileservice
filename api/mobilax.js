@@ -50,7 +50,18 @@ const CATEGORIES_SITE = [
   { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122, 2089],   regle: { type: 'marge', taux: 0.60 } },  // Secteur, Sans fil, Power Bank, Voiture
   { categorie: 'accessoire', emoji: '🔧', ids: [2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES } }, // Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
   { categorie: 'telephone',  emoji: '📱', ids: [1986, 1988, 2003],       regle: { type: 'marge', taux: 0.25 } },  // Smartphone Neuf, Smartphone Occasion, Téléphone Neuf
-  { categorie: 'pc',         emoji: '💻', ids: [1997, 2136, 204],        regle: { type: 'marge', taux: 0.20 } },  // Tablette Occasion, Tablette Neuve, Informatique
+  /* Informatique : PAS la racine 204, qui contient 529 pièces détachées PC.
+     Marge faible sur le matériel cher (comparé en ligne), forte sur les petits accessoires. */
+  { categorie: 'pc',         emoji: '💻', ids: [1997, 377, 2065, 126, 209, 1117, 2118, 2121, 134],
+    regle: { type: 'marge', taux: 0.20 },   // Tablette Occasion, Ordinateur Portable, Moniteur Portable
+    reglesParId: {
+      126:  { type: 'marge', taux: 0.80 },  // Stockage (cartes mémoire, clés USB)
+      209:  { type: 'marge', taux: 0.80 },  // Souris & Claviers
+      1117: { type: 'marge', taux: 0.80 },  // Câbles informatique
+      2118: { type: 'marge', taux: 0.80 },  // Hubs
+      2121: { type: 'marge', taux: 0.80 },  // Réseau sans fil
+      134:  { type: 'marge', taux: 0.60 },  // Chargeurs PC & MacBook
+    } },
 ];
 
 /* Prix d'achat HT minimum crédible par catégorie Mobilax : en dessous, le prix
@@ -61,7 +72,7 @@ const PRIX_ACHAT_MIN_HT = {
   1988: 40, // Smartphone Occasion
   2003: 10, // Téléphone Neuf (portables simples, moins chers)
   1997: 40, // Tablette Occasion
-  2136: 40, // Tablette Neuve
+  377:  40, // Ordinateur Portable
 };
 
 for (const conf of CATEGORIES_SITE) {
@@ -128,7 +139,7 @@ async function appelMobilax(chemin, params = {}, corps = null) {
 }
 
 /* ---------- Construction du catalogue ---------------------- */
-function versProduitSite(p, conf) {
+function versProduitSite(p, conf, regle = conf.regle) {
   return {
     id: ID_OFFSET + p.id,
     mobilaxId: p.id,
@@ -136,7 +147,7 @@ function versProduitSite(p, conf) {
     categorie: conf.categorie,
     marque: '',
     emoji: conf.emoji,
-    prix: calculerPrixVente(Number(p.price) || 0, conf.regle),
+    prix: calculerPrixVente(Number(p.price) || 0, regle),
     badge: null,
     grade: null,
     neuf: true,
@@ -165,7 +176,7 @@ async function chargerCatalogue() {
       const plancher = PRIX_ACHAT_MIN_HT[conf.ids[i]] || 0.01;
       return ((l.value.data && l.value.data.products) || [])
         .filter(p => Number(p.price) >= plancher)
-        .map(p => versProduitSite(p, conf));
+        .map(p => versProduitSite(p, conf, (conf.reglesParId && conf.reglesParId[conf.ids[i]]) || conf.regle));
     });
   }));
 
