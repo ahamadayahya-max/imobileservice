@@ -36,6 +36,7 @@
       <div class="topbar-title">💰 Gestion des prix</div>
     </div>
     <div class="admin-content">
+      <div style="background:#fff7e6;border:1px solid #f0c36d;color:#7a5200;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">👁️ <strong>Aperçu du catalogue en ligne.</strong> Les modifications faites sur cette page restent dans votre navigateur et <strong>ne changent pas encore le site public</strong> (les prix Mobilax sont calculés automatiquement par vos règles de marge).</div>
 
       <!-- Modification en masse -->
       <div class="data-card" style="margin-bottom:1.5rem;">
@@ -112,7 +113,9 @@
 
   const catLabels = { telephone:'📱', pc:'💻', protection:'🛡️', coque:'🎨', chargeur:'⚡', cable:'🔗', audio:'🎧', accessoire:'🔧' };
 
-  document.addEventListener('DOMContentLoaded', () => {
+  /* Même catalogue que le site public : on attend le chargement Mobilax */
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.CATALOGUE_PRET) await window.CATALOGUE_PRET;
     catalogue = typeof CATALOGUE !== 'undefined' ? CATALOGUE.map(p => ({ ...p, prix: prices[p.id] ?? p.prix })) : [];
     afficherPrix(catalogue);
     afficherHistorique();

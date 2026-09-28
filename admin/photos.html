@@ -199,6 +199,7 @@
       <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
     </div>
   </header>
+  <div style="padding:0 1.5rem;margin-top:1rem;"><div style="background:#fff7e6;border:1px solid #f0c36d;color:#7a5200;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">👁️ <strong>Aperçu du catalogue en ligne.</strong> Les modifications faites sur cette page restent dans votre navigateur et <strong>ne changent pas encore le site public</strong> (les prix Mobilax sont calculés automatiquement par vos règles de marge).</div></div>
 
   <div class="toolbar">
     <input type="search" class="toolbar-search" id="search-input" placeholder="🔍 Rechercher un produit…" oninput="filterCards()">
@@ -271,7 +272,7 @@ function buildGrid() {
 
   CATALOGUE.forEach(p => {
     const isContain = p.categorie === 'telephone' || p.categorie === 'pc';
-    const defaultSrc = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) ? IMAGES[p.id].src : '';
+    const defaultSrc = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) ? IMAGES[p.id].src : (p.image || '');
     const customSrc = customPhotos[p.id] || '';
     const currentSrc = customSrc || defaultSrc;
     const isModified = !!customSrc;
@@ -385,8 +386,8 @@ function resetOne(id) {
   input.classList.remove('has-custom');
 
   /* Restaurer la photo par défaut */
-  const defaultSrc = (typeof IMAGES !== 'undefined' && IMAGES[id]) ? IMAGES[id].src : '';
   const p = CATALOGUE.find(x => x.id === id);
+  const defaultSrc = (typeof IMAGES !== 'undefined' && IMAGES[id]) ? IMAGES[id].src : ((p && p.image) || '');
   const isContain = p && (p.categorie === 'telephone' || p.categorie === 'pc');
   const imgWrap = card.querySelector('.card-img-wrap');
   const fallback = card.querySelector('.card-emoji-fallback');
@@ -466,7 +467,8 @@ function showToast(msg, type = 'success') {
 }
 
 /* ---- Init si déjà connecté ---- */
-buildGrid();
+/* Même catalogue que le site public : on attend le chargement Mobilax */
+(window.CATALOGUE_PRET || Promise.resolve()).then(buildGrid);
 </script>
 <script src="../js/devis.js"></script>
 </body>

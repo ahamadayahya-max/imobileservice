@@ -33,6 +33,7 @@
     </div>
 
     <div class="admin-content">
+      <div style="background:#fff7e6;border:1px solid #f0c36d;color:#7a5200;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">👁️ <strong>Aperçu du catalogue en ligne.</strong> Les modifications faites sur cette page restent dans votre navigateur et <strong>ne changent pas encore le site public</strong> (les prix Mobilax sont calculés automatiquement par vos règles de marge).</div>
       <div class="data-card">
         <div class="card-header">
           <div class="search-bar">
@@ -114,7 +115,9 @@
     audio:'🎧 Audio', accessoire:'🔧 Accessoires'
   };
 
-  document.addEventListener('DOMContentLoaded', () => {
+  /* Même catalogue que le site public : on attend le chargement Mobilax */
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.CATALOGUE_PRET) await window.CATALOGUE_PRET;
     catalogue = (typeof CATALOGUE !== 'undefined') ? [...CATALOGUE] : [];
     /* Appliquer prix modifiés */
     catalogue = catalogue.map(p => ({ ...p, prix: prices[p.id] ?? p.prix }));
@@ -139,10 +142,10 @@
       return;
     }
     tbody.innerHTML = liste.map(p => {
-      const imgUrl = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) ? IMAGES[p.id].src : null;
+      const imgUrl = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) ? IMAGES[p.id].src : (p.image || null);
       const isHidden = hidden.includes(p.id);
       return `<tr>
-        <td>${imgUrl ? `<img src="${imgUrl}" alt="${p.nom}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">` : p.emoji}</td>
+        <td>${imgUrl ? `<img src="${imgUrl}" alt="${p.nom}" style="width:40px;height:40px;object-fit:contain;background:#fff;border-radius:6px;">` : p.emoji}</td>
         <td><strong>${p.nom}</strong><br><span style="font-size:.75rem;color:#888;">${p.marque || ''}</span></td>
         <td><span style="font-size:.78rem;">${catLabels[p.categorie] || p.categorie}</span></td>
         <td>

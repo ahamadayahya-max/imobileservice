@@ -134,9 +134,6 @@ const MOBILAX_TIMEOUT_MS = 6000;
 window.CATALOGUE_SOURCE = 'statique';
 
 window.CATALOGUE_PRET = (async () => {
-  /* Les pages admin travaillent sur les IDs statiques (prix, photos) */
-  if (location.pathname.includes('/admin/')) return CATALOGUE;
-
   const controleur = new AbortController();
   const minuteur = setTimeout(() => controleur.abort(), MOBILAX_TIMEOUT_MS);
 
