@@ -28,12 +28,11 @@
       <div class="topbar-title">📦 Gestion des produits</div>
       <div class="topbar-right">
         <button class="btn-admin btn-secondary btn-sm" onclick="exportCSV()">📥 Exporter CSV</button>
-        <button class="btn-admin btn-primary btn-sm" onclick="ouvrirModalAjout()">+ Ajouter produit</button>
       </div>
     </div>
 
     <div class="admin-content">
-      <div style="background:#fff7e6;border:1px solid #f0c36d;color:#7a5200;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">👁️ <strong>Aperçu du catalogue en ligne.</strong> Les modifications faites sur cette page restent dans votre navigateur et <strong>ne changent pas encore le site public</strong> (les prix Mobilax sont calculés automatiquement par vos règles de marge).</div>
+      <div style="background:#e8f7ee;border:1px solid #9bd3b0;color:#1f5f3a;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">✅ <strong>Les changements faits ici s'appliquent au site</strong> pour tous les clients (sous 1 minute) : afficher / masquer un produit, fixer son prix. Les produits, noms et catégories viennent de Mobilax.</div>
       <div class="data-card">
         <div class="card-header">
           <div class="search-bar">
@@ -73,10 +72,10 @@
   <div style="background:#fff;border-radius:14px;padding:1.5rem;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;">
     <h3 style="font-family:'Space Grotesk',sans-serif;margin-bottom:1rem;" id="modal-title">✏️ Modifier le produit</h3>
     <div style="display:flex;flex-direction:column;gap:.75rem;">
-      <div><label class="form-label">Nom</label><input type="text" id="edit-nom" class="admin-input" style="width:100%;"></div>
+      <div><label class="form-label">Nom</label><input type="text" id="edit-nom" class="admin-input" style="width:100%;" disabled title="Nom fourni par Mobilax"></div>
       <div><label class="form-label">Prix (€)</label><input type="number" id="edit-prix" class="admin-input" style="width:100%;" step="0.01" min="0"></div>
       <div><label class="form-label">Catégorie</label>
-        <select id="edit-cat" class="admin-select" style="width:100%;">
+        <select id="edit-cat" class="admin-select" style="width:100%;" disabled title="Catégorie définie par Mobilax">
           <option value="telephone">Téléphone</option><option value="pc">PC/Tablette</option>
           <option value="protection">Protection</option><option value="coque">Coque</option>
           <option value="chargeur">Chargeur</option><option value="cable">Câble</option>
@@ -84,7 +83,7 @@
         </select>
       </div>
       <div><label class="form-label">Badge</label>
-        <select id="edit-badge" class="admin-select" style="width:100%;">
+        <select id="edit-badge" class="admin-select" style="width:100%;" disabled>
           <option value="">Aucun</option><option value="bestseller">Bestseller</option>
           <option value="nouveau">Nouveau</option><option value="pro">Pro</option>
         </select>
@@ -104,9 +103,10 @@
 <script>
   requireAuth();
 
+  /* Masquage et prix enregistrés sur le serveur (/api/reglages) : ils
+     s'appliquent à tous les visiteurs. p.masque / p.prixManuel / p.prixAuto
+     sont posés par catalogue.js à partir de ces réglages. */
   let catalogue = [];
-  let hidden    = JSON.parse(localStorage.getItem('ims_hidden') || '[]');
-  let prices    = JSON.parse(localStorage.getItem('ims_prices') || '{}');
   let editId    = null;
 
   const catLabels = {
@@ -114,15 +114,39 @@
     coque:'🎨 Coques', chargeur:'⚡ Chargeurs', cable:'🔗 Câbles',
     audio:'🎧 Audio', accessoire:'🔧 Accessoires'
   };
+  const euros = n => Number(n).toFixed(2).replace('.', ',') + '€';
+  const esc = t => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 
-  /* Même catalogue que le site public : on attend le chargement Mobilax */
   document.addEventListener('DOMContentLoaded', async () => {
     if (window.CATALOGUE_PRET) await window.CATALOGUE_PRET;
-    catalogue = (typeof CATALOGUE !== 'undefined') ? [...CATALOGUE] : [];
-    /* Appliquer prix modifiés */
-    catalogue = catalogue.map(p => ({ ...p, prix: prices[p.id] ?? p.prix }));
+    catalogue = (typeof CATALOGUE !== 'undefined') ? CATALOGUE : [];
+    if (!window.REGLAGES) adminToast('Réglages serveur indisponibles : les modifications ne pourront pas être enregistrées', 'error');
     afficherProduits(catalogue);
   });
+
+  /* Recalque l'état local sur la réponse du serveur (source de vérité) */
+  function synchroniser(r) {
+    const masques = new Set((r.masques || []).map(Number));
+    catalogue.forEach(p => {
+      const fixe = r.prix[p.id];
+      p.prix = fixe != null ? Number(fixe) : p.prixAuto;
+      p.prixManuel = fixe != null;
+      p.masque = masques.has(p.id);
+    });
+    filtrerProduits();
+  }
+
+  async function envoyer(modifs, message) {
+    try {
+      synchroniser(await enregistrerReglages(modifs));
+      adminToast(message + ' — en ligne sur le site', 'success');
+      return true;
+    } catch (err) {
+      adminToast('Non enregistré : ' + err.message, 'error');
+      filtrerProduits();
+      return false;
+    }
+  }
 
   function filtrerProduits() {
     const q   = document.getElementById('search').value.toLowerCase();
@@ -135,26 +159,27 @@
   }
 
   function afficherProduits(liste) {
-    document.getElementById('produits-count').textContent = liste.length + ' produit(s)';
+    const nbMasques = catalogue.filter(p => p.masque).length;
+    document.getElementById('produits-count').textContent = liste.length + ' produit(s)' + (nbMasques ? ' · ' + nbMasques + ' masqué(s)' : '');
     const tbody = document.getElementById('produits-tbody');
     if (!liste.length) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">Aucun produit</td></tr>';
       return;
     }
     tbody.innerHTML = liste.map(p => {
-      const imgUrl = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) ? IMAGES[p.id].src : (p.image || null);
-      const isHidden = hidden.includes(p.id);
-      return `<tr>
-        <td>${imgUrl ? `<img src="${imgUrl}" alt="${p.nom}" style="width:40px;height:40px;object-fit:contain;background:#fff;border-radius:6px;">` : p.emoji}</td>
-        <td><strong>${p.nom}</strong><br><span style="font-size:.75rem;color:#888;">${p.marque || ''}</span></td>
+      const img = window.imageProduit(p);
+      return `<tr style="${p.masque ? 'opacity:.55;' : ''}">
+        <td>${img ? `<img src="${img.src}" alt="" style="width:40px;height:40px;object-fit:contain;background:#fff;border-radius:6px;">` : p.emoji}</td>
+        <td><strong>${esc(p.nom)}</strong><br><span style="font-size:.75rem;color:#888;">${esc(p.marque || '')}</span></td>
         <td><span style="font-size:.78rem;">${catLabels[p.categorie] || p.categorie}</span></td>
         <td>
-          <span class="price-editable" onclick="editerPrixInline(${p.id}, this)" id="price-${p.id}">${p.prix.toFixed(2).replace('.',',')}€</span>
+          <span class="price-editable" onclick="editerPrixInline(${p.id}, this)" id="price-${p.id}">${euros(p.prix)}</span>
+          ${p.prixManuel ? '<br><span style="font-size:.7rem;color:#8b1a1a;">fixé à la main</span>' : ''}
         </td>
-        <td>${p.badge ? `<span class="badge badge-devis">${p.badge}</span>` : '—'}</td>
+        <td>${p.badge ? `<span class="badge badge-devis">${esc(p.badge)}</span>` : '—'}</td>
         <td>
-          <label class="toggle-switch">
-            <input type="checkbox" ${!isHidden ? 'checked' : ''} onchange="toggleVisible(${p.id}, this.checked)">
+          <label class="toggle-switch" title="${p.masque ? 'Masqué sur le site' : 'Visible sur le site'}">
+            <input type="checkbox" ${!p.masque ? 'checked' : ''} onchange="toggleVisible(${p.id}, this.checked)">
             <span class="toggle-slider"></span>
           </label>
         </td>
@@ -164,6 +189,13 @@
         </td>
       </tr>`;
     }).join('');
+  }
+
+  function enregistrerPrix(id, val) {
+    const p = catalogue.find(x => x.id === id);
+    if (!p) return Promise.resolve(false);
+    return envoyer({ prix: { [id]: val }, historique: [{ id, nom: p.nom, ancien: p.prix, nouveau: val }] },
+      'Prix mis à jour : ' + euros(val));
   }
 
   function editerPrixInline(id, el) {
@@ -179,32 +211,22 @@
     sel.addRange(range);
     el.onblur = () => {
       el.contentEditable = 'false';
-      const val = parseFloat(el.textContent.replace(',','.').replace('€',''));
-      if (!isNaN(val) && val >= 0) {
-        prices[id] = val;
-        localStorage.setItem('ims_prices', JSON.stringify(prices));
-        p.prix = val;
-        el.textContent = val.toFixed(2).replace('.',',') + '€';
-        adminToast('Prix mis à jour', 'success');
-      } else {
-        el.textContent = oldTxt;
-      }
+      const val = Math.round(parseFloat(el.textContent.replace(',', '.').replace('€', '')) * 100) / 100;
+      if (!isNaN(val) && val >= 0 && Math.abs(val - p.prix) >= 0.005) enregistrerPrix(id, val);
+      else el.textContent = oldTxt;
     };
     el.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } };
   }
 
   function toggleVisible(id, visible) {
-    if (visible) hidden = hidden.filter(x => x !== id);
-    else if (!hidden.includes(id)) hidden.push(id);
-    localStorage.setItem('ims_hidden', JSON.stringify(hidden));
-    adminToast(visible ? 'Produit affiché' : 'Produit masqué');
+    envoyer({ masques: { [id]: !visible } }, visible ? 'Produit affiché' : 'Produit masqué');
   }
 
   function ouvrirModal(id) {
     const p = catalogue.find(x => x.id === id);
     if (!p) return;
     editId = id;
-    document.getElementById('modal-title').textContent = '✏️ Modifier — ' + p.nom;
+    document.getElementById('modal-title').textContent = '✏️ Prix — ' + p.nom;
     document.getElementById('edit-nom').value   = p.nom;
     document.getElementById('edit-prix').value  = p.prix;
     document.getElementById('edit-cat').value   = p.categorie;
@@ -212,43 +234,20 @@
     document.getElementById('modal-overlay').style.display = 'flex';
   }
 
-  function ouvrirModalAjout() {
-    editId = null;
-    document.getElementById('modal-title').textContent = '+ Ajouter un produit';
-    document.getElementById('edit-nom').value = '';
-    document.getElementById('edit-prix').value = '';
-    document.getElementById('edit-cat').value = 'accessoire';
-    document.getElementById('edit-badge').value = '';
-    document.getElementById('modal-overlay').style.display = 'flex';
-  }
-
   function fermerModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 
-  function sauvegarderProduit() {
-    const nom   = document.getElementById('edit-nom').value.trim();
-    const prix  = parseFloat(document.getElementById('edit-prix').value);
-    const cat   = document.getElementById('edit-cat').value;
-    const badge = document.getElementById('edit-badge').value || undefined;
-    if (!nom || isNaN(prix)) { adminToast('Champs requis', 'error'); return; }
-    if (editId) {
-      const p = catalogue.find(x => x.id === editId);
-      if (p) { p.nom = nom; p.prix = prix; p.categorie = cat; p.badge = badge; prices[editId] = prix; }
-    } else {
-      const newId = Math.max(...catalogue.map(x => x.id)) + 1;
-      catalogue.push({ id: newId, nom, prix, categorie: cat, badge, emoji: '📦', marque: '', disponible: true });
-    }
-    localStorage.setItem('ims_prices', JSON.stringify(prices));
-    fermerModal();
-    filtrerProduits();
-    adminToast('Produit sauvegardé', 'success');
+  async function sauvegarderProduit() {
+    const prix = Math.round(parseFloat(document.getElementById('edit-prix').value) * 100) / 100;
+    if (!editId || isNaN(prix) || prix < 0) { adminToast('Prix invalide', 'error'); return; }
+    if (await enregistrerPrix(editId, prix)) fermerModal();
   }
 
   function exportCSV() {
-    const rows = [['ID','Nom','Categorie','Prix','Badge','Visible']];
-    catalogue.forEach(p => rows.push([p.id, p.nom, p.categorie, p.prix, p.badge || '', !hidden.includes(p.id) ? 'Oui' : 'Non']));
-    const csv = rows.map(r => r.map(v => `"${v}"`).join(';')).join('\n');
+    const rows = [['ID', 'Nom', 'Categorie', 'Prix', 'Prix automatique', 'Visible']];
+    catalogue.forEach(p => rows.push([p.id, p.nom, p.categorie, p.prix, p.prixAuto, !p.masque ? 'Oui' : 'Non']));
+    const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n');
     const a = document.createElement('a');
-    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('﻿' + csv);
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\ufeff' + csv);
     a.download = 'produits-ims.csv';
     a.click();
     adminToast('CSV exporté', 'success');

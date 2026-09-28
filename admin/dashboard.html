@@ -87,19 +87,19 @@
 </div>
 
 <div id="toast-container"></div>
+<script src="../js/catalogue.js"></script>
 <script src="auth.js"></script>
 <script>
   requireAuth();
 
-  document.addEventListener('DOMContentLoaded', () => {
-    /* KPI */
-    const catalogue  = JSON.parse(localStorage.getItem('ims_catalogue') || 'null');
+  document.addEventListener('DOMContentLoaded', async () => {
+    /* KPI produits : catalogue en ligne (Mobilax + réglages serveur) */
+    if (window.CATALOGUE_PRET) await window.CATALOGUE_PRET;
     const commandes  = JSON.parse(localStorage.getItem('ims_commandes') || '[]');
     const devis      = JSON.parse(localStorage.getItem('ims_devis') || '[]');
-    const hidden     = JSON.parse(localStorage.getItem('ims_hidden') || '[]');
 
-    const totalProd = catalogue ? catalogue.length : 87;
-    const visibles  = totalProd - hidden.length;
+    const totalProd = CATALOGUE.length;
+    const visibles  = CATALOGUE.filter(p => !p.masque).length;
 
     document.getElementById('kpi-produits').textContent  = totalProd;
     document.getElementById('kpi-visibles').textContent  = visibles;

@@ -84,12 +84,8 @@ function buildCarteHTML(produit) {
   const categorieLabel = LABELS_CATEGORIE[produit.categorie] || produit.categorie;
   const prixFormate = produit.prix.toFixed(2).replace('.', ',') + '€';
 
-  /* Photo produit : localStorage (admin) en priorité, sinon IMAGES map, sinon emoji */
-  const customPhotos = (() => { try { return JSON.parse(localStorage.getItem('ims_photos') || '{}'); } catch { return {}; } })();
-  const imgData = customPhotos[produit.id]
-    ? { src: customPhotos[produit.id], alt: produit.nom }
-    : (typeof IMAGES !== 'undefined' && IMAGES[produit.id])
-      || (produit.image ? { src: produit.image, alt: produit.nom } : null);
+  /* Photo produit : photo choisie dans l'admin (réglages serveur), sinon photo d'origine, sinon emoji */
+  const imgData = window.imageProduit(produit);
   /* Photos fournisseur (fond blanc, cadrage serré) : affichées entières, jamais recadrées */
   const isContain = produit.source === 'mobilax' || produit.categorie === 'telephone' || produit.categorie === 'pc';
   const imgHTML = imgData

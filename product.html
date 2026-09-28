@@ -501,8 +501,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   /* Image produit : IMAGES map par id, sinon BG_IMAGES catégorie, sinon emoji */
-  const imgData = (typeof IMAGES !== 'undefined' && IMAGES[produit.id])
-    || (produit.image ? { src: produit.image, alt: produit.nom } : null);
+  const imgData = window.imageProduit(produit);
   const isContain = produit.source === 'mobilax' || produit.categorie === 'telephone' || produit.categorie === 'pc';
   let visualHTML;
   if (imgData) {
@@ -565,8 +564,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     gridSimilaire.innerHTML = similaires.map(p => {
       const prixF = p.prix.toFixed(2).replace('.',',') + '€';
-      const relImg = (typeof IMAGES !== 'undefined' && IMAGES[p.id])
-        || (p.image ? { src: p.image, alt: p.nom } : null);
+      const relImg = window.imageProduit(p);
       const relIsContain = p.source === 'mobilax' || p.categorie === 'telephone' || p.categorie === 'pc';
       const relImgHTML = relImg
         ? `<img src="${relImg.src}" alt="${relImg.alt}" loading="lazy"
@@ -642,7 +640,17 @@ async function afficherVenteAdditionnelle(produit) {
   if (modele) {
     try {
       const res = await fetch('/api/mobilax?action=accessoires&modele=' + encodeURIComponent(modele));
-      if (res.ok) suggestions = ((await res.json()).produits || []).slice(0, 2);
+      if (res.ok) {
+        /* Ces accessoires viennent directement de Mobilax : on leur applique
+           les mêmes réglages admin que le reste du catalogue */
+        const r = window.REGLAGES || {};
+        const masques = new Set((r.masques || []).map(Number));
+        suggestions = ((await res.json()).produits || [])
+          .filter(p => !masques.has(p.id))
+          .map(p => ({ ...p, prix: (r.prix && r.prix[p.id] != null) ? Number(r.prix[p.id]) : p.prix,
+                              image: (r.photos && r.photos[p.id]) || p.image }))
+          .slice(0, 2);
+      }
     } catch { /* suggestions compatibles indisponibles : on garde les génériques */ }
   }
 

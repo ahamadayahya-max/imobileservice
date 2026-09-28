@@ -36,7 +36,7 @@
       <div class="topbar-title">💰 Gestion des prix</div>
     </div>
     <div class="admin-content">
-      <div style="background:#fff7e6;border:1px solid #f0c36d;color:#7a5200;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">👁️ <strong>Aperçu du catalogue en ligne.</strong> Les modifications faites sur cette page restent dans votre navigateur et <strong>ne changent pas encore le site public</strong> (les prix Mobilax sont calculés automatiquement par vos règles de marge).</div>
+      <div style="background:#e8f7ee;border:1px solid #9bd3b0;color:#1f5f3a;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">✅ <strong>Les prix modifiés ici s'appliquent au site</strong> pour tous les clients (sous 1 minute). « Automatique » = prix calculé par vos règles de marge Mobilax.</div>
 
       <!-- Modification en masse -->
       <div class="data-card" style="margin-bottom:1.5rem;">
@@ -107,19 +107,45 @@
 <script src="auth.js"></script>
 <script>
   requireAuth();
+  /* Prix enregistrés sur le serveur (/api/reglages) : ce qui est fixé ici
+     s'applique à tous les visiteurs du site. p.prixAuto = prix calculé par
+     les règles de marge Mobilax ; p.prix = prix affiché (manuel ou auto). */
   let catalogue = [];
-  let prices    = JSON.parse(localStorage.getItem('ims_prices') || '{}');
-  let historique = JSON.parse(localStorage.getItem('ims_prix_historique') || '[]');
+  let historique = [];
 
   const catLabels = { telephone:'📱', pc:'💻', protection:'🛡️', coque:'🎨', chargeur:'⚡', cable:'🔗', audio:'🎧', accessoire:'🔧' };
+  const euros = n => Number(n).toFixed(2).replace('.', ',') + '€';
+  const esc = t => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 
-  /* Même catalogue que le site public : on attend le chargement Mobilax */
   document.addEventListener('DOMContentLoaded', async () => {
     if (window.CATALOGUE_PRET) await window.CATALOGUE_PRET;
-    catalogue = typeof CATALOGUE !== 'undefined' ? CATALOGUE.map(p => ({ ...p, prix: prices[p.id] ?? p.prix })) : [];
+    catalogue = typeof CATALOGUE !== 'undefined' ? CATALOGUE : [];
+    historique = (window.REGLAGES && window.REGLAGES.historique) || [];
+    if (!window.REGLAGES) adminToast('Réglages serveur indisponibles : les modifications ne pourront pas être enregistrées', 'error');
     afficherPrix(catalogue);
     afficherHistorique();
   });
+
+  /* Recalque l'état local sur la réponse du serveur (source de vérité) */
+  function synchroniser(r) {
+    catalogue.forEach(p => {
+      const fixe = r.prix[p.id];
+      p.prix = fixe != null ? Number(fixe) : p.prixAuto;
+      p.prixManuel = fixe != null;
+    });
+    historique = r.historique || [];
+    filtrerPrix();
+    afficherHistorique();
+  }
+
+  async function envoyer(modifs, message) {
+    try {
+      synchroniser(await enregistrerReglages(modifs));
+      adminToast(message + ' — en ligne sur le site', 'success');
+    } catch (err) {
+      adminToast('Non enregistré : ' + err.message, 'error');
+    }
+  }
 
   function filtrerPrix() {
     const q = document.getElementById('search-prix').value.toLowerCase();
@@ -129,30 +155,33 @@
   function afficherPrix(liste) {
     document.getElementById('prix-tbody').innerHTML = liste.map(p => `
       <tr>
-        <td>${p.emoji} <strong>${p.nom}</strong></td>
+        <td>${p.emoji} <strong>${esc(p.nom)}</strong>${p.masque ? ' <span style="color:#b45309;font-size:.75rem;">(masqué)</span>' : ''}</td>
         <td>${catLabels[p.categorie] || ''} ${p.categorie}</td>
-        <td><span class="prix-value">${p.prix.toFixed(2).replace('.',',')}€</span></td>
+        <td>
+          <span class="prix-value">${euros(p.prix)}</span>
+          ${p.prixManuel ? `<br><span style="font-size:.72rem;color:#8b1a1a;font-weight:600;">fixé à la main · auto : ${euros(p.prixAuto)}</span>` : '<br><span style="font-size:.72rem;color:#888;">automatique</span>'}
+        </td>
         <td><input type="number" class="admin-input prix-input" id="new-prix-${p.id}" value="${p.prix.toFixed(2)}" step="0.01" min="0"></td>
-        <td><button class="btn-admin btn-primary btn-sm" onclick="sauvegarderPrix(${p.id})">✅ Mettre à jour</button></td>
+        <td style="white-space:nowrap;">
+          <button class="btn-admin btn-primary btn-sm" onclick="sauvegarderPrix(${p.id})">✅ Mettre à jour</button>
+          ${p.prixManuel ? `<button class="btn-admin btn-ghost btn-sm" title="Revenir au prix automatique" onclick="revenirAuto(${p.id})">↺ Auto</button>` : ''}
+        </td>
       </tr>`).join('');
   }
 
   function sauvegarderPrix(id) {
-    const input = document.getElementById('new-prix-' + id);
-    const val   = parseFloat(input.value);
-    const p     = catalogue.find(x => x.id === id);
+    const val = Math.round(parseFloat(document.getElementById('new-prix-' + id).value) * 100) / 100;
+    const p   = catalogue.find(x => x.id === id);
     if (!p || isNaN(val) || val < 0) { adminToast('Valeur invalide', 'error'); return; }
-    const ancien = p.prix;
-    prices[id] = val;
-    p.prix = val;
-    localStorage.setItem('ims_prices', JSON.stringify(prices));
-    /* Historique */
-    historique.unshift({ id, nom: p.nom, ancien: ancien, nouveau: val, date: new Date().toLocaleString('fr-FR') });
-    if (historique.length > 20) historique = historique.slice(0, 20);
-    localStorage.setItem('ims_prix_historique', JSON.stringify(historique));
-    afficherPrix(catalogue);
-    afficherHistorique();
-    adminToast(`Prix mis à jour : ${val.toFixed(2).replace('.',',')}€`, 'success');
+    envoyer({ prix: { [id]: val }, historique: [{ id, nom: p.nom, ancien: p.prix, nouveau: val }] },
+      'Prix mis à jour : ' + euros(val));
+  }
+
+  function revenirAuto(id) {
+    const p = catalogue.find(x => x.id === id);
+    if (!p) return;
+    envoyer({ prix: { [id]: null }, historique: [{ id, nom: p.nom, ancien: p.prix, nouveau: p.prixAuto }] },
+      'Prix automatique rétabli');
   }
 
   function appliquerMasse() {
@@ -160,25 +189,21 @@
     const type = document.getElementById('masse-type').value;
     const val  = parseFloat(document.getElementById('masse-val').value);
     if (isNaN(val) || val < 0) { adminToast('Valeur invalide', 'error'); return; }
-    let nb = 0;
-    catalogue.filter(p => cat === 'all' || p.categorie === cat).forEach(p => {
-      let nvx;
-      if (type === 'pct_remise') nvx = Math.max(0, p.prix * (1 - val / 100));
-      if (type === 'pct_hausse') nvx = p.prix * (1 + val / 100);
+    const cibles = catalogue.filter(p => cat === 'all' || p.categorie === cat);
+    if (!cibles.length) return;
+    if (!confirm(`Modifier le prix de ${cibles.length} produit(s) sur le site ?`)) return;
+    const prix = {}, histo = [];
+    cibles.forEach(p => {
+      let nvx = p.prix;
+      if (type === 'pct_remise')  nvx = Math.max(0, p.prix * (1 - val / 100));
+      if (type === 'pct_hausse')  nvx = p.prix * (1 + val / 100);
       if (type === 'fixe_remise') nvx = Math.max(0, p.prix - val);
       if (type === 'fixe_hausse') nvx = p.prix + val;
       nvx = Math.round(nvx * 100) / 100;
-      prices[p.id] = nvx;
-      historique.unshift({ id: p.id, nom: p.nom, ancien: p.prix, nouveau: nvx, date: new Date().toLocaleString('fr-FR') });
-      p.prix = nvx;
-      nb++;
+      prix[p.id] = nvx;
+      histo.push({ id: p.id, nom: p.nom, ancien: p.prix, nouveau: nvx });
     });
-    if (historique.length > 20) historique = historique.slice(0, 20);
-    localStorage.setItem('ims_prices', JSON.stringify(prices));
-    localStorage.setItem('ims_prix_historique', JSON.stringify(historique));
-    filtrerPrix();
-    afficherHistorique();
-    adminToast(nb + ' produit(s) mis à jour', 'success');
+    envoyer({ prix, historique: histo }, cibles.length + ' produit(s) mis à jour');
   }
 
   function afficherHistorique() {
@@ -189,11 +214,11 @@
     }
     el.innerHTML = historique.map((h, i) => `
       <div class="historique-row">
-        <span style="flex:1;font-weight:600;">${h.nom}</span>
-        <span class="old-prix">${h.ancien?.toFixed(2).replace('.',',')}€</span>
+        <span style="flex:1;font-weight:600;">${esc(h.nom)}</span>
+        <span class="old-prix">${euros(h.ancien)}</span>
         <span>→</span>
-        <span style="color:#8b1a1a;font-weight:700;">${h.nouveau?.toFixed(2).replace('.',',')}€</span>
-        <span style="color:#aaa;font-size:.78rem;">${h.date}</span>
+        <span style="color:#8b1a1a;font-weight:700;">${euros(h.nouveau)}</span>
+        <span style="color:#aaa;font-size:.78rem;">${new Date(h.date).toLocaleString('fr-FR')}</span>
         <button class="btn-admin btn-ghost btn-sm" onclick="annulerModif(${i})">↩ Annuler</button>
       </div>`).join('');
   }
@@ -201,21 +226,15 @@
   function annulerModif(i) {
     const h = historique[i];
     const p = catalogue.find(x => x.id === h.id);
-    if (!p) return;
-    prices[h.id] = h.ancien;
-    p.prix = h.ancien;
-    historique.splice(i, 1);
-    localStorage.setItem('ims_prices', JSON.stringify(prices));
-    localStorage.setItem('ims_prix_historique', JSON.stringify(historique));
-    filtrerPrix();
-    afficherHistorique();
-    adminToast('Prix annulé', 'success');
+    if (!p) { adminToast('Produit plus présent dans le catalogue', 'error'); return; }
+    /* Revenir à l'ancien prix ; s'il correspond au prix automatique, on retire le prix fixé */
+    const retour = Math.abs(h.ancien - p.prixAuto) < 0.005 ? null : h.ancien;
+    envoyer({ prix: { [h.id]: retour }, historique: [{ id: h.id, nom: p.nom, ancien: p.prix, nouveau: h.ancien }] }, 'Prix annulé');
   }
 
   function viderHistorique() {
-    historique = [];
-    localStorage.removeItem('ims_prix_historique');
-    afficherHistorique();
+    if (!confirm("Effacer l'historique des prix ? (les prix actuels ne changent pas)")) return;
+    envoyer({ viderHistorique: true }, 'Historique effacé');
   }
 </script>
 </body>

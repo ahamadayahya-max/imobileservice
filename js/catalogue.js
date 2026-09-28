@@ -133,9 +133,52 @@ const MOBILAX_TIMEOUT_MS = 6000;
 
 window.CATALOGUE_SOURCE = 'statique';
 
+/* Pages admin : on garde les produits masqués (affichés avec leur interrupteur) */
+const EST_ADMIN = location.pathname.includes('/admin/');
+
+/* Réglages de l'admin (prix fixés, produits masqués, photos) partagés par
+   tous les visiteurs : lus sur le serveur, jamais dans le navigateur */
+async function chargerReglages() {
+  try {
+    const res = await fetch('/api/reglages', { credentials: 'same-origin' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch (err) {
+    console.warn('[catalogue] réglages indisponibles, valeurs automatiques utilisées :', err.message);
+    return null;
+  }
+}
+
+function appliquerReglages(r) {
+  if (!r) return;
+  const masques = new Set((r.masques || []).map(Number));
+  CATALOGUE.forEach(p => {
+    p.prixAuto = p.prixAuto ?? p.prix;
+    const prixFixe = r.prix && r.prix[p.id];
+    p.prix = prixFixe != null ? Number(prixFixe) : p.prixAuto;
+    p.prixManuel = prixFixe != null;
+    p.imagePerso = (r.photos && r.photos[p.id]) || null;
+    p.masque = masques.has(p.id);
+  });
+  if (!EST_ADMIN) {
+    const visibles = CATALOGUE.filter(p => !p.masque);
+    CATALOGUE.length = 0;
+    CATALOGUE.push(...visibles);
+  }
+}
+
+/* Photo à afficher : photo choisie dans l'admin, sinon photo d'origine */
+window.imageProduit = function (p) {
+  if (!p) return null;
+  if (p.imagePerso) return { src: p.imagePerso, alt: p.nom };
+  if (typeof IMAGES !== 'undefined' && IMAGES[p.id]) return IMAGES[p.id];
+  return p.image ? { src: p.image, alt: p.nom } : null;
+};
+
 window.CATALOGUE_PRET = (async () => {
   const controleur = new AbortController();
   const minuteur = setTimeout(() => controleur.abort(), MOBILAX_TIMEOUT_MS);
+  const promesseReglages = chargerReglages();
 
   try {
     const res = await fetch('/api/mobilax?action=catalogue', { signal: controleur.signal });
@@ -148,11 +191,14 @@ window.CATALOGUE_PRET = (async () => {
     CATALOGUE.length = 0;
     CATALOGUE.push(...produits, ...conserves);
     window.CATALOGUE_SOURCE = 'mobilax';
-    document.dispatchEvent(new CustomEvent('catalogue:charge', { detail: { source: 'mobilax' } }));
   } catch (err) {
     console.warn('[catalogue] API Mobilax indisponible, catalogue statique conservé :', err.message);
   } finally {
     clearTimeout(minuteur);
   }
+
+  window.REGLAGES = await promesseReglages;
+  appliquerReglages(window.REGLAGES);
+  document.dispatchEvent(new CustomEvent('catalogue:charge', { detail: { source: window.CATALOGUE_SOURCE } }));
   return CATALOGUE;
 })();

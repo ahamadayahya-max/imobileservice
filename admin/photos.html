@@ -199,7 +199,7 @@
       <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
     </div>
   </header>
-  <div style="padding:0 1.5rem;margin-top:1rem;"><div style="background:#fff7e6;border:1px solid #f0c36d;color:#7a5200;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">👁️ <strong>Aperçu du catalogue en ligne.</strong> Les modifications faites sur cette page restent dans votre navigateur et <strong>ne changent pas encore le site public</strong> (les prix Mobilax sont calculés automatiquement par vos règles de marge).</div></div>
+  <div style="padding:0 1.5rem;margin-top:1rem;"><div style="background:#e8f7ee;border:1px solid #9bd3b0;color:#1f5f3a;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">✅ <strong>Les photos appliquées ici s'affichent sur le site</strong> pour tous les clients (sous 1 minute). Collez le lien https d'une image puis cliquez sur « Appliquer ».</div>
 
   <div class="toolbar">
     <input type="search" class="toolbar-search" id="search-input" placeholder="🔍 Rechercher un produit…" oninput="filterCards()">
@@ -224,12 +224,13 @@
 
 <script src="../js/catalogue.js"></script>
 <script src="../js/images.js"></script>
+<script src="auth.js"></script>
 <script>
 /* ============================================================
-   Admin photos — gestion des photos produits via localStorage
+   Admin photos — photos produits enregistrées sur le serveur
+   (/api/reglages) : une photo appliquée ici s'affiche sur le site
+   pour tous les visiteurs.
    ============================================================ */
-
-const PHOTOS_KEY     = 'ims_photos';
 
 /* ---- Authentification ----
    La page n'est servie qu'aux admins connectés (middleware.js) :
@@ -242,12 +243,21 @@ function logout() {
     .finally(() => location.replace('login.html'));
 }
 
-/* ---- Photos personnalisées (localStorage) ---- */
+/* ---- Photos personnalisées (réglages serveur) ---- */
 function getCustomPhotos() {
-  try { return JSON.parse(localStorage.getItem(PHOTOS_KEY) || '{}'); } catch { return {}; }
+  return (window.REGLAGES && window.REGLAGES.photos) || {};
 }
-function saveCustomPhotos(obj) {
-  localStorage.setItem(PHOTOS_KEY, JSON.stringify(obj));
+
+/* Envoie des changements de photos ; renvoie true si le serveur les a enregistrés */
+async function envoyerPhotos(modifs, message) {
+  try {
+    await enregistrerReglages(modifs);
+    showToast(message + ' — en ligne sur le site', 'success');
+    return true;
+  } catch (err) {
+    showToast('⚠️ Non enregistré : ' + err.message, 'info');
+    return false;
+  }
 }
 
 /* État temporaire : modifications en cours avant sauvegarde */
@@ -273,6 +283,7 @@ function buildGrid() {
   CATALOGUE.forEach(p => {
     const isContain = p.categorie === 'telephone' || p.categorie === 'pc';
     const defaultSrc = (typeof IMAGES !== 'undefined' && IMAGES[p.id]) ? IMAGES[p.id].src : (p.image || '');
+    const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
     const customSrc = customPhotos[p.id] || '';
     const currentSrc = customSrc || defaultSrc;
     const isModified = !!customSrc;
@@ -298,8 +309,8 @@ function buildGrid() {
         <div class="card-id">#${p.id}</div>
         <div class="url-input-row">
           <input type="url" class="url-input ${customSrc ? 'has-custom' : ''}" id="url-${p.id}"
-            value="${customSrc}"
-            placeholder="https://images.unsplash.com/…"
+            value="${esc(customSrc)}"
+            placeholder="https://… (lien d'une image)"
             oninput="onUrlChange(${p.id}, this)">
           <button class="btn-apply" id="btn-${p.id}" onclick="applyPhoto(${p.id})">Appliquer</button>
         </div>
@@ -332,11 +343,10 @@ function applyPhoto(id) {
 
   /* Vérifier que l'URL charge bien avant de sauvegarder */
   const testImg = new Image();
-  testImg.onload = () => {
-    /* Sauvegarder immédiatement */
-    const photos = getCustomPhotos();
-    photos[id] = url;
-    saveCustomPhotos(photos);
+  testImg.onload = async () => {
+    /* Enregistrer sur le serveur avant de mettre à jour l'aperçu */
+    if (!/^https:\/\//i.test(url)) { showToast('⚠️ Le lien doit commencer par https://', 'info'); return; }
+    if (!(await envoyerPhotos({ photos: { [id]: url } }, '✅ Photo mise à jour'))) return;
 
     /* Mettre à jour l'aperçu */
     let img = imgWrap.querySelector('img');
@@ -361,7 +371,6 @@ function applyPhoto(id) {
     btn.classList.add('saved');
     setTimeout(() => { btn.textContent = 'Appliquer'; btn.classList.remove('saved'); }, 2000);
 
-    showToast('✅ Photo mise à jour !', 'success');
     delete pendingChanges[id];
   };
   testImg.onerror = () => {
@@ -371,10 +380,8 @@ function applyPhoto(id) {
 }
 
 /* ---- Réinitialiser un produit ---- */
-function resetOne(id) {
-  const photos = getCustomPhotos();
-  delete photos[id];
-  saveCustomPhotos(photos);
+async function resetOne(id) {
+  if (!(await envoyerPhotos({ photos: { [id]: null } }, '↩ Photo d\'origine rétablie'))) return;
   delete pendingChanges[id];
 
   const card = document.querySelector(`.photo-card[data-id="${id}"]`);
@@ -407,32 +414,27 @@ function resetOne(id) {
     fallback.style.display = '';
   }
 
-  showToast('↩ Photo réinitialisée', 'info');
 }
 
 /* ---- Tout sauvegarder (changements en attente) ---- */
-function saveAll() {
+async function saveAll() {
   if (Object.keys(pendingChanges).length === 0) {
     showToast('✅ Toutes les photos sont déjà sauvegardées', 'success');
     return;
   }
-  const photos = getCustomPhotos();
-  Object.entries(pendingChanges).forEach(([id, url]) => {
-    if (url) photos[id] = url;
-    else delete photos[id];
-  });
-  saveCustomPhotos(photos);
+  const photos = {};
+  Object.entries(pendingChanges).forEach(([id, url]) => { photos[id] = url || null; });
+  if (!(await envoyerPhotos({ photos }, `✅ ${Object.keys(photos).length} photo(s) enregistrée(s)`))) return;
   Object.keys(pendingChanges).forEach(k => delete pendingChanges[k]);
-  showToast(`✅ ${Object.keys(photos).length} photo(s) sauvegardée(s)`, 'success');
+  buildGrid();
 }
 
 /* ---- Réinitialiser toutes les photos custom ---- */
-function confirmResetAll() {
-  if (!confirm('Remettre toutes les photos par défaut ? Les photos personnalisées seront perdues.')) return;
-  localStorage.removeItem(PHOTOS_KEY);
+async function confirmResetAll() {
+  if (!confirm("Remettre toutes les photos d'origine sur le site ? Les photos personnalisées seront perdues.")) return;
+  if (!(await envoyerPhotos({ reinitialiserPhotos: true }, "↩ Toutes les photos d'origine rétablies"))) return;
   Object.keys(pendingChanges).forEach(k => delete pendingChanges[k]);
   buildGrid();
-  showToast('↩ Toutes les photos réinitialisées', 'info');
 }
 
 /* ---- Filtrer la grille ---- */

@@ -34,6 +34,26 @@ async function adminLogout() {
   }
 }
 
+/* Enregistre des modifications de réglages (prix, masquage, photos) sur le
+   serveur : elles s'appliquent alors à tous les visiteurs du site.
+   Renvoie les réglages complets à jour ; lève une erreur si l'envoi échoue. */
+async function enregistrerReglages(modifs) {
+  const res = await fetch('/api/reglages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify(modifs),
+  });
+  if (res.status === 401) {
+    window.location.replace('login.html');
+    throw new Error('Session expirée');
+  }
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json.status !== 'OK') throw new Error(json.message || 'Enregistrement impossible');
+  window.REGLAGES = json;
+  return json;
+}
+
 /* Toast partagé */
 function adminToast(msg, type = 'success') {
   let container = document.getElementById('toast-container');
