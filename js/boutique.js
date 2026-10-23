@@ -96,6 +96,19 @@ function getBadgeGrade(produit) {
   return '';
 }
 
+/* Les noms Mobilax sont très longs (référence, modèles compatibles…) :
+   on les coupe sur la carte, le nom complet reste au survol et sur la fiche */
+const LONGUEUR_NOM_CARTE = 40;
+
+function tronquerNom(nom) {
+  const n = String(nom || '');
+  return n.length > LONGUEUR_NOM_CARTE ? n.slice(0, LONGUEUR_NOM_CARTE - 3).trimEnd() + '...' : n;
+}
+
+function echapperAttr(t) {
+  return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+}
+
 /* Construit le HTML d'une carte produit */
 function buildCarteHTML(produit) {
   const badgeHTML = produit.badge
@@ -130,7 +143,7 @@ function buildCarteHTML(produit) {
       </a>
       <div class="product-body">
         <div class="product-category">${categorieLabel}</div>
-        <a href="product.html?id=${produit.id}" class="product-name">${produit.nom}</a>
+        <a href="product.html?id=${produit.id}" class="product-name" title="${echapperAttr(produit.nom)}">${echapperAttr(tronquerNom(produit.nom))}</a>
         <div class="product-footer">
           <div>
             <span class="product-price">${prixFormate}</span>
