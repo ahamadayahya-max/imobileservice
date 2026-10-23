@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Messages — Admin i-Mobile Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">🔧 i-Mobile Service<span>Administration</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="produits.html"><span class="nav-icon">📦</span> Produits</a>
+      <a href="photos.html"><span class="nav-icon">🖼️</span> Photos</a>
+      <a href="prix.html"><span class="nav-icon">💰</span> Prix</a>
+      <a href="commandes.html"><span class="nav-icon">📋</span> Commandes</a>
+      <a href="factures.html"><span class="nav-icon">🧾</span> Factures</a>
+      <a href="devis.html"><span class="nav-icon">📩</span> Devis reçus</a>
+      <a href="rdv.html"><span class="nav-icon">📅</span> Rendez-vous</a>
+      <a href="messages.html" class="active"><span class="nav-icon">✉️</span> Messages</a>
+    </nav>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="adminLogout()">🚪 Déconnexion</button></div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">✉️ Messages du formulaire de contact</div>
+      <div class="topbar-right">
+        <label style="font-size:.82rem;display:flex;align-items:center;gap:.4rem;">
+          <input type="checkbox" id="masquer-archives" checked onchange="afficherMessages()"> Masquer les archivés
+        </label>
+        <button class="btn-admin btn-ghost btn-sm" onclick="chargerMessages()">↻ Actualiser</button>
+      </div>
+    </div>
+    <div class="admin-content">
+      <div class="kpi-grid" id="kpi-messages" style="margin-bottom:1.5rem;"></div>
+      <div class="data-card">
+        <div class="card-header"><span class="card-title">✉️ Messages reçus</span></div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Client</th><th>Sujet</th><th>Message</th><th>Suivi</th><th>Actions</th></tr></thead>
+            <tbody id="messages-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="auth.js"></script>
+<script>
+  requireAuth();
+  /* Messages du formulaire de contact, enregistrés sur le serveur (/api/dossiers?type=message) */
+  let messages = [];
+
+  const statutLabels = { nouveau:'🆕 Nouveau', repondu:'✅ Répondu', archive:'📦 Archivé' };
+  const esc = t => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+
+  document.addEventListener('DOMContentLoaded', chargerMessages);
+
+  async function chargerMessages() {
+    const tbody = document.getElementById('messages-tbody');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">Chargement…</td></tr>';
+    try {
+      const res = await fetch('/api/dossiers?type=message', { credentials: 'same-origin' });
+      if (res.status === 401) { window.location.replace('login.html'); return; }
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+      messages = json.dossiers || [];
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:#dc2626;">Impossible de charger les messages : ${esc(err.message)}</td></tr>`;
+      return;
+    }
+    afficherKPI();
+    afficherMessages();
+  }
+
+  function afficherKPI() {
+    const compte = s => messages.filter(m => (m.statut || 'nouveau') === s).length;
+    document.getElementById('kpi-messages').innerHTML = `
+      <div class="kpi-card"><div class="kpi-icon">🆕</div><div class="kpi-label">À traiter</div><div class="kpi-value">${compte('nouveau')}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-label">Répondus</div><div class="kpi-value">${compte('repondu')}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">✉️</div><div class="kpi-label">Total</div><div class="kpi-value">${messages.length}</div></div>`;
+  }
+
+  function afficherMessages() {
+    const tbody = document.getElementById('messages-tbody');
+    const masquer = document.getElementById('masquer-archives').checked;
+    const liste = messages.filter(m => !masquer || m.statut !== 'archive');
+    if (!liste.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">Aucun message.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = liste.map(m => {
+      const i = messages.indexOf(m);
+      const statut = m.statut || 'nouveau';
+      const objet = encodeURIComponent(`Re : ${m.sujet || 'votre message'} — i-Mobile Service`);
+      const corps = encodeURIComponent(`Bonjour ${m.client?.prenom || ''},\n\nMerci pour votre message.\n\n...\n\nCordialement,\ni-Mobile Service\n05 31 21 71 38\n\n> ${(m.message || '').replace(/\n/g, '\n> ')}`);
+      return `<tr style="${statut === 'nouveau' ? 'background:#fffbeb;' : ''}">
+        <td style="font-size:.82rem;white-space:nowrap;">${esc(m.date)}<br><span class="badge badge-devis">${esc(m.id)}</span></td>
+        <td>
+          <strong>${esc((m.client?.prenom || '') + ' ' + (m.client?.nom || ''))}</strong><br>
+          <span style="font-size:.78rem;color:#555;">${esc(m.client?.email || '')}</span>
+          ${m.client?.tel ? `<br><a href="tel:${esc(m.client.tel)}" style="font-size:.78rem;color:#8b1a1a;">${esc(m.client.tel)}</a>` : ''}
+        </td>
+        <td style="font-size:.85rem;">${esc(m.sujet || '—')}</td>
+        <td style="font-size:.85rem;max-width:340px;white-space:pre-wrap;">${esc(m.message || '')}</td>
+        <td>
+          <select class="admin-select" style="font-size:.78rem;padding:.3rem .5rem;" onchange="changerStatut(${i}, this.value)">
+            ${Object.entries(statutLabels).map(([v,l]) => `<option value="${v}" ${v === statut ? 'selected' : ''}>${l}</option>`).join('')}
+          </select>
+        </td>
+        <td style="white-space:nowrap;">
+          <a href="mailto:${esc(m.client?.email)}?subject=${objet}&body=${corps}" class="btn-admin btn-primary btn-sm" onclick="changerStatut(${i}, 'repondu', true)">✉️ Répondre</a>
+          <button class="btn-admin btn-danger btn-sm" onclick="supprimerMessage(${i})">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function appelAdmin(action, corps) {
+    const res = await fetch('/api/dossiers?type=message&action=' + action, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(corps),
+    });
+    if (res.status === 401) { window.location.replace('login.html'); throw new Error('Session expirée'); }
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    return json;
+  }
+
+  /* silencieux : passage automatique à « Répondu » quand on clique sur Répondre */
+  async function changerStatut(i, statut, silencieux) {
+    if (messages[i].statut === statut) return;
+    try {
+      const { dossier } = await appelAdmin('statut', { cle: messages[i].cle, statut });
+      messages[i] = dossier;
+      afficherKPI();
+      afficherMessages();
+      if (!silencieux) adminToast('Statut : ' + statutLabels[statut], 'success');
+    } catch (err) {
+      adminToast('Non enregistré : ' + err.message, 'error');
+      afficherMessages();
+    }
+  }
+
+  async function supprimerMessage(i) {
+    if (!confirm(`Supprimer définitivement le message ${messages[i].id} ?`)) return;
+    try {
+      await appelAdmin('supprimer', { cle: messages[i].cle });
+      messages.splice(i, 1);
+      afficherKPI();
+      afficherMessages();
+      adminToast('Message supprimé', 'success');
+    } catch (err) {
+      adminToast('Suppression impossible : ' + err.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>

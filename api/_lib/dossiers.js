@@ -12,6 +12,7 @@ const TYPES = {
   commande: { statuts: ['en_attente', 'confirmee', 'expediee', 'livree', 'annulee'], initial: 'en_attente' },
   devis:    { statuts: ['nouveau', 'envoye', 'accepte', 'repare', 'rendu', 'refuse'], initial: 'nouveau' },
   rdv:      { statuts: ['nouveau', 'confirme', 'honore', 'absent', 'annule'], initial: 'nouveau' },
+  message:  { statuts: ['nouveau', 'repondu', 'archive'], initial: 'nouveau' },
 };
 
 const txt = (v, max = 200) => String(v == null ? '' : v).replace(/[<>"`]/g, '').trim().slice(0, max);
@@ -37,6 +38,15 @@ function nettoyer(type, d) {
         relais: relais ? { nom: txt(relais.nom, 120), adresse: txt(relais.adresseComplete || relais.adresse, 200) } : null,
       },
       soustotal: num(d.soustotal), frais: num(d.frais), total: num(d.total),
+    };
+  }
+  if (type === 'message') {
+    return {
+      id: txt(d.id, 30),
+      date: txt(d.date, 40),
+      sujet: txt(d.sujet, 80),
+      message: txt(d.message, 3000),
+      client: { prenom: txt(c.prenom, 80), nom: txt(c.nom, 80), email: txt(c.email, 160), tel: txt(c.tel, 40) },
     };
   }
   if (type === 'rdv') {
@@ -79,7 +89,7 @@ async function ecrireBlob(pathname, valeur) {
 async function creerDossier(type, donnees) {
   const d = nettoyer(type, donnees);
   const creeLe = new Date().toISOString();
-  const numero = d.id.replace(/[^A-Za-z0-9-]/g, '') || ({ devis: 'DEV', rdv: 'RDV' }[type] || 'IMS') + '-' + Date.now().toString(36).toUpperCase();
+  const numero = d.id.replace(/[^A-Za-z0-9-]/g, '') || ({ devis: 'DEV', rdv: 'RDV', message: 'MSG' }[type] || 'IMS') + '-' + Date.now().toString(36).toUpperCase();
   const cle = `dossiers/${type}/${creeLe.replace(/[:.]/g, '-')}_${numero}.json`;
   const dossier = { ...d, id: numero, type, statut: TYPES[type].initial, creeLe, cle };
   await ecrireBlob(cle, dossier);

@@ -396,14 +396,55 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
 
   if (!valid) { showToast('Veuillez corriger les champs en rouge', 'error'); return; }
 
-  /* Simulation envoi */
+  /* Envoi réel : email à la boutique (EmailJS, via js/devis.js) + enregistrement
+     dans l'admin (page Messages). Le message de succès n'apparaît que si au
+     moins l'un des deux a fonctionné. */
   const btn = document.getElementById('contact-submit-btn');
+  const texteBouton = btn.innerHTML;
   btn.disabled = true; btn.textContent = 'Envoi en cours…';
-  setTimeout(() => {
-    document.getElementById('contact-form-wrapper').style.display = 'none';
-    document.getElementById('submit-success').classList.add('visible');
-    showToast('Message envoyé avec succès !', 'success');
-  }, 1200);
+
+  const typeEl = document.getElementById('c-type');
+  const sujet = typeEl.options[typeEl.selectedIndex]?.text || typeEl.value;
+  const msg = {
+    id: 'MSG-' + String(Math.floor(10000 + Math.random() * 90000)),
+    date: new Date().toLocaleString('fr-FR'),
+    sujet,
+    message: document.getElementById('c-message').value.trim(),
+    client: {
+      prenom: document.getElementById('c-firstname').value.trim(),
+      nom: document.getElementById('c-lastname').value.trim(),
+      email: document.getElementById('c-email').value.trim(),
+      tel: document.getElementById('c-phone').value.trim(),
+    },
+  };
+
+  const enregistrement = fetch('/api/dossiers?type=message', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(msg), keepalive: true,
+  }).then(r => r.ok).catch(() => false);
+
+  const email = (typeof envoyerEmailDevis === 'function'
+    ? envoyerEmailDevis({
+        to_email: 'ims.tlse@gmail.com',
+        order_number: msg.id, order_date: msg.date,
+        customer_name: msg.client.prenom + ' ' + msg.client.nom,
+        customer_email: msg.client.email, customer_phone: msg.client.tel || '—',
+        order_items: `MESSAGE DU FORMULAIRE CONTACT\nSujet : ${msg.sujet}\n\n${msg.message}`,
+        delivery_mode: 'Formulaire de contact', subtotal: '—', shipping: '—', total: '—',
+        reply_to: msg.client.email,
+      })
+    : Promise.reject(new Error('module email absent'))
+  ).then(() => true).catch(err => { console.warn('[contact] email non envoyé :', err.message); return false; });
+
+  Promise.all([enregistrement, email]).then(([okServeur, okEmail]) => {
+    if (okServeur || okEmail) {
+      document.getElementById('contact-form-wrapper').style.display = 'none';
+      document.getElementById('submit-success').classList.add('visible');
+      showToast('Message envoyé avec succès !', 'success');
+    } else {
+      btn.disabled = false; btn.innerHTML = texteBouton;
+      showToast("L'envoi a échoué. Appelez-nous au 05 31 21 71 38 ou écrivez à ims.tlse@gmail.com", 'error');
+    }
+  });
 });
 </script>
 <script src="js/devis.js"></script>
