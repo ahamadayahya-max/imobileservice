@@ -343,7 +343,38 @@
   document.addEventListener('DOMContentLoaded', () => {
     reinitialiser();
     afficherRegistre();
+    preremplirDepuisDossier();
   });
+
+  /* Arrivée depuis Commandes ou Devis (bouton 🧾) : formulaire pré-rempli */
+  function preremplirDepuisDossier() {
+    const depuis = new URLSearchParams(location.search).get('depuis');
+    let d = null;
+    try { d = JSON.parse(sessionStorage.getItem('ims_facturer') || 'null'); } catch { /* ignoré */ }
+    sessionStorage.removeItem('ims_facturer');
+    if (!depuis || !d) return;
+
+    const c = d.client || {};
+    document.getElementById('f-nom').value = depuis === 'devis' ? `${c.prenom || ''} ${c.nom || ''}`.trim() : (c.nom || '');
+    document.getElementById('f-email').value = c.email || '';
+    document.getElementById('f-tel').value = c.tel || c.phone || '';
+    document.getElementById('f-commande').value = d.id || '';
+    document.getElementById('f-lignes').innerHTML = '';
+
+    if (depuis === 'commande') {
+      (d.articles || []).forEach(a => ajouterLigne(a.name, a.qty, a.price));
+      if (Number(d.frais) > 0) ajouterLigne('Frais de livraison', 1, Number(d.frais));
+      if (d.livraison && d.livraison.mode === 'delivery' && d.livraison.adresse) {
+        document.getElementById('f-adresse').value = d.livraison.adresse.replace(/^Livraison à domicile[^—]*—\s*/, '');
+      }
+      adminToast(`Commande ${d.id} importée — vérifiez puis émettez`, 'success');
+    } else {
+      const appareil = [d.appareil && d.appareil.replace(/^\S+\s/, ''), d.modele].filter(Boolean).join(' ');
+      ajouterLigne(`Réparation ${appareil}${d.pannes ? ' — ' + d.pannes : ''}`, 1, '');
+      adminToast(`Devis ${d.id} importé — indiquez le prix de la réparation`, 'success');
+    }
+    document.getElementById('f-nom').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 </script>
 </body>
 </html>

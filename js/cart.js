@@ -576,7 +576,7 @@ async function confirmStorePickup() {
     articles: cart,
     livraison: {
       mode, adresse: modeLabel,
-      relais: (mode === 'pickup' && selectedRelais) ? selectedRelais : null
+      relais: ((mode === 'pickup' || mode === 'vinted') && selectedRelais) ? selectedRelais : null
     },
     soustotal: subtotal.toFixed(2),
     frais: shipping.toFixed(2),
@@ -584,6 +584,15 @@ async function confirmStorePickup() {
     statut: 'en_attente'
   });
   localStorage.setItem('ims_commandes', JSON.stringify(commandes));
+
+  /* Enregistrement côté serveur : la commande apparaît dans l'admin même si
+     l'email n'arrive pas. keepalive : l'envoi aboutit même si le client quitte la page. */
+  fetch('/api/dossiers?type=commande', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(commandes[0]),
+    keepalive: true,
+  }).catch(err => console.warn('[commande] enregistrement serveur impossible :', err.message));
 
   /* Corps email */
   const corpsMail =

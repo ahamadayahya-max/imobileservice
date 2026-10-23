@@ -261,6 +261,14 @@ async function envoyerDevis() {
   stock.unshift(devisData);
   localStorage.setItem('ims_devis', JSON.stringify(stock));
 
+  /* Enregistrement côté serveur : le devis apparaît dans l'admin même si l'email se perd */
+  fetch('/api/dossiers?type=devis', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(devisData),
+    keepalive: true,
+  }).catch(err => console.warn('[devis] enregistrement serveur impossible :', err.message));
+
   /* Envoi direct à la boutique ; le bouton est bloqué pendant l'envoi */
   const boutonEnvoi = document.querySelector('[onclick*="envoyerDevis"]');
   if (boutonEnvoi) { boutonEnvoi.disabled = true; boutonEnvoi.dataset.texte = boutonEnvoi.textContent; boutonEnvoi.textContent = 'Envoi en cours…'; }

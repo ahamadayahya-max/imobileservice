@@ -27,7 +27,7 @@
     <div class="admin-topbar">
       <div class="topbar-title">📩 Devis reçus</div>
       <div class="topbar-right">
-        <button class="btn-admin btn-danger btn-sm" onclick="viderDevis()">🗑 Tout effacer</button>
+        <button class="btn-admin btn-ghost btn-sm" onclick="chargerDevis()">↻ Actualiser</button>
       </div>
     </div>
     <div class="admin-content">
@@ -40,7 +40,7 @@
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table">
-            <thead><tr><th>N°</th><th>Date</th><th>Appareil / Modèle</th><th>Panne(s)</th><th>Client</th><th>Actions</th></tr></thead>
+            <thead><tr><th>N°</th><th>Date</th><th>Appareil / Modèle</th><th>Panne(s)</th><th>Client</th><th>Suivi</th><th>Actions</th></tr></thead>
             <tbody id="devis-tbody"></tbody>
           </table>
         </div>
@@ -53,67 +53,119 @@
 <script src="auth.js"></script>
 <script>
   requireAuth();
-  let devis = JSON.parse(localStorage.getItem('ims_devis') || '[]');
+  /* Devis enregistrés sur le serveur (/api/dossiers) : toutes les demandes
+     du site, avec leur suivi (statut) partagé entre vos appareils. */
+  let devis = [];
 
-  document.addEventListener('DOMContentLoaded', () => {
+  const statutLabels = { nouveau:'🆕 Nouveau', envoye:'✉️ Devis envoyé', accepte:'👍 Accepté', repare:'🔧 Réparé', rendu:'✅ Rendu au client', refuse:'✕ Refusé' };
+  const esc = t => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+
+  document.addEventListener('DOMContentLoaded', chargerDevis);
+
+  async function chargerDevis() {
+    const tbody = document.getElementById('devis-tbody');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">Chargement…</td></tr>';
+    try {
+      const res = await fetch('/api/dossiers?type=devis', { credentials: 'same-origin' });
+      if (res.status === 401) { window.location.replace('login.html'); return; }
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+      devis = json.dossiers || [];
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#dc2626;">Impossible de charger les devis : ${esc(err.message)}</td></tr>`;
+      return;
+    }
     afficherKPI();
     afficherDevis(devis);
-  });
+  }
 
   function afficherKPI() {
-    const iphone  = devis.filter(d => d.appareil?.includes('iPhone')).length;
-    const samsung = devis.filter(d => d.appareil?.includes('Samsung')).length;
+    const compte = s => devis.filter(d => (d.statut || 'nouveau') === s).length;
+    const enCours = compte('accepte') + compte('repare');
     document.getElementById('kpi-devis').innerHTML = `
       <div class="kpi-card"><div class="kpi-icon">📩</div><div class="kpi-label">Total devis</div><div class="kpi-value">${devis.length}</div></div>
-      <div class="kpi-card"><div class="kpi-icon">📱</div><div class="kpi-label">iPhone</div><div class="kpi-value">${iphone}</div></div>
-      <div class="kpi-card"><div class="kpi-icon">🤖</div><div class="kpi-label">Samsung</div><div class="kpi-value">${samsung}</div></div>
-      <div class="kpi-card"><div class="kpi-icon">🔧</div><div class="kpi-label">Autres</div><div class="kpi-value">${devis.length - iphone - samsung}</div></div>`;
+      <div class="kpi-card"><div class="kpi-icon">🆕</div><div class="kpi-label">À traiter</div><div class="kpi-value">${compte('nouveau')}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">🔧</div><div class="kpi-label">En cours</div><div class="kpi-value">${enCours}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-label">Rendus</div><div class="kpi-value">${compte('rendu')}</div></div>`;
   }
 
   function afficherDevis(liste) {
     const tbody = document.getElementById('devis-tbody');
     if (!liste.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">Aucun devis reçu.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">Aucun devis reçu.</td></tr>';
       return;
     }
-    tbody.innerHTML = liste.map((d, i) => {
-      const sujet = encodeURIComponent(`Réponse devis ${d.numero} — ${d.modele || d.appareil}`);
-      const corps = encodeURIComponent(`Bonjour ${d.client?.prenom},\n\nSuite à votre demande de devis (${d.numero}) pour votre ${d.modele || d.appareil},\n\n...\n\nCordialement,\ni-Mobile Service\n05 31 21 71 38`);
-      return `<tr>
-        <td><span class="badge badge-devis">${d.numero}</span></td>
-        <td style="font-size:.82rem;white-space:nowrap;">${d.date}</td>
+    tbody.innerHTML = liste.map(d => {
+      const i = devis.indexOf(d);
+      const statut = d.statut || 'nouveau';
+      const sujet = encodeURIComponent(`Réponse devis ${d.id} — ${d.modele || d.appareil}`);
+      const corps = encodeURIComponent(`Bonjour ${d.client?.prenom || ''},\n\nSuite à votre demande de devis (${d.id}) pour votre ${d.modele || d.appareil},\n\n...\n\nCordialement,\ni-Mobile Service\n05 31 21 71 38`);
+      return `<tr style="${statut === 'nouveau' ? 'background:#fffbeb;' : ''}">
+        <td><span class="badge badge-devis">${esc(d.id)}</span></td>
+        <td style="font-size:.82rem;white-space:nowrap;">${esc(d.date)}</td>
         <td>
-          <strong>${d.appareil || '—'}</strong>
-          ${d.modele ? `<br><span style="font-size:.78rem;color:#888;">${d.modele}</span>` : ''}
+          <strong>${esc(d.appareil || '—')}</strong>
+          ${d.modele ? `<br><span style="font-size:.78rem;color:#888;">${esc(d.modele)}</span>` : ''}
         </td>
-        <td style="font-size:.82rem;max-width:180px;">${d.pannes || '—'}</td>
+        <td style="font-size:.82rem;max-width:200px;">${esc(d.pannes || '—')}${d.description ? `<br><span style="color:#888;" title="${esc(d.description)}">« ${esc(d.description.slice(0, 80))}${d.description.length > 80 ? '…' : ''} »</span>` : ''}</td>
         <td>
-          <strong>${d.client?.prenom || ''} ${d.client?.nom || ''}</strong><br>
-          <a href="tel:${d.client?.tel}" style="font-size:.78rem;color:#8b1a1a;">${d.client?.tel || ''}</a>
+          <strong>${esc((d.client?.prenom || '') + ' ' + (d.client?.nom || ''))}</strong><br>
+          <a href="tel:${esc(d.client?.tel)}" style="font-size:.78rem;color:#8b1a1a;">${esc(d.client?.tel || '')}</a>
+        </td>
+        <td>
+          <select class="admin-select" style="font-size:.78rem;padding:.3rem .5rem;" onchange="changerStatut(${i}, this.value)">
+            ${Object.entries(statutLabels).map(([v,l]) => `<option value="${v}" ${v === statut ? 'selected' : ''}>${l}</option>`).join('')}
+          </select>
         </td>
         <td style="white-space:nowrap;">
-          <a href="mailto:${d.client?.email}?subject=${sujet}&body=${corps}" class="btn-admin btn-primary btn-sm">✉️ Répondre</a>
-          <button class="btn-admin btn-danger btn-sm" onclick="supprimerDevis(${i})" style="margin-left:4px;">✕</button>
+          <a href="mailto:${esc(d.client?.email)}?subject=${sujet}&body=${corps}" class="btn-admin btn-primary btn-sm">✉️ Répondre</a>
+          <button class="btn-admin btn-ghost btn-sm" title="Créer la facture de la réparation" onclick="facturer(${i})">🧾</button>
+          <button class="btn-admin btn-danger btn-sm" onclick="supprimerDevis(${i})">✕</button>
         </td>
       </tr>`;
     }).join('');
   }
 
-  function supprimerDevis(i) {
-    devis.splice(i, 1);
-    localStorage.setItem('ims_devis', JSON.stringify(devis));
-    afficherKPI();
-    afficherDevis(devis);
-    adminToast('Devis supprimé', 'success');
+  async function appelAdmin(action, corps) {
+    const res = await fetch('/api/dossiers?type=devis&action=' + action, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(corps),
+    });
+    if (res.status === 401) { window.location.replace('login.html'); throw new Error('Session expirée'); }
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    return json;
   }
 
-  function viderDevis() {
-    if (!confirm('Effacer tous les devis ?')) return;
-    devis = [];
-    localStorage.removeItem('ims_devis');
-    afficherKPI();
-    afficherDevis([]);
-    adminToast('Devis effacés');
+  async function changerStatut(i, statut) {
+    try {
+      const { dossier } = await appelAdmin('statut', { cle: devis[i].cle, statut });
+      devis[i] = dossier;
+      afficherKPI();
+      afficherDevis(devis);
+      adminToast('Statut : ' + statutLabels[statut], 'success');
+    } catch (err) {
+      adminToast('Non enregistré : ' + err.message, 'error');
+      afficherDevis(devis);
+    }
+  }
+
+  async function supprimerDevis(i) {
+    if (!confirm(`Supprimer définitivement le devis ${devis[i].id} ?`)) return;
+    try {
+      await appelAdmin('supprimer', { cle: devis[i].cle });
+      devis.splice(i, 1);
+      afficherKPI();
+      afficherDevis(devis);
+      adminToast('Devis supprimé', 'success');
+    } catch (err) {
+      adminToast('Suppression impossible : ' + err.message, 'error');
+    }
+  }
+
+  /* Facture de la réparation : client et désignation pré-remplis, prix à saisir */
+  function facturer(i) {
+    sessionStorage.setItem('ims_facturer', JSON.stringify(devis[i]));
+    window.location.href = 'factures.html?depuis=devis';
   }
 </script>
 </body>

@@ -95,8 +95,14 @@
   document.addEventListener('DOMContentLoaded', async () => {
     /* KPI produits : catalogue en ligne (Mobilax + réglages serveur) */
     if (window.CATALOGUE_PRET) await window.CATALOGUE_PRET;
-    const commandes  = JSON.parse(localStorage.getItem('ims_commandes') || '[]');
-    const devis      = JSON.parse(localStorage.getItem('ims_devis') || '[]');
+    /* Commandes et devis enregistrés sur le serveur */
+    const lire = async type => {
+      try {
+        const res = await fetch('/api/dossiers?type=' + type, { credentials: 'same-origin' });
+        return res.ok ? ((await res.json()).dossiers || []) : [];
+      } catch { return []; }
+    };
+    const [commandes, devis] = await Promise.all([lire('commande'), lire('devis')]);
 
     const totalProd = CATALOGUE.length;
     const visibles  = CATALOGUE.filter(p => !p.masque).length;
@@ -113,7 +119,7 @@
           <td><span class="badge badge-commande">${c.id}</span></td>
           <td>${c.date}</td>
           <td>${c.client?.nom || '—'}</td>
-          <td><strong>${c.total}€</strong></td>
+          <td><strong>${Number(c.total || 0).toFixed(2).replace(".", ",")}€</strong></td>
           <td><a href="commandes.html" class="btn-admin btn-ghost btn-sm">Voir →</a></td>
         </tr>`).join('');
       document.getElementById('recent-commandes').innerHTML =
@@ -124,7 +130,7 @@
     if (devis.length) {
       const tbody = devis.slice(0, 5).map(d => `
         <tr>
-          <td><span class="badge badge-devis">${d.numero}</span></td>
+          <td><span class="badge badge-devis">${d.id || d.numero}</span></td>
           <td>${d.date}</td>
           <td>${d.client?.prenom} ${d.client?.nom}</td>
           <td>${d.appareil}</td>
