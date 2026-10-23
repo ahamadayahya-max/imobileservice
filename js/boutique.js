@@ -28,7 +28,24 @@ const BADGE_CLASSES = {
 };
 
 /* Étiquettes livraison rapide par catégorie */
+/* Seuil sous lequel on prévient le client que le stock fournisseur est bas */
+const SEUIL_STOCK_LIMITE = 5;
+
+/* Produit Mobilax sans stock : affiché « Rupture », non commandable */
+function estEnRupture(produit) {
+  return produit.source === 'mobilax' && produit.stock === 0;
+}
+
 function getLivraisonLabel(produit) {
+  /* Produits Mobilax : stock réel du fournisseur (rafraîchi toutes les 10 min,
+     revérifié en direct au moment de la commande) */
+  if (produit.source === 'mobilax' && typeof produit.stock === 'number') {
+    if (produit.stock === 0) return '<span class="dispo-tag" style="background:#fee2e2;color:#b91c1c;">❌ Rupture</span>';
+    if (produit.stock < SEUIL_STOCK_LIMITE) {
+      return `<span class="dispo-tag dispo-pending">⚡ Stock limité (${produit.stock} restant${produit.stock > 1 ? 's' : ''})</span>`;
+    }
+    return '<span class="dispo-tag dispo-ok">✅ En stock</span>';
+  }
   if (produit.categorie === 'telephone' || produit.categorie === 'pc') {
     return '<span class="dispo-tag dispo-pending">⏳ Disponibilité sous 24h</span>';
   }
@@ -37,6 +54,10 @@ function getLivraisonLabel(produit) {
 
 /* Génère le bouton principal selon disponibilité Mobilax */
 function getBoutonAction(produit) {
+  if (estEnRupture(produit)) {
+    return `<button class="add-to-cart-btn" disabled aria-disabled="true"
+      style="opacity:.45;cursor:not-allowed;" title="Rupture de stock chez notre fournisseur">Rupture</button>`;
+  }
   if (!produit.disponible) {
     /* Produit Mobilax — bouton Réserver → mailto */
     const sujet = encodeURIComponent(`Réservation — ${produit.nom}`);
@@ -240,3 +261,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* Re-rendu quand le catalogue Mobilax remplace le catalogue statique */
 document.addEventListener('catalogue:charge', afficherProduits);
+
+/* Mobilax injoignable : on prévient que le catalogue affiché est celui de secours */
+if (window.CATALOGUE_PRET) {
+  window.CATALOGUE_PRET.then(() => {
+    if (window.CATALOGUE_SOURCE !== 'statique') return;
+    const grille = document.getElementById('products-grid');
+    if (!grille || document.getElementById('bandeau-hors-ligne')) return;
+    const bandeau = document.createElement('div');
+    bandeau.id = 'bandeau-hors-ligne';
+    bandeau.setAttribute('role', 'status');
+    bandeau.style.cssText = 'background:#fff7e6;border:1px solid #f0c36d;color:#7a5200;border-radius:10px;padding:.75rem 1rem;margin:0 0 1rem;font-size:.9rem;';
+    bandeau.innerHTML = '⚠️ <strong>Catalogue en mode hors-ligne</strong> — notre fournisseur ne répond pas pour le moment. '
+      + 'Les produits affichés sont notre sélection habituelle ; rechargez la page dans quelques minutes ou appelez-nous au 05 31 21 71 38.';
+    grille.parentNode.insertBefore(bandeau, grille);
+  });
+}

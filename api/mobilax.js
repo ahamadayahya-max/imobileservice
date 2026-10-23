@@ -160,6 +160,8 @@ function versProduitSite(p, conf, regle = conf.regle) {
       ? `${ASSETS_URL}/images/products/id-image/${p.main_image.image_id}?size=sm`
       : null,
     disponible: Number(p.quantity) > 0,
+    /* Quantité Mobilax : sert aux indicateurs « Stock limité » / « Rupture » */
+    stock: Math.max(0, Math.floor(Number(p.quantity) || 0)),
     source: 'mobilax',
   };
 }
