@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Rendez-vous — Admin i-Mobile Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">🔧 i-Mobile Service<span>Administration</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="produits.html"><span class="nav-icon">📦</span> Produits</a>
+      <a href="photos.html"><span class="nav-icon">🖼️</span> Photos</a>
+      <a href="prix.html"><span class="nav-icon">💰</span> Prix</a>
+      <a href="commandes.html"><span class="nav-icon">📋</span> Commandes</a>
+      <a href="factures.html"><span class="nav-icon">🧾</span> Factures</a>
+      <a href="devis.html"><span class="nav-icon">📩</span> Devis reçus</a>
+      <a href="rdv.html" class="active"><span class="nav-icon">📅</span> Rendez-vous</a>
+    </nav>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="adminLogout()">🚪 Déconnexion</button></div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">📅 Rendez-vous</div>
+      <div class="topbar-right">
+        <label style="font-size:.82rem;display:flex;align-items:center;gap:.4rem;">
+          <input type="checkbox" id="avenir-seul" checked onchange="afficherRdv()"> À venir uniquement
+        </label>
+        <button class="btn-admin btn-ghost btn-sm" onclick="chargerRdv()">↻ Actualiser</button>
+      </div>
+    </div>
+    <div class="admin-content">
+
+      <div class="kpi-grid" id="kpi-rdv" style="margin-bottom:1.5rem;"></div>
+
+      <div class="data-card">
+        <div class="card-header">
+          <span class="card-title">📅 Rendez-vous pris sur le site</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Date &amp; heure</th><th>N°</th><th>Client</th><th>Appareil</th><th>Problème</th><th>Suivi</th><th>Actions</th></tr></thead>
+            <tbody id="rdv-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="auth.js"></script>
+<script>
+  requireAuth();
+  /* Rendez-vous enregistrés sur le serveur (/api/dossiers?type=rdv),
+     triés par date de rendez-vous (le plus proche en premier). */
+  let rdvs = [];
+
+  const statutLabels = { nouveau:'🆕 Nouveau', confirme:'✅ Confirmé', honore:'🔧 Venu', absent:'🚫 Absent', annule:'✕ Annulé' };
+  const esc = t => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const aujourdhui = () => new Date().toISOString().slice(0, 10);
+  const dateFr = j => j ? new Date(j + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) : '—';
+
+  document.addEventListener('DOMContentLoaded', chargerRdv);
+
+  async function chargerRdv() {
+    const tbody = document.getElementById('rdv-tbody');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">Chargement…</td></tr>';
+    try {
+      const res = await fetch('/api/dossiers?type=rdv', { credentials: 'same-origin' });
+      if (res.status === 401) { window.location.replace('login.html'); return; }
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+      rdvs = (json.dossiers || []).sort((a, b) => ((a.jour || '') + (a.heure || '')).localeCompare((b.jour || '') + (b.heure || '')));
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#dc2626;">Impossible de charger les rendez-vous : ${esc(err.message)}</td></tr>`;
+      return;
+    }
+    afficherKPI();
+    afficherRdv();
+  }
+
+  function afficherKPI() {
+    const jour = aujourdhui();
+    const actifs = rdvs.filter(r => !['annule', 'absent'].includes(r.statut));
+    const auj = actifs.filter(r => r.jour === jour).length;
+    const avenir = actifs.filter(r => r.jour >= jour).length;
+    const aConfirmer = rdvs.filter(r => (r.statut || 'nouveau') === 'nouveau' && r.jour >= jour).length;
+    document.getElementById('kpi-rdv').innerHTML = `
+      <div class="kpi-card"><div class="kpi-icon">📍</div><div class="kpi-label">Aujourd'hui</div><div class="kpi-value">${auj}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📅</div><div class="kpi-label">À venir</div><div class="kpi-value">${avenir}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">🆕</div><div class="kpi-label">À confirmer</div><div class="kpi-value">${aConfirmer}</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Total</div><div class="kpi-value">${rdvs.length}</div></div>`;
+  }
+
+  function afficherRdv() {
+    const tbody = document.getElementById('rdv-tbody');
+    const avenirSeul = document.getElementById('avenir-seul').checked;
+    const jour = aujourdhui();
+    const liste = avenirSeul ? rdvs.filter(r => !r.jour || r.jour >= jour) : rdvs.slice().reverse();
+    if (!liste.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">${avenirSeul ? 'Aucun rendez-vous à venir.' : 'Aucun rendez-vous.'}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = liste.map(r => {
+      const i = rdvs.indexOf(r);
+      const statut = r.statut || 'nouveau';
+      const estAujourdhui = r.jour === jour;
+      const sujet = encodeURIComponent(`Votre rendez-vous ${r.id} — i-Mobile Service`);
+      const corps = encodeURIComponent(`Bonjour ${r.client?.prenom || ''},\n\nNous vous confirmons votre rendez-vous du ${dateFr(r.jour)} à ${r.heure} au 221 Route de Seysses, 31100 Toulouse.\n\nÀ bientôt,\ni-Mobile Service\n05 31 21 71 38`);
+      return `<tr style="${estAujourdhui ? 'background:#ecfeff;' : statut === 'nouveau' ? 'background:#fffbeb;' : ''}">
+        <td style="white-space:nowrap;"><strong>${esc(dateFr(r.jour))}</strong><br><span style="font-size:1.05rem;font-weight:700;color:#8b1a1a;">${esc(r.heure || '—')}</span>${estAujourdhui ? '<br><span class="badge badge-livraison-pickup">Aujourd\'hui</span>' : ''}</td>
+        <td><span class="badge badge-devis">${esc(r.id)}</span></td>
+        <td>
+          <strong>${esc((r.client?.prenom || '') + ' ' + (r.client?.nom || ''))}</strong><br>
+          <a href="tel:${esc(r.client?.tel)}" style="font-size:.78rem;color:#8b1a1a;">${esc(r.client?.tel || '')}</a>
+        </td>
+        <td style="font-size:.85rem;">${esc(r.appareil || '—')}${r.marque ? `<br><span style="color:#888;">${esc(r.marque)}</span>` : ''}</td>
+        <td style="font-size:.82rem;max-width:220px;">${esc(r.pannes || '—')}${r.description || r.message ? `<br><span style="color:#888;" title="${esc((r.description || '') + ' ' + (r.message || ''))}">« ${esc(((r.description || '') + ' ' + (r.message || '')).trim().slice(0, 80))} »</span>` : ''}</td>
+        <td>
+          <select class="admin-select" style="font-size:.78rem;padding:.3rem .5rem;" onchange="changerStatut(${i}, this.value)">
+            ${Object.entries(statutLabels).map(([v,l]) => `<option value="${v}" ${v === statut ? 'selected' : ''}>${l}</option>`).join('')}
+          </select>
+        </td>
+        <td style="white-space:nowrap;">
+          <a href="mailto:${esc(r.client?.email)}?subject=${sujet}&body=${corps}" class="btn-admin btn-primary btn-sm">✉️</a>
+          <button class="btn-admin btn-danger btn-sm" onclick="supprimerRdv(${i})">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function appelAdmin(action, corps) {
+    const res = await fetch('/api/dossiers?type=rdv&action=' + action, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(corps),
+    });
+    if (res.status === 401) { window.location.replace('login.html'); throw new Error('Session expirée'); }
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    return json;
+  }
+
+  async function changerStatut(i, statut) {
+    try {
+      const { dossier } = await appelAdmin('statut', { cle: rdvs[i].cle, statut });
+      rdvs[i] = dossier;
+      afficherKPI();
+      afficherRdv();
+      adminToast('Statut : ' + statutLabels[statut], 'success');
+    } catch (err) {
+      adminToast('Non enregistré : ' + err.message, 'error');
+      afficherRdv();
+    }
+  }
+
+  async function supprimerRdv(i) {
+    if (!confirm(`Supprimer définitivement le rendez-vous ${rdvs[i].id} ?`)) return;
+    try {
+      await appelAdmin('supprimer', { cle: rdvs[i].cle });
+      rdvs.splice(i, 1);
+      afficherKPI();
+      afficherRdv();
+      adminToast('Rendez-vous supprimé', 'success');
+    } catch (err) {
+      adminToast('Suppression impossible : ' + err.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>

@@ -286,7 +286,7 @@
     <div class="confirmation-card" id="confirmation-card">
       <div class="confirmation-icon">✅</div>
       <h2>Rendez-vous confirmé !</h2>
-      <p>Votre demande a bien été enregistrée. Un SMS de confirmation vous sera envoyé avant votre rendez-vous.</p>
+      <p id="conf-note">Votre demande a bien été enregistrée. Envoi de votre confirmation par email…</p>
       <div class="rdv-number" id="conf-rdv-number">IMS-XXXXX</div>
       <div class="confirmation-details">
         <div class="confirmation-row">
@@ -307,7 +307,7 @@
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:.75rem;">
-        <a href="mailto:ims.tlse@gmail.com?subject=Confirmation%20RDV%20%E2%80%94%20i-Mobile%20Service" id="conf-mailto" class="btn btn-primary">📧 Recevoir la confirmation par email</a>
+        <button type="button" id="conf-mailto" class="btn btn-primary">📧 Recevoir la confirmation par email</button>
         <a href="index.html" class="btn btn-outline">← Retour à l'accueil</a>
       </div>
     </div>

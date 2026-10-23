@@ -405,13 +405,54 @@ document.getElementById('rdv-submit-btn')?.addEventListener('click', () => {
 });
 
 /* ---------- Confirmation ---------------------------------- */
+const RDV_APPAREILS = {
+  smartphone: '📱 Smartphone', tablette: '📲 Tablette', pc: '💻 PC / Ordinateur',
+  console: '🎮 Console', autre: '🔧 Autre',
+};
+
+/* Paramètres EmailJS (même modèle que les commandes et devis) pour un RDV */
+function parametresEmailRdv(rdv, destinataire) {
+  return {
+    to_email: destinataire,
+    order_number: rdv.id,
+    order_date: rdv.dateLabel + ' à ' + rdv.heure,
+    customer_name: rdv.client.prenom + ' ' + rdv.client.nom,
+    customer_email: rdv.client.email,
+    customer_phone: rdv.client.tel,
+    order_items:
+      `RENDEZ-VOUS EN BOUTIQUE\n` +
+      `Date : ${rdv.dateLabel} à ${rdv.heure}\n` +
+      `Appareil : ${rdv.appareil}${rdv.marque ? ' — ' + rdv.marque : ''}\n` +
+      (rdv.pannes ? `Problème(s) : ${rdv.pannes}\n` : '') +
+      (rdv.description ? `Description : ${rdv.description}\n` : '') +
+      (rdv.message ? `Message : ${rdv.message}\n` : '') +
+      `\nAdresse : 221 Route de Seysses, 31100 Toulouse\nTél : 05 31 21 71 38`,
+    delivery_mode: 'Rendez-vous en boutique — 221 Route de Seysses, 31100 Toulouse',
+    subtotal: 'Devis sur place', shipping: '—', total: 'Devis gratuit',
+    reply_to: destinataire === 'ims.tlse@gmail.com' ? rdv.client.email : 'ims.tlse@gmail.com',
+  };
+}
+
+async function envoyerConfirmationClient(rdv, bouton) {
+  if (typeof envoyerEmailDevis !== 'function') throw new Error('module email absent');
+  if (bouton) { bouton.disabled = true; bouton.textContent = '⏳ Envoi en cours…'; }
+  try {
+    await envoyerEmailDevis(parametresEmailRdv(rdv, rdv.client.email));
+    if (bouton) bouton.textContent = `✅ Confirmation envoyée à ${rdv.client.email}`;
+    return true;
+  } catch (err) {
+    console.warn('[rdv] email client non envoyé :', err.message);
+    if (bouton) { bouton.disabled = false; bouton.textContent = '📧 Recevoir la confirmation par email'; }
+    return false;
+  }
+}
+
 function showConfirmation() {
   /* Masquer le formulaire */
   const wrapper = document.getElementById('rdv-form-wrapper');
   if (wrapper) wrapper.style.display = 'none';
 
-  /* Générer un numéro de RDV aléatoire */
-  const rdvNumber = 'IMS-' + String(Math.floor(10000 + Math.random() * 90000));
+  const rdvNumber = 'RDV-' + String(Math.floor(10000 + Math.random() * 90000));
 
   const [y, m, d] = (rdvState.date || '').split('-');
   const months = ['janvier','février','mars','avril','mai','juin',
@@ -419,6 +460,17 @@ function showConfirmation() {
   const dateLabel = rdvState.date
     ? `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`
     : '';
+  const appareil = RDV_APPAREILS[rdvState.device] || rdvState.device || '—';
+
+  const rdv = {
+    id: rdvNumber,
+    date: new Date().toLocaleDateString('fr-FR'),
+    jour: rdvState.date, heure: rdvState.time, dateLabel,
+    appareil, marque: rdvState.brand || '',
+    pannes: (rdvState.issues || []).join(', '),
+    description: rdvState.description || '', message: rdvState.message || '',
+    client: { prenom: rdvState.firstName, nom: rdvState.lastName, email: rdvState.email, tel: rdvState.phone },
+  };
 
   /* Remplir la carte de confirmation */
   const card = document.getElementById('confirmation-card');
@@ -426,24 +478,40 @@ function showConfirmation() {
     document.getElementById('conf-rdv-number').textContent = rdvNumber;
     document.getElementById('conf-date').textContent = `${dateLabel} à ${rdvState.time}`;
     document.getElementById('conf-name').textContent = `${rdvState.firstName} ${rdvState.lastName}`;
-    document.getElementById('conf-device').textContent = rdvState.device || '—';
+    document.getElementById('conf-device').textContent = appareil + (rdv.marque ? ' — ' + rdv.marque : '');
     card.classList.add('visible');
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  /* Optionnel : ouvrir un mailto avec le récapitulatif */
-  const subject = encodeURIComponent(`Confirmation RDV ${rdvNumber} — i-Mobile Service`);
-  const body = encodeURIComponent(
-    `Bonjour,\n\nVotre rendez-vous a été confirmé :\n\n` +
-    `N° RDV : ${rdvNumber}\n` +
-    `Date : ${dateLabel} à ${rdvState.time}\n` +
-    `Appareil : ${rdvState.device}\n\n` +
-    `i-Mobile Service — 221 Route de Seysses, 31100 Toulouse\n` +
-    `Tél : 05 31 21 71 38`
-  );
-  const mailtoLink = document.getElementById('conf-mailto');
-  if (mailtoLink) {
-    mailtoLink.href = `mailto:${rdvState.email}?subject=${subject}&body=${body}`;
+  /* 1. Enregistrement dans l'admin (page Rendez-vous) */
+  fetch('/api/dossiers?type=rdv', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(rdv),
+    keepalive: true,
+  }).catch(err => console.warn('[rdv] enregistrement serveur impossible :', err.message));
+
+  /* 2. Prévenir la boutique */
+  if (typeof envoyerEmailDevis === 'function') {
+    envoyerEmailDevis(parametresEmailRdv(rdv, 'ims.tlse@gmail.com'))
+      .catch(err => console.warn('[rdv] email boutique non envoyé :', err.message));
+  }
+
+  /* 3. Confirmation au client, automatiquement ; le bouton permet de la renvoyer */
+  const bouton = document.getElementById('conf-mailto');
+  const note = document.getElementById('conf-note');
+  envoyerConfirmationClient(rdv, bouton).then(ok => {
+    if (note) note.textContent = ok
+      ? `Un email de confirmation vous a été envoyé à ${rdv.client.email}. Pensez à vérifier vos spams.`
+      : 'Votre rendez-vous est bien enregistré. Pour recevoir la confirmation par email, cliquez sur le bouton ci-dessous.';
+  });
+  if (bouton) {
+    bouton.onclick = (e) => {
+      e.preventDefault();
+      envoyerConfirmationClient(rdv, bouton).then(ok => {
+        if (!ok && typeof showToast === 'function') showToast("Envoi impossible pour le moment. Appelez-nous au 05 31 21 71 38.", 'error');
+      });
+    };
   }
 }
 
