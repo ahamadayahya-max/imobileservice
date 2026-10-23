@@ -52,7 +52,7 @@ const CATEGORIES_SITE = [
   { categorie: 'audio',      emoji: '🎧', ids: [139],                   regle: { type: 'marge', taux: 0.50 } },  // Accessoires Audio (écouteurs, casques, adaptateurs jack)
   { categorie: 'cable',      emoji: '🔗', ids: [424, 425],              regle: { type: 'marge', taux: 0.80 } },  // Câbles, Adaptateurs
   { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122, 2089],   regle: { type: 'marge', taux: 0.60 } },  // Secteur, Sans fil, Power Bank, Voiture
-  { categorie: 'accessoire', emoji: '🔧', ids: [2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES }, prixMax: PRIX_VENTE_MAX_VITRINE }, // Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
+  { categorie: 'accessoire', emoji: '🔧', ids: [1984, 2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES }, prixMax: PRIX_VENTE_MAX_VITRINE }, // Lunettes connectées (en tête : sinon noyées dans Smart gadgets), Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
   { categorie: 'telephone',  emoji: '📱', ids: [1986, 1988, 2003],       regle: { type: 'marge', taux: 0.25 } },  // Smartphone Neuf, Smartphone Occasion, Téléphone Neuf
   /* Informatique : PAS la racine 204, qui contient 529 pièces détachées PC.
      Marge faible sur le matériel cher (comparé en ligne), forte sur les petits accessoires. */
