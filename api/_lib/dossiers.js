@@ -135,4 +135,22 @@ async function supprimerDossier(type, cle) {
   await del(cle);
 }
 
-module.exports = { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier };
+/* Créneaux de rendez-vous déjà réservés (à venir, ni annulés ni absents).
+   Uniquement date + heure : aucune donnée client ne sort de cette fonction.
+   Cache court : le calendrier est consulté par chaque visiteur. */
+let cacheCreneaux = { valeur: null, jusqua: 0 };
+
+async function creneauxPris({ frais = false } = {}) {
+  if (!frais && cacheCreneaux.valeur && Date.now() < cacheCreneaux.jusqua) return cacheCreneaux.valeur;
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const valeur = (await listerDossiers('rdv'))
+    .filter(r => r.jour && r.heure && r.jour >= aujourdhui && !['annule', 'absent'].includes(r.statut))
+    .map(r => `${r.jour} ${r.heure.replace('h', ':')}`);
+  cacheCreneaux = { valeur: [...new Set(valeur)].sort(), jusqua: Date.now() + 30 * 1000 };
+  return cacheCreneaux.valeur;
+}
+
+/* Un changement de statut (ex. annulation) libère ou bloque un créneau : on vide le cache */
+function invaliderCreneaux() { cacheCreneaux = { valeur: null, jusqua: 0 }; }
+
+module.exports = { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier, creneauxPris, invaliderCreneaux };

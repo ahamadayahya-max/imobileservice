@@ -7,7 +7,7 @@
    POST /api/dossiers?type=…&action=supprimer {cle}       → admin
    ============================================================ */
 
-const { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier } = require('./_lib/dossiers');
+const { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier, creneauxPris, invaliderCreneaux } = require('./_lib/dossiers');
 const { sessionAdminValide } = require('./_lib/session');
 
 /* Anti-abus sur l'enregistrement public : 20 dossiers / 10 min par IP (par instance) */
@@ -36,6 +36,11 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
+      /* Public : créneaux de RDV déjà pris (date + heure seulement) pour le calendrier */
+      if (type === 'rdv' && action === 'creneaux') {
+        res.setHeader('Cache-Control', 's-maxage=15, stale-while-revalidate=30');
+        return res.status(200).json({ status: 'OK', pris: await creneauxPris() });
+      }
       if (!admin) return res.status(401).json({ status: 'ERROR', message: 'Session admin requise' });
       return res.status(200).json({ status: 'OK', statuts: TYPES[type].statuts, dossiers: await listerDossiers(type) });
     }
@@ -50,17 +55,28 @@ module.exports = async (req, res) => {
     if (!action) {
       const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'inconnue';
       if (limiteAtteinte(ip)) return res.status(429).json({ status: 'ERROR', message: 'Trop de demandes, réessayez plus tard' });
+      /* Un créneau = un client : on refuse s'il vient d'être pris par quelqu'un d'autre */
+      if (type === 'rdv') {
+        const cle = `${corps.jour} ${String(corps.heure || '').replace('h', ':')}`;
+        if ((await creneauxPris({ frais: true })).includes(cle)) {
+          return res.status(409).json({ status: 'CRENEAU_PRIS', message: "Ce créneau vient d'être réservé" });
+        }
+      }
       const dossier = await creerDossier(type, corps);
+      if (type === 'rdv') invaliderCreneaux();
       /* Le visiteur ne reçoit que son numéro, jamais la clé de stockage */
       return res.status(201).json({ status: 'OK', id: dossier.id });
     }
 
     if (!admin) return res.status(401).json({ status: 'ERROR', message: 'Session admin requise' });
     if (action === 'statut') {
-      return res.status(200).json({ status: 'OK', dossier: await changerStatut(type, corps.cle, corps.statut) });
+      const dossier = await changerStatut(type, corps.cle, corps.statut);
+      if (type === 'rdv') invaliderCreneaux();
+      return res.status(200).json({ status: 'OK', dossier });
     }
     if (action === 'supprimer') {
       await supprimerDossier(type, corps.cle);
+      if (type === 'rdv') invaliderCreneaux();
       return res.status(200).json({ status: 'OK' });
     }
     return res.status(400).json({ status: 'ERROR', message: 'Action inconnue' });

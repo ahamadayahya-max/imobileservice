@@ -61,15 +61,30 @@ function generateSlots(start, end) {
   return slots;
 }
 
-/* Simuler ~30% de créneaux "complets" de façon déterministe */
-function isSlotFull(dateStr, time) {
-  /* Utiliser un hash simple pour que les mêmes créneaux restent "complets" */
-  const key = dateStr + time;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) & 0xFFFF;
+/* Créneaux déjà réservés par d'autres clients : « AAAA-MM-JJ HH:MM ».
+   Fournis par le serveur (date + heure seulement, aucune donnée client). */
+let creneauxPris = new Set();
+
+async function chargerCreneauxPris() {
+  try {
+    const res = await fetch('/api/dossiers?type=rdv&action=creneaux', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    creneauxPris = new Set((await res.json()).pris || []);
+  } catch (err) {
+    /* Liste indisponible : tout reste réservable, le serveur refusera un doublon à l'envoi */
+    console.warn('[rdv] créneaux pris indisponibles :', err.message);
   }
-  return hash % 10 < 3; /* ~30% */
+}
+
+/* Délai minimum avant un rendez-vous le jour même (le temps de s'organiser) */
+const DELAI_MIN_RDV_MS = 60 * 60 * 1000;
+
+function isSlotFull(dateStr, time) {
+  if (creneauxPris.has(`${dateStr} ${time}`)) return true;
+  /* Le jour même, les créneaux passés (ou dans moins d'1 h) ne sont plus proposés */
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const [h, min] = time.split(':').map(Number);
+  return new Date(y, m - 1, d, h, min).getTime() < Date.now() + DELAI_MIN_RDV_MS;
 }
 
 /* ---------- Stepper --------------------------------------- */
@@ -209,11 +224,14 @@ function renderCalendar() {
     if (isClosed && !isPast) day.title = 'Fermé';
 
     if (!isPast && !isClosed) {
-      day.addEventListener('click', () => {
+      day.addEventListener('click', async () => {
         rdvState.date = dateStr;
         rdvState.time = null;
         renderCalendar();
         renderSlots(dateStr, date.getDay());
+        /* Liste à jour (un autre client a pu réserver entre-temps) */
+        await chargerCreneauxPris();
+        if (rdvState.date === dateStr) renderSlots(dateStr, date.getDay());
       });
     }
 
@@ -447,11 +465,7 @@ async function envoyerConfirmationClient(rdv, bouton) {
   }
 }
 
-function showConfirmation() {
-  /* Masquer le formulaire */
-  const wrapper = document.getElementById('rdv-form-wrapper');
-  if (wrapper) wrapper.style.display = 'none';
-
+async function showConfirmation() {
   const rdvNumber = 'RDV-' + String(Math.floor(10000 + Math.random() * 90000));
 
   const [y, m, d] = (rdvState.date || '').split('-');
@@ -472,6 +486,38 @@ function showConfirmation() {
     client: { prenom: rdvState.firstName, nom: rdvState.lastName, email: rdvState.email, tel: rdvState.phone },
   };
 
+  /* 1. Enregistrement dans l'admin (page Rendez-vous), qui vérifie aussi que le créneau est libre */
+  const boutonEnvoi = document.getElementById('rdv-submit-btn');
+  const texteEnvoi = boutonEnvoi ? boutonEnvoi.innerHTML : '';
+  if (boutonEnvoi) { boutonEnvoi.disabled = true; boutonEnvoi.textContent = 'Réservation en cours…'; }
+  let reponse = null;
+  try {
+    reponse = await fetch('/api/dossiers?type=rdv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rdv),
+    });
+  } catch (err) {
+    console.warn('[rdv] enregistrement serveur impossible :', err.message);
+  } finally {
+    if (boutonEnvoi) { boutonEnvoi.disabled = false; boutonEnvoi.innerHTML = texteEnvoi; }
+  }
+
+  if (reponse && reponse.status === 409) {
+    /* Quelqu'un vient de prendre ce créneau : retour au choix de l'heure */
+    if (typeof showToast === 'function') showToast('Ce créneau vient d\'être réservé par un autre client. Choisissez un autre horaire.', 'error');
+    rdvState.time = null;
+    await chargerCreneauxPris();
+    goToStep(2);
+    const [ry, rm, rd] = rdvState.date.split('-').map(Number);
+    renderSlots(rdvState.date, new Date(ry, rm - 1, rd).getDay());
+    return;
+  }
+
+  /* Masquer le formulaire */
+  const wrapper = document.getElementById('rdv-form-wrapper');
+  if (wrapper) wrapper.style.display = 'none';
+
   /* Remplir la carte de confirmation */
   const card = document.getElementById('confirmation-card');
   if (card) {
@@ -482,14 +528,6 @@ function showConfirmation() {
     card.classList.add('visible');
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
-
-  /* 1. Enregistrement dans l'admin (page Rendez-vous) */
-  fetch('/api/dossiers?type=rdv', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(rdv),
-    keepalive: true,
-  }).catch(err => console.warn('[rdv] enregistrement serveur impossible :', err.message));
 
   /* 2. Prévenir la boutique */
   if (typeof envoyerEmailDevis === 'function') {
@@ -517,6 +555,7 @@ function showConfirmation() {
 
 /* ---------- Pré-remplir le type depuis l'URL -------------- */
 document.addEventListener('DOMContentLoaded', () => {
+  chargerCreneauxPris();
   renderCalendar();
   goToStep(1);
 
