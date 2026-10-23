@@ -3,6 +3,29 @@
    Panneau glissant multi-étapes, EmailJS + mailto fallback
    ============================================================ */
 
+/* ── Envoi des devis par email (EmailJS, API REST) ──
+   Appel direct à l'API : fonctionne sur toutes les pages, sans dépendre
+   du SDK EmailJS qui n'est chargé que sur la boutique. */
+const DEVIS_EMAILJS = {
+  service:  'service_sgvqdst',
+  template: 'template_01plkrv',
+  cle:      'BHp_rzqQOf4Ogh91G',
+};
+
+async function envoyerEmailDevis(params) {
+  const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      service_id: DEVIS_EMAILJS.service,
+      template_id: DEVIS_EMAILJS.template,
+      user_id: DEVIS_EMAILJS.cle,
+      template_params: params,
+    }),
+  });
+  if (!res.ok) throw new Error('EmailJS HTTP ' + res.status + ' ' + (await res.text()).slice(0, 120));
+}
+
 /* ── État du formulaire ── */
 const devisState = { appareil: '', modele: '', pannes: [], description: '' };
 
@@ -206,7 +229,7 @@ function nextStep(num) {
 window.nextStep = nextStep;
 
 /* ── Envoyer le devis ── */
-function envoyerDevis() {
+async function envoyerDevis() {
   const prenom = document.getElementById('devis-prenom')?.value.trim()    || '';
   const nom    = document.getElementById('devis-nom')?.value.trim()       || '';
   const email  = document.getElementById('devis-email')?.value.trim()     || '';
@@ -238,23 +261,31 @@ function envoyerDevis() {
   stock.unshift(devisData);
   localStorage.setItem('ims_devis', JSON.stringify(stock));
 
-  /* Essayer EmailJS si disponible */
-  if (typeof emailjs !== 'undefined' &&
-      typeof EMAILJS_SERVICE !== 'undefined' &&
-      typeof EMAILJS_TEMPLATE !== 'undefined') {
-    emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+  /* Envoi direct à la boutique ; le bouton est bloqué pendant l'envoi */
+  const boutonEnvoi = document.querySelector('[onclick*="envoyerDevis"]');
+  if (boutonEnvoi) { boutonEnvoi.disabled = true; boutonEnvoi.dataset.texte = boutonEnvoi.textContent; boutonEnvoi.textContent = 'Envoi en cours…'; }
+
+  let envoye = false;
+  try {
+    await envoyerEmailDevis({
       to_email: 'ims.tlse@gmail.com',
       order_number: numDevis, order_date: dateStr,
       customer_name: prenom + ' ' + nom,
       customer_email: email, customer_phone: tel,
-      order_items: `Appareil: ${devisData.appareil}\nModèle: ${devisState.modele}\nPannes: ${pannesTexte}`,
-      delivery_mode: 'Devis en boutique',
-      subtotal: 'Sur devis', shipping: 'Gratuit', total: 'Sur devis',
+      order_items: `DEMANDE DE DEVIS\nAppareil : ${devisData.appareil}\nModèle : ${devisState.modele}\nPannes : ${pannesTexte}\nDescription : ${devisState.description || '—'}`,
+      delivery_mode: 'Devis réparation',
+      subtotal: 'Sur devis', shipping: '—', total: 'Sur devis',
       reply_to: email
-    }, { publicKey: EMAILJS_KEY }).catch(() => {});
+    });
+    envoye = true;
+  } catch (err) {
+    /* Détail technique seulement : jamais les coordonnées du client */
+    console.warn('[devis] envoi email impossible :', err.message);
+  } finally {
+    if (boutonEnvoi) { boutonEnvoi.disabled = false; boutonEnvoi.textContent = boutonEnvoi.dataset.texte || boutonEnvoi.textContent; }
   }
 
-  /* mailto de secours (s'ouvre sans quitter la page) */
+  /* Secours uniquement si l'envoi automatique a échoué : le client envoie lui-même */
   const sujet = encodeURIComponent(`Devis ${numDevis} — ${devisState.modele || devisData.appareil}`);
   const corps = encodeURIComponent(
     `N° : ${numDevis}\nDate : ${dateStr}\n` +
@@ -262,7 +293,7 @@ function envoyerDevis() {
     `Pannes : ${pannesTexte}\nDescription : ${devisState.description}\n\n` +
     `Client : ${prenom} ${nom}\nEmail : ${email}\nTél : ${tel}`
   );
-  window.open(`mailto:ims.tlse@gmail.com?subject=${sujet}&body=${corps}`, '_blank');
+  if (!envoye) window.open(`mailto:ims.tlse@gmail.com?subject=${sujet}&body=${corps}`, '_blank');
 
   /* Afficher la confirmation */
   document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
