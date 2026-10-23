@@ -83,7 +83,7 @@
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table">
-            <thead><tr><th>Produit</th><th>Catégorie</th><th>Prix actuel</th><th>Nouveau prix</th><th>Sauvegarder</th></tr></thead>
+            <thead><tr><th>Produit</th><th>Catégorie</th><th title="Prix d'achat Mobilax hors taxes">Prix Mobilax (HT)</th><th>Prix vente (TTC)</th><th title="Marge sur le prix d'achat, calculée hors taxes">Marge</th><th>Nouveau prix</th><th>Sauvegarder</th></tr></thead>
             <tbody id="prix-tbody"></tbody>
           </table>
         </div>
@@ -123,6 +123,7 @@
     if (window.CATALOGUE_PRET) await window.CATALOGUE_PRET;
     catalogue = typeof CATALOGUE !== 'undefined' ? CATALOGUE : [];
     historique = (window.REGLAGES && window.REGLAGES.historique) || [];
+    await chargerCouts();
     if (!window.REGLAGES) adminToast('Réglages serveur indisponibles : les modifications ne pourront pas être enregistrées', 'error');
     afficherPrix(catalogue);
     afficherHistorique();
@@ -149,6 +150,30 @@
     }
   }
 
+  /* Prix d'achat HT Mobilax par produit : jamais envoyés au public, seulement à l'admin */
+  let couts = {};
+  const TVA = 1.20;
+  async function chargerCouts() {
+    try {
+      const res = await fetch('/api/mobilax?action=couts', { credentials: 'same-origin' });
+      if (res.ok) couts = (await res.json()).couts || {};
+    } catch { /* colonnes Mobilax vides si indisponible */ }
+  }
+
+  /* Marge sur l'achat, hors taxes : (prix de vente HT − achat HT) / achat HT */
+  function marge(p) {
+    const achat = couts[p.id];
+    if (!achat) return null;
+    return (p.prix / TVA - achat) / achat;
+  }
+
+  function badgeMarge(m) {
+    if (m == null) return '<span style="color:#aaa;font-size:.8rem;">—</span>';
+    const pct = Math.round(m * 100);
+    const [fond, texte, icone] = m > 0.5 ? ['#dcfce7', '#166534', '🟢'] : m >= 0.2 ? ['#ffedd5', '#9a3412', '🟡'] : ['#fee2e2', '#b91c1c', '🔴'];
+    return `<span class="badge" style="background:${fond};color:${texte};">${icone} ${pct >= 0 ? '+' : ''}${pct}%${m < 0.2 ? ' ALERTE' : ''}</span>`;
+  }
+
   function filtrerPrix() {
     const q = document.getElementById('search-prix').value.toLowerCase();
     afficherPrix(catalogue.filter(p => p.nom.toLowerCase().includes(q)));
@@ -159,10 +184,12 @@
       <tr>
         <td>${p.emoji} <strong>${esc(p.nom)}</strong>${p.masque ? ' <span style="color:#b45309;font-size:.75rem;">(masqué)</span>' : ''}</td>
         <td>${catLabels[p.categorie] || ''} ${p.categorie}</td>
+        <td style="white-space:nowrap;color:#555;">${couts[p.id] ? euros(couts[p.id]) : '—'}</td>
         <td>
           <span class="prix-value">${euros(p.prix)}</span>
           ${p.prixManuel ? `<br><span style="font-size:.72rem;color:#8b1a1a;font-weight:600;">fixé à la main · auto : ${euros(p.prixAuto)}</span>` : '<br><span style="font-size:.72rem;color:#888;">automatique</span>'}
         </td>
+        <td>${badgeMarge(marge(p))}</td>
         <td><input type="number" class="admin-input prix-input" id="new-prix-${p.id}" value="${p.prix.toFixed(2)}" step="0.01" min="0"></td>
         <td style="white-space:nowrap;">
           <button class="btn-admin btn-primary btn-sm" onclick="sauvegarderPrix(${p.id})">✅ Mettre à jour</button>
@@ -175,6 +202,11 @@
     const val = Math.round(parseFloat(document.getElementById('new-prix-' + id).value) * 100) / 100;
     const p   = catalogue.find(x => x.id === id);
     if (!p || isNaN(val) || val < 0) { adminToast('Valeur invalide', 'error'); return; }
+    const achat = couts[id];
+    if (achat && (val / TVA - achat) / achat < 0.2) {
+      const perte = val / TVA <= achat;
+      if (!confirm(`⚠️ ${perte ? 'VENTE À PERTE' : 'Marge inférieure à 20 %'} : achat ${euros(achat)} HT, vente ${euros(val)} TTC.\n\nEnregistrer quand même ce prix ?`)) return;
+    }
     envoyer({ prix: { [id]: val }, historique: [{ id, nom: p.nom, ancien: p.prix, nouveau: val }] },
       'Prix mis à jour : ' + euros(val));
   }

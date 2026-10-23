@@ -6,7 +6,10 @@
 
    GET /api/mobilax?action=catalogue   → produits au format CATALOGUE
    GET /api/mobilax?action=categories  → référentiel catégories (debug mapping)
+   GET /api/mobilax?action=couts       → admin : prix d'achat HT par produit
    ============================================================ */
+
+const { sessionAdminValide } = require('./_lib/session');
 
 /* Production (vrais stocks et prix). Pour tester sur la preprod :
    MOBILAX_BASE_URL=https://apiv2.mobilax.pro/v1.0/external avec une clé preprod */
@@ -21,14 +24,14 @@ const TVA = 1.20;
 /* Nombre de produits chargés par catégorie Mobilax (max API : 100) */
 const LIMITE_PAR_CATEGORIE = 24;
 
-/* Seuil d'achat HT sous lequel une coque / un verre est vendu 10€ (sinon 15€) */
-const SEUIL_PRIX_FIXE_HT = 3;
+/* Prix de vente minimum (TTC) par défaut, si une règle n'en précise pas */
+const PRIX_VENTE_MIN_TTC = 10;
 
-/* Prix de vente minimum (TTC) pour les produits vendus avec marge */
-const PRIX_VENTE_MIN_TTC = 5;
+/* Garde-fou : quelle que soit la règle, jamais moins de 20 % de marge sur l'achat HT */
+const MARGE_SECURITE = 0.20;
 
-/* Marge des accessoires sans règle dédiée (supports, bracelets, objets pratiques) */
-const MARGE_ACCESSOIRES = 0.50;
+/* Marge des accessoires (supports, bracelets, objets connectés…) */
+const MARGE_ACCESSOIRES = 0.40;
 
 /* Prix de vente max (TTC) des rayons accessoires et informatique : au-delà,
    article de niche (NAS, serveur…) peu vendable en boutique */
@@ -46,25 +49,27 @@ const CATEGORIES_EXCLUES = new Set([
 /* Liste blanche : seules ces catégories Mobilax sont interrogées.
    IDs de PRODUCTION (différents de la preprod) ; un categoryId parent inclut
    ses sous-catégories. Vérifier le stock par ID : /api/mobilax?action=compter&ids=… */
+/* Grille de prix : marge sur l'achat HT, puis TVA, avec un prix de vente minimum (TTC) */
 const CATEGORIES_SITE = [
-  { categorie: 'protection', emoji: '🛡️', ids: [54],                    regle: { type: 'fixe' } },               // Protection › Verre Trempé
-  { categorie: 'coque',      emoji: '🎨', ids: [409],                   regle: { type: 'fixe' } },               // Protection › Coques
-  { categorie: 'audio',      emoji: '🎧', ids: [139],                   regle: { type: 'marge', taux: 0.50 } },  // Accessoires Audio (écouteurs, casques, adaptateurs jack)
-  { categorie: 'cable',      emoji: '🔗', ids: [424, 425],              regle: { type: 'marge', taux: 0.80 } },  // Câbles, Adaptateurs
-  { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122, 2089],   regle: { type: 'marge', taux: 0.60 } },  // Secteur, Sans fil, Power Bank, Voiture
-  { categorie: 'accessoire', emoji: '🔧', ids: [1984, 2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES }, prixMax: PRIX_VENTE_MAX_VITRINE }, // Lunettes connectées (en tête : sinon noyées dans Smart gadgets), Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
-  { categorie: 'telephone',  emoji: '📱', ids: [1986, 1988, 2003],       regle: { type: 'marge', taux: 0.25 } },  // Smartphone Neuf, Smartphone Occasion, Téléphone Neuf
+  { categorie: 'protection', emoji: '🛡️', ids: [54],                    regle: { type: 'marge', taux: 0.40, min: 10 } },  // Protection › Verre Trempé
+  { categorie: 'coque',      emoji: '🎨', ids: [409],                   regle: { type: 'marge', taux: 0.40, min: 10 } },  // Protection › Coques
+  { categorie: 'audio',      emoji: '🎧', ids: [139],                   regle: { type: 'marge', taux: 0.50, min: 15 } },  // Accessoires Audio (écouteurs, casques, adaptateurs jack)
+  { categorie: 'cable',      emoji: '🔗', ids: [424, 425],              regle: { type: 'marge', taux: 0.80, min: 10 } },  // Câbles, Adaptateurs
+  { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122, 2089],   regle: { type: 'marge', taux: 0.60, min: 15 } },  // Secteur, Sans fil, Power Bank, Voiture
+  { categorie: 'accessoire', emoji: '🔧', ids: [1984, 2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES, min: 10 }, prixMax: PRIX_VENTE_MAX_VITRINE }, // Lunettes connectées (en tête : sinon noyées dans Smart gadgets), Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
+  { categorie: 'telephone',  emoji: '📱', ids: [1986, 1988, 2003],       regle: { type: 'marge', taux: 0.30, min: 159 } }, // Smartphone Neuf, Smartphone Occasion, Téléphone Neuf
   /* Informatique : PAS la racine 204, qui contient 529 pièces détachées PC.
-     Marge faible sur le matériel cher (comparé en ligne), forte sur les petits accessoires. */
+     Appareils (tablettes, PC, écrans) : +25 % et 159 € minimum.
+     Petits accessoires informatiques : règles d'accessoires, jamais le minimum de 159 €. */
   { categorie: 'pc',         emoji: '💻', ids: [1997, 377, 2065, 126, 209, 1117, 2118, 2121, 134],
-    regle: { type: 'marge', taux: 0.20 },   // Tablette Occasion, Ordinateur Portable, Moniteur Portable
+    regle: { type: 'marge', taux: 0.25, min: 159 },   // Tablette Occasion, Ordinateur Portable, Moniteur Portable
     reglesParId: {
-      126:  { type: 'marge', taux: 0.80 },  // Stockage (cartes mémoire, clés USB)
-      209:  { type: 'marge', taux: 0.80 },  // Souris & Claviers
-      1117: { type: 'marge', taux: 0.80 },  // Câbles informatique
-      2118: { type: 'marge', taux: 0.80 },  // Hubs
-      2121: { type: 'marge', taux: 0.80 },  // Réseau sans fil
-      134:  { type: 'marge', taux: 0.60 },  // Chargeurs PC & MacBook
+      126:  { type: 'marge', taux: 0.80, min: 10 },  // Stockage (cartes mémoire, clés USB)
+      209:  { type: 'marge', taux: 0.80, min: 10 },  // Souris & Claviers
+      1117: { type: 'marge', taux: 0.80, min: 10 },  // Câbles informatique
+      2118: { type: 'marge', taux: 0.80, min: 10 },  // Hubs
+      2121: { type: 'marge', taux: 0.80, min: 10 },  // Réseau sans fil
+      134:  { type: 'marge', taux: 0.60, min: 15 },  // Chargeurs PC & MacBook
     }, prixMax: PRIX_VENTE_MAX_VITRINE },
 ];
 
@@ -88,13 +93,18 @@ for (const conf of CATEGORIES_SITE) {
 const ID_OFFSET = 1000000;
 
 /* ---------- Règles de prix de vente ------------------------ */
-function calculerPrixVente(prixAchatHT, regle) {
-  if (regle.type === 'fixe') {
-    return prixAchatHT <= SEUIL_PRIX_FIXE_HT ? 10 : 15;
+function calculerPrixVente(prixAchatHT, regle, idProduit) {
+  const minimum = regle.min != null ? regle.min : PRIX_VENTE_MIN_TTC;
+  const prix = Math.max(minimum, Math.ceil(prixAchatHT * (1 + regle.taux) * TVA));
+
+  /* Vérification obligatoire : jamais vendre sous l'achat + 20 % (TVA comprise).
+     Ne se déclenche que si une règle est mal saisie ; journal sans donnée client. */
+  const plancher = Math.ceil(prixAchatHT * (1 + MARGE_SECURITE) * TVA);
+  if (prix < plancher) {
+    console.error(`[mobilax] ALERTE MARGE produit ${idProduit} : achat ${prixAchatHT}€ HT, vente ${prix}€ → corrigé à ${plancher}€`);
+    return plancher;
   }
-  /* Marge appliquée sur le coût d'achat (coefficient), puis TVA ; arrondi à l'euro supérieur.
-     Plancher : un article à 2 € ne couvre pas le temps de vente et d'emballage */
-  return Math.max(PRIX_VENTE_MIN_TTC, Math.ceil(prixAchatHT * (1 + regle.taux) * TVA));
+  return prix;
 }
 
 /* ---------- Authentification (JWT mis en cache) ------------ */
@@ -151,7 +161,9 @@ function versProduitSite(p, conf, regle = conf.regle) {
     categorie: conf.categorie,
     marque: '',
     emoji: conf.emoji,
-    prix: calculerPrixVente(Number(p.price) || 0, regle),
+    prix: calculerPrixVente(Number(p.price) || 0, regle, p.id),
+    /* Prix d'achat HT : réservé à l'admin, retiré avant toute réponse publique */
+    _achatHT: Number(p.price) || 0,
     badge: null,
     grade: null,
     neuf: true,
@@ -166,7 +178,24 @@ function versProduitSite(p, conf, regle = conf.regle) {
   };
 }
 
+/* Retire le prix d'achat avant d'envoyer un produit au navigateur d'un visiteur */
+function versionPublique(p) {
+  const { _achatHT, ...reste } = p;
+  return reste;
+}
+
+/* Mémo court par instance : l'admin et le public ne déclenchent pas deux fois
+   les ~26 appels Mobilax dans la même minute (quota 30 req/min) */
+let memoCatalogue = { valeur: null, jusqua: 0 };
+
 async function chargerCatalogue() {
+  if (memoCatalogue.valeur && Date.now() < memoCatalogue.jusqua) return memoCatalogue.valeur;
+  const valeur = await chargerCatalogueMobilax();
+  if (valeur.produits.length) memoCatalogue = { valeur, jusqua: Date.now() + 60 * 1000 };
+  return valeur;
+}
+
+async function chargerCatalogueMobilax() {
   const resultats = await Promise.allSettled(CATEGORIES_SITE.map(async (conf) => {
     /* Une sous-catégorie en échec ne fait pas tomber les autres de la même famille */
     const lots = await Promise.allSettled(conf.ids.map(categoryId =>
@@ -252,7 +281,7 @@ module.exports = async (req, res) => {
         appelMobilax('/products/search', { categoryId: conf.ids[0], search: modele, inStock: 'true', limit: 1, id_lang: 1 })
           .then(json => ((json.data && json.data.products) || [])
             .filter(p => Number(p.price) > 0)
-            .map(p => versProduitSite(p, conf)))
+            .map(p => versionPublique(versProduitSite(p, conf))))
           .catch(() => [])
       ));
       res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
@@ -287,7 +316,15 @@ module.exports = async (req, res) => {
       }
       /* Cache CDN 10 min : protège le quota Mobilax (30 req/min sur /products) */
       res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
-      return res.status(200).json({ status: 'OK', ...data });
+      return res.status(200).json({ status: 'OK', ...data, produits: data.produits.map(versionPublique) });
+    }
+
+    if (action === 'couts') {
+      /* Admin uniquement : prix d'achat HT Mobilax, pour contrôler les marges */
+      if (!sessionAdminValide(req)) return res.status(401).json({ status: 'ERROR', message: 'Session admin requise' });
+      const data = await chargerCatalogue();
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(200).json({ status: 'OK', couts: Object.fromEntries(data.produits.map(p => [p.id, p._achatHT])) });
     }
 
     return res.status(400).json({ status: 'ERROR', message: 'Action inconnue' });
