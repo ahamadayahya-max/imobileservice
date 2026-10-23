@@ -10,6 +10,7 @@
    ============================================================ */
 
 const { sessionAdminValide } = require('./_lib/session');
+const { prixMarche } = require('./_lib/prixMarche');
 
 /* Production (vrais stocks et prix). Pour tester sur la preprod :
    MOBILAX_BASE_URL=https://apiv2.mobilax.pro/v1.0/external avec une clé preprod */
@@ -18,20 +19,8 @@ const BASE_URL = process.env.MOBILAX_BASE_URL || 'https://apiv2.mobilax.fr/v1.0/
 /* Assets publics de la prod (le stockage d'images de la preprod est vide) */
 const ASSETS_URL = process.env.MOBILAX_ASSETS_URL || 'https://apiv2.mobilax.fr/v1.0/assets';
 
-/* TVA appliquée au prix d'achat HT avant d'afficher un prix TTC */
-const TVA = 1.20;
-
 /* Nombre de produits chargés par catégorie Mobilax (max API : 100) */
 const LIMITE_PAR_CATEGORIE = 24;
-
-/* Prix de vente minimum (TTC) par défaut, si une règle n'en précise pas */
-const PRIX_VENTE_MIN_TTC = 10;
-
-/* Garde-fou : quelle que soit la règle, jamais moins de 20 % de marge sur l'achat HT */
-const MARGE_SECURITE = 0.20;
-
-/* Marge des accessoires (supports, bracelets, objets connectés…) */
-const MARGE_ACCESSOIRES = 0.40;
 
 /* Prix de vente max (TTC) des rayons accessoires et informatique : au-delà,
    article de niche (NAS, serveur…) peu vendable en boutique */
@@ -49,28 +38,19 @@ const CATEGORIES_EXCLUES = new Set([
 /* Liste blanche : seules ces catégories Mobilax sont interrogées.
    IDs de PRODUCTION (différents de la preprod) ; un categoryId parent inclut
    ses sous-catégories. Vérifier le stock par ID : /api/mobilax?action=compter&ids=… */
-/* Grille de prix : marge sur l'achat HT, puis TVA, avec un prix de vente minimum (TTC) */
+/* Rayons du site et catégories Mobilax (IDs de PRODUCTION) interrogées pour chacun.
+   Les prix ne sont plus calculés ici : voir api/_lib/prixMarche.js (prix « marché »). */
 const CATEGORIES_SITE = [
-  { categorie: 'protection', emoji: '🛡️', ids: [54],                    regle: { type: 'marge', taux: 0.40, min: 10 } },  // Protection › Verre Trempé
-  { categorie: 'coque',      emoji: '🎨', ids: [409],                   regle: { type: 'marge', taux: 0.40, min: 10 } },  // Protection › Coques
-  { categorie: 'audio',      emoji: '🎧', ids: [139],                   regle: { type: 'marge', taux: 0.50, min: 15 } },  // Accessoires Audio (écouteurs, casques, adaptateurs jack)
-  { categorie: 'cable',      emoji: '🔗', ids: [424, 425],              regle: { type: 'marge', taux: 0.80, min: 10 } },  // Câbles, Adaptateurs
-  { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122, 2089],   regle: { type: 'marge', taux: 0.60, min: 15 } },  // Secteur, Sans fil, Power Bank, Voiture
-  { categorie: 'accessoire', emoji: '🔧', ids: [1984, 2077, 1121, 1993, 2076], regle: { type: 'marge', taux: MARGE_ACCESSOIRES, min: 10 }, prixMax: PRIX_VENTE_MAX_VITRINE }, // Lunettes connectées (en tête : sinon noyées dans Smart gadgets), Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
-  { categorie: 'telephone',  emoji: '📱', ids: [1986, 1988, 2003],       regle: { type: 'marge', taux: 0.30, min: 159 } }, // Smartphone Neuf, Smartphone Occasion, Téléphone Neuf
-  /* Informatique : PAS la racine 204, qui contient 529 pièces détachées PC.
-     Appareils (tablettes, PC, écrans) : +25 % et 159 € minimum.
-     Petits accessoires informatiques : règles d'accessoires, jamais le minimum de 159 €. */
-  { categorie: 'pc',         emoji: '💻', ids: [1997, 377, 2065, 126, 209, 1117, 2118, 2121, 134],
-    regle: { type: 'marge', taux: 0.25, min: 159 },   // Tablette Occasion, Ordinateur Portable, Moniteur Portable
-    reglesParId: {
-      126:  { type: 'marge', taux: 0.80, min: 10 },  // Stockage (cartes mémoire, clés USB)
-      209:  { type: 'marge', taux: 0.80, min: 10 },  // Souris & Claviers
-      1117: { type: 'marge', taux: 0.80, min: 10 },  // Câbles informatique
-      2118: { type: 'marge', taux: 0.80, min: 10 },  // Hubs
-      2121: { type: 'marge', taux: 0.80, min: 10 },  // Réseau sans fil
-      134:  { type: 'marge', taux: 0.60, min: 15 },  // Chargeurs PC & MacBook
-    }, prixMax: PRIX_VENTE_MAX_VITRINE },
+  { categorie: 'protection', emoji: '🛡️', ids: [54] },                    // Protection › Verre Trempé
+  { categorie: 'coque',      emoji: '🎨', ids: [409] },                   // Protection › Coques
+  { categorie: 'audio',      emoji: '🎧', ids: [139] },                   // Accessoires Audio
+  { categorie: 'cable',      emoji: '🔗', ids: [424, 425] },              // Câbles, Adaptateurs
+  { categorie: 'chargeur',   emoji: '⚡', ids: [426, 131, 1122, 2089] },   // Secteur, Sans fil, Power Bank, Voiture
+  { categorie: 'accessoire', emoji: '🔧', ids: [1984, 2077, 1121, 1993, 2076], prixMax: PRIX_VENTE_MAX_VITRINE }, // Lunettes connectées, Support & Confort, Supports voiture, Montres & bracelets, Smart gadgets
+  { categorie: 'telephone',  emoji: '📱', ids: [1986, 1988, 2003] },       // Smartphone Neuf, Smartphone Occasion, Téléphone Neuf
+  /* Informatique : PAS la racine 204 (529 pièces détachées PC).
+     1997/377/2065 = appareils ; les autres = petits accessoires informatiques. */
+  { categorie: 'pc',         emoji: '💻', ids: [1997, 377, 2065, 126, 209, 1117, 2118, 2121, 134], prixMax: PRIX_VENTE_MAX_VITRINE },
 ];
 
 /* Prix d'achat HT minimum crédible par catégorie Mobilax : en dessous, le prix
@@ -91,21 +71,6 @@ for (const conf of CATEGORIES_SITE) {
 
 /* Décalage d'ID pour ne jamais entrer en collision avec le catalogue statique (1–87) */
 const ID_OFFSET = 1000000;
-
-/* ---------- Règles de prix de vente ------------------------ */
-function calculerPrixVente(prixAchatHT, regle, idProduit) {
-  const minimum = regle.min != null ? regle.min : PRIX_VENTE_MIN_TTC;
-  const prix = Math.max(minimum, Math.ceil(prixAchatHT * (1 + regle.taux) * TVA));
-
-  /* Vérification obligatoire : jamais vendre sous l'achat + 20 % (TVA comprise).
-     Ne se déclenche que si une règle est mal saisie ; journal sans donnée client. */
-  const plancher = Math.ceil(prixAchatHT * (1 + MARGE_SECURITE) * TVA);
-  if (prix < plancher) {
-    console.error(`[mobilax] ALERTE MARGE produit ${idProduit} : achat ${prixAchatHT}€ HT, vente ${prix}€ → corrigé à ${plancher}€`);
-    return plancher;
-  }
-  return prix;
-}
 
 /* ---------- Authentification (JWT mis en cache) ------------ */
 /* Le cache survit entre invocations tant que l'instance reste chaude,
@@ -153,7 +118,11 @@ async function appelMobilax(chemin, params = {}, corps = null) {
 }
 
 /* ---------- Construction du catalogue ---------------------- */
-function versProduitSite(p, conf, regle = conf.regle) {
+/* idCategorie : catégorie Mobilax d'origine (distingue appareils et accessoires du rayon PC) */
+function versProduitSite(p, conf, idCategorie = conf.ids[0]) {
+  const achatHT = Number(p.price) || 0;
+  const nom = p.short_name || p.name;
+  const { prix } = prixMarche({ nom, categorie: conf.categorie, achatHT, idCategorieMobilax: idCategorie });
   return {
     id: ID_OFFSET + p.id,
     mobilaxId: p.id,
@@ -161,7 +130,8 @@ function versProduitSite(p, conf, regle = conf.regle) {
     categorie: conf.categorie,
     marque: '',
     emoji: conf.emoji,
-    prix: calculerPrixVente(Number(p.price) || 0, regle, p.id),
+    /* Prix « marché » boutique de quartier : voir api/_lib/prixMarche.js */
+    prix,
     /* Prix d'achat HT : réservé à l'admin, retiré avant toute réponse publique */
     _achatHT: Number(p.price) || 0,
     badge: null,
@@ -211,7 +181,7 @@ async function chargerCatalogueMobilax() {
       const plancher = PRIX_ACHAT_MIN_HT[conf.ids[i]] || 0.01;
       return ((l.value.data && l.value.data.products) || [])
         .filter(p => Number(p.price) >= plancher)
-        .map(p => versProduitSite(p, conf, (conf.reglesParId && conf.reglesParId[conf.ids[i]]) || conf.regle))
+        .map(p => versProduitSite(p, conf, conf.ids[i]))
         /* Vitrine ciblée : un NAS à 685 € ne se vend pas en boutique de quartier */
         .filter(p => !conf.prixMax || p.prix <= conf.prixMax);
     });
