@@ -4,6 +4,12 @@
   "trailingSlash": false,
   "routes": [
     {
+      "src": "/(.*)",
+      "has": [{ "type": "host", "value": "www.imobileservice.fr" }],
+      "status": 308,
+      "headers": { "Location": "https://imobileservice.fr/$1" }
+    },
+    {
       "src": "/api/ping",
       "dest": "/api/ping/index.json",
       "headers": { "Content-Type": "application/json" }
