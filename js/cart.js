@@ -512,6 +512,58 @@ function genOrderNumber() {
   return 'IMS-' + Math.random().toString(36).slice(2, 7).toUpperCase();
 }
 
+/* ---------- Paiement par carte (Stripe Checkout) ---------- */
+/* Le navigateur n'envoie que les identifiants et quantités : le serveur
+   recalcule prix et frais de livraison (api/stripe-checkout.js). */
+async function payerStripe() {
+  const form = document.getElementById('order-form');
+  if (!validateOrderForm(form)) return;
+
+  const btn = document.getElementById('btn-stripe');
+  const texte = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Vérification du stock…';
+
+  const stockOk = await verifierStockPanier();
+  if (!stockOk) {
+    btn.disabled = false; btn.textContent = texte;
+    closeOrderModal(); openCart();
+    return;
+  }
+
+  const cart = getCart();
+  const mode = getDeliveryMode();
+  const adresse = mode === 'delivery'
+    ? ['order-address', 'order-postal', 'order-city'].map(id => (document.getElementById(id)?.value || '').trim()).join(' ').trim()
+    : (selectedRelais ? `${selectedRelais.nom} — ${selectedRelais.adresseComplete}` : '');
+
+  btn.textContent = '⏳ Redirection vers le paiement…';
+  try {
+    const res = await fetch('/api/stripe-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        articles: cart.map(item => ({ id: Number(item.id), qty: item.qty })),
+        livraison: { mode, adresse, relais: selectedRelais },
+        client: {
+          nom: `${document.getElementById('order-firstname').value.trim()} ${document.getElementById('order-lastname').value.trim()}`,
+          email: document.getElementById('order-email').value.trim(),
+          phone: document.getElementById('order-phone').value.trim(),
+        },
+      }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.url) throw new Error(json.message || 'Paiement indisponible');
+
+    /* Le panier n'est vidé qu'au retour d'un paiement réussi (success.html) */
+    sessionStorage.setItem('ims_paiement_en_cours', JSON.stringify({ commande: json.commande, total: json.total }));
+    window.location.href = json.url;
+  } catch (err) {
+    btn.disabled = false; btn.textContent = texte;
+    showToast(err.message + ' — vous pouvez aussi choisir « Payer en boutique ».', 'error', 'Paiement par carte');
+  }
+}
+
 /* ---------- Valider et confirmer la commande ---------- */
 async function confirmStorePickup() {
   const form = document.getElementById('order-form');
@@ -841,6 +893,10 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Payer en boutique */
   const storePayBtn = document.getElementById('btn-pay-store');
   if (storePayBtn) storePayBtn.addEventListener('click', confirmStorePickup);
+
+  /* Payer par carte (Stripe) */
+  const stripeBtn = document.getElementById('btn-stripe');
+  if (stripeBtn) stripeBtn.addEventListener('click', payerStripe);
 
   /* Fermer le drawer via bouton */
   const cartCloseBtn = document.getElementById('cart-close-btn');

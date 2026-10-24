@@ -304,3 +304,6 @@ module.exports = async (req, res) => {
     return res.status(502).json({ status: 'ERROR', message: 'API Mobilax indisponible' });
   }
 };
+
+/* Réutilisé par api/stripe-checkout.js : le paiement recalcule les prix côté serveur */
+module.exports.chargerCatalogue = chargerCatalogue;

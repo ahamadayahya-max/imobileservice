@@ -107,10 +107,77 @@
 <script src="js/main.js"></script>
 <script src="js/devis.js"></script>
 <script>
-  /* Récupérer les données depuis localStorage (commande en cours) */
+  /* Mêmes libellés et délais que la grille de livraison du panier (js/cart.js) */
+  const MODES = {
+    store:    { label: 'Retrait en boutique', delai: 'Disponible le jour même',
+                consigne: '🏪 Venez récupérer votre commande au :<br><strong>221 Route de Seysses, 31100 Toulouse</strong><br>Mar-Ven 10h-19h / Sam 10h-18h' },
+    pickup:   { label: 'Retrait Point Relais Pickup', delai: '24-48h',
+                consigne: '📦 Votre colis sera disponible dans <strong>24-48h</strong><br>au point relais choisi' },
+    vinted:   { label: 'Vinted Locker', delai: 'Consigne automatique 24h/24 · 7j/7',
+                consigne: '🔁 Votre colis sera disponible en consigne<br><strong>Vinted Locker 24h/24 - 7j/7</strong>' },
+    delivery: { label: 'Livraison à domicile', delai: 'Colissimo 2-3 jours ouvrés',
+                consigne: '🚚 Livraison Colissimo sous <strong>2-3 jours ouvrés</strong><br>Vous recevrez un email de suivi' },
+  };
+
+  function afficherMode(mode, libelleFrais, adresse) {
+    const m = MODES[mode] || MODES.store;
+    document.getElementById('recap-mode').textContent    = m.label + (libelleFrais ? ' — ' + libelleFrais : '');
+    document.getElementById('recap-adresse').textContent = adresse || '221 Route de Seysses, 31100 Toulouse';
+    document.getElementById('recap-delai').textContent   = m.delai;
+    document.getElementById('recap-consigne').innerHTML  = m.consigne;
+  }
+
+  /* Retour de Stripe : on ne croit pas l'URL, on demande au serveur si c'est payé */
+  async function confirmerPaiementCarte(sessionId) {
+    const titre = document.querySelector('.success-title');
+    const sous = document.querySelector('.success-sub');
+    titre.textContent = 'Vérification du paiement…';
+    try {
+      const res = await fetch('/api/stripe-checkout?session_id=' + encodeURIComponent(sessionId));
+      const r = await res.json();
+      if (!res.ok) throw new Error(r.message || 'HTTP ' + res.status);
+
+      document.getElementById('order-number').textContent = r.commande || '—';
+      if (!r.paye) {
+        document.querySelector('.success-icon').textContent = '⏳';
+        titre.textContent = 'Paiement en cours de validation';
+        sous.innerHTML = 'Votre paiement n\'est pas encore confirmé par la banque. Si le montant a été débité, nous vous recontactons rapidement.<br><strong>Votre numéro de commande :</strong>';
+        return;
+      }
+
+      titre.textContent = 'Paiement accepté — commande confirmée !';
+      sous.innerHTML = `Merci ! Vous avez payé <strong>${r.total.toFixed(2).replace('.', ',')} €</strong> par carte. Un email de confirmation vous est envoyé.<br><strong>Votre numéro de commande :</strong>`;
+      afficherMode(r.livraison, 'payé par carte');
+
+      /* Paiement confirmé : on vide le panier et on prévient boutique + client (une seule fois) */
+      localStorage.removeItem('ims_cart');
+      sessionStorage.removeItem('ims_paiement_en_cours');
+      if (r.premiereConfirmation && typeof envoyerEmailDevis === 'function') {
+        const articles = r.articles.map(a => `• ${a.nom} ×${a.qty} = ${a.total.toFixed(2).replace('.', ',')}€`).join('\n');
+        const params = dest => ({
+          to_email: dest, order_number: r.commande, order_date: new Date().toLocaleString('fr-FR'),
+          customer_name: r.nom || '', customer_email: r.email || '', customer_phone: '—',
+          order_items: 'COMMANDE PAYÉE PAR CARTE (Stripe)\n' + articles,
+          delivery_mode: (MODES[r.livraison] || MODES.store).label,
+          subtotal: '—', shipping: '—', total: r.total.toFixed(2).replace('.', ',') + '€ (payé)',
+          reply_to: dest === 'ims.tlse@gmail.com' ? (r.email || dest) : 'ims.tlse@gmail.com',
+        });
+        envoyerEmailDevis(params('ims.tlse@gmail.com')).catch(() => {});
+        if (r.email) envoyerEmailDevis(params(r.email)).catch(() => {});
+      }
+    } catch (err) {
+      document.querySelector('.success-icon').textContent = 'ℹ️';
+      titre.textContent = 'Paiement reçu ?';
+      sous.innerHTML = 'Nous n\'avons pas pu vérifier votre paiement automatiquement. Pas d\'inquiétude : appelez-nous au <strong>05 31 21 71 38</strong> avec votre numéro de commande.<br><strong>Votre numéro de commande :</strong>';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
-    /* Numéro depuis URL param ou localStorage */
     const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    if (sessionId) { confirmerPaiementCarte(sessionId); return; }
+
+    /* Commande « payer en boutique » : récapitulatif depuis ce navigateur */
     const numUrl = params.get('num');
     const commandes = JSON.parse(localStorage.getItem('ims_commandes') || '[]');
     const derniere  = commandes[0];
@@ -123,25 +190,8 @@
 
     if (derniere) {
       const mode = derniere.livraison?.mode || 'store';
-      /* Mêmes libellés et délais que la grille de livraison du panier (js/cart.js) */
-      const modes = {
-        store:    { label: 'Retrait en boutique', delai: 'Disponible le jour même',
-                    consigne: '🏪 Venez récupérer votre commande au :<br><strong>221 Route de Seysses, 31100 Toulouse</strong><br>Mar-Ven 10h-19h / Sam 10h-18h' },
-        pickup:   { label: 'Retrait Point Relais Pickup', delai: '24-48h',
-                    consigne: '📦 Votre colis sera disponible dans <strong>24-48h</strong><br>au point relais choisi' },
-        vinted:   { label: 'Vinted Locker', delai: 'Consigne automatique 24h/24 · 7j/7',
-                    consigne: '🔁 Votre colis sera disponible en consigne<br><strong>Vinted Locker 24h/24 - 7j/7</strong>' },
-        delivery: { label: 'Livraison à domicile', delai: 'Colissimo 2-3 jours ouvrés',
-                    consigne: '🚚 Livraison Colissimo sous <strong>2-3 jours ouvrés</strong><br>Vous recevrez un email de suivi' },
-      };
-      const m = modes[mode] || modes.store;
       const frais = Number(derniere.frais) || 0;
-      const libelleFrais = mode === 'store' ? 'gratuit' : (frais === 0 ? 'offerte' : frais.toFixed(2).replace('.', ',') + '€');
-
-      document.getElementById('recap-mode').textContent    = m.label + ' — ' + libelleFrais;
-      document.getElementById('recap-adresse').textContent = derniere.livraison?.adresse || '221 Route de Seysses, 31100 Toulouse';
-      document.getElementById('recap-delai').textContent   = m.delai;
-      document.getElementById('recap-consigne').innerHTML  = m.consigne;
+      afficherMode(mode, mode === 'store' ? 'gratuit' : (frais === 0 ? 'offerte' : frais.toFixed(2).replace('.', ',') + '€'), derniere.livraison?.adresse);
     }
   });
 </script>

@@ -86,13 +86,20 @@
   }
 
   function afficherKPI() {
-    const actives = commandes.filter(c => c.statut !== 'annulee');
+    const actives = commandes.filter(c => c.statut !== 'annulee' && c.paiement !== 'carte_attente');
     const ca = actives.reduce((s, c) => s + Number(c.total || 0), 0);
     const en_attente = commandes.filter(c => !c.statut || c.statut === 'en_attente').length;
     document.getElementById('kpi-commandes').innerHTML = `
       <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Total commandes</div><div class="kpi-value">${commandes.length}</div></div>
       <div class="kpi-card"><div class="kpi-icon">💶</div><div class="kpi-label">CA (hors annulées)</div><div class="kpi-value">${ca.toFixed(0)}€</div></div>
       <div class="kpi-card"><div class="kpi-icon">⏳</div><div class="kpi-label">En attente</div><div class="kpi-value">${en_attente}</div></div>`;
+  }
+
+  /* Paiement : carte payée, carte abandonnée (client parti avant de payer) ou en boutique */
+  function badgePaiement(p) {
+    if (p === 'carte_payee')   return '<span class="badge" style="background:#dcfce7;color:#166534;">💳 Payé par carte</span>';
+    if (p === 'carte_attente') return '<span class="badge" style="background:#fee2e2;color:#b91c1c;" title="Le client a ouvert le paiement Stripe sans le terminer">⏳ Carte non payée</span>';
+    return '<span class="badge" style="background:#f3f4f6;color:#374151;">🏪 Paiement en boutique</span>';
   }
 
   function filtrerCommandes() {
@@ -131,7 +138,7 @@
         </td>
         <td style="max-width:180px;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(articles)}">${esc(articles)}</td>
         <td style="font-size:.82rem;">${livraison}</td>
-        <td><strong>${euros(c.total)}</strong>${Number(c.frais) > 0 ? `<br><small style="color:#888;">dont livraison ${euros(c.frais)}</small>` : ''}</td>
+        <td><strong>${euros(c.total)}</strong>${Number(c.frais) > 0 ? `<br><small style="color:#888;">dont livraison ${euros(c.frais)}</small>` : ''}<br>${badgePaiement(c.paiement)}</td>
         <td>
           <select class="admin-select" style="font-size:.78rem;padding:.3rem .5rem;" onchange="changerStatut(${i}, this.value)">
             ${Object.entries(statutLabels).map(([v,l]) => `<option value="${v}" ${v === statut ? 'selected' : ''}>${l}</option>`).join('')}

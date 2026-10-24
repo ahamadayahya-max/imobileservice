@@ -3,6 +3,7 @@
   "private": true,
   "description": "Site i-Mobile Service — boutique Mobilax, réglages admin (Vercel Blob)",
   "dependencies": {
-    "@vercel/blob": "2.8.0"
+    "@vercel/blob": "2.8.0",
+    "stripe": "23.0.1"
   }
 }

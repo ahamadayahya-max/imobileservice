@@ -38,6 +38,8 @@ function nettoyer(type, d) {
         relais: relais ? { nom: txt(relais.nom, 120), adresse: txt(relais.adresseComplete || relais.adresse, 200) } : null,
       },
       soustotal: num(d.soustotal), frais: num(d.frais), total: num(d.total),
+      /* boutique = payé au retrait ; carte_attente → carte_payee via Stripe */
+      paiement: ['boutique', 'carte_attente', 'carte_payee'].includes(d.paiement) ? d.paiement : 'boutique',
     };
   }
   if (type === 'message') {
@@ -130,6 +132,22 @@ async function changerStatut(type, cle, statut) {
   return { ...dossier, cle };
 }
 
+/* Paiement Stripe confirmé : commande confirmée et marquée payée par carte */
+async function marquerCommandePayee(cle, referencePaiement) {
+  if (!cleValide('commande', cle)) throw new Error('Paramètres invalides');
+  const dossier = await lireBlob(cle);
+  if (!dossier) throw new Error('Dossier introuvable');
+  if (dossier.paiement === 'carte_payee') return { dossier: { ...dossier, cle }, dejaFait: true };
+  Object.assign(dossier, {
+    paiement: 'carte_payee',
+    statut: dossier.statut === 'en_attente' ? 'confirmee' : dossier.statut,
+    referencePaiement: String(referencePaiement || '').slice(0, 80),
+    payeLe: new Date().toISOString(),
+  });
+  await ecrireBlob(cle, dossier);
+  return { dossier: { ...dossier, cle }, dejaFait: false };
+}
+
 async function supprimerDossier(type, cle) {
   if (!cleValide(type, cle)) throw new Error('Paramètres invalides');
   await del(cle);
@@ -153,4 +171,4 @@ async function creneauxPris({ frais = false } = {}) {
 /* Un changement de statut (ex. annulation) libère ou bloque un créneau : on vide le cache */
 function invaliderCreneaux() { cacheCreneaux = { valeur: null, jusqua: 0 }; }
 
-module.exports = { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier, creneauxPris, invaliderCreneaux };
+module.exports = { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier, creneauxPris, invaliderCreneaux, marquerCommandePayee };
