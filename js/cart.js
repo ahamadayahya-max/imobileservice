@@ -158,13 +158,37 @@ function toggleRelaisSection(mode) {
   }
 }
 
+/* Point déjà choisi : on replie la liste sur ce seul point, pour que le panier
+   (article, autres modes de réception, bouton Commander) reste visible */
+function afficherRelaisChoisi(type) {
+  const listEl = document.getElementById('relais-liste-' + type);
+  const recherche = listEl && listEl.previousElementSibling;
+  if (!listEl || !selectedRelais || selectedRelais.type !== type) return false;
+  if (recherche && recherche.classList.contains('relais-search')) recherche.style.display = 'none';
+  listEl.innerHTML = buildRelaisCard(selectedRelais)
+    + `<button type="button" class="relais-changer" onclick="changerRelais('${type}')">↺ Changer de point relais</button>`;
+  return true;
+}
+
+function changerRelais(type) {
+  const listEl = document.getElementById('relais-liste-' + type);
+  const recherche = listEl && listEl.previousElementSibling;
+  if (recherche && recherche.classList.contains('relais-search')) recherche.style.display = '';
+  chercherRelais(type, true);
+}
+window.changerRelais = changerRelais;
+
 /* ---------- Recherche intelligente par adresse / CP / ville -- */
-function chercherRelais(typeForce) {
+function chercherRelais(typeForce, forcerListe) {
   const type  = typeForce || (getDeliveryMode() === 'vinted' ? 'vinted' : 'pickup');
   const inputEl = document.getElementById('adresse-relais-' + type);
   const input   = inputEl ? inputEl.value.trim() : '';
   const listEl  = document.getElementById('relais-liste-' + type);
   if (!listEl) return;
+  if (!forcerListe && afficherRelaisChoisi(type)) return;
+  /* Liste complète : la zone de recherche doit être visible */
+  const zoneRecherche = listEl.previousElementSibling;
+  if (zoneRecherche && zoneRecherche.classList.contains('relais-search')) zoneRecherche.style.display = '';
 
   listEl.innerHTML = '<div class="relais-loading">🔍 Recherche en cours…</div>';
 
@@ -242,8 +266,10 @@ function selectionnerRelais(id) {
   if (!relais) return;
   selectedRelais = relais;
 
-  /* Re-rendre la liste pour mettre à jour l'état visuels */
-  chercherRelais(relais.type);
+  /* Liste repliée sur le point choisi, puis on montre le bas du panier (bouton Commander) */
+  afficherRelaisChoisi(relais.type);
+  const footer = document.getElementById('cart-footer');
+  if (footer) footer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   /* Mettre à jour le sous-label de l'option radio */
   const subLabel = document.getElementById(relais.type + '-sub-label');

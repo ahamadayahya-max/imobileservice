@@ -68,6 +68,10 @@
       padding-top: .75rem;
     }
     .relais-search { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+    /* La liste a sa propre zone défilante : le reste du panier reste visible */
+    #relais-liste-pickup, #relais-liste-vinted { max-height: 290px; overflow-y: auto; padding-right: .25rem; overscroll-behavior: contain; }
+    .relais-changer { margin-top: .5rem; width: 100%; padding: .6rem; border: 1.5px dashed var(--color-border); border-radius: 10px; background: none; color: #8b1a1a; font-weight: 600; font-size: .88rem; cursor: pointer; font-family: inherit; }
+    .relais-changer:hover { border-color: #8b1a1a; background: rgba(139,26,26,.04); }
     .relais-cp-input {
       flex: 1; min-width: 140px; padding: .55rem .85rem;
       border: 1.5px solid var(--color-border); border-radius: 8px;
