@@ -146,13 +146,14 @@
       }
 
       titre.textContent = 'Paiement accepté — commande confirmée !';
-      sous.innerHTML = `Merci ! Vous avez payé <strong>${r.total.toFixed(2).replace('.', ',')} €</strong> par carte. Un email de confirmation vous est envoyé.<br><strong>Votre numéro de commande :</strong>`;
+      sous.innerHTML = `Merci ! Vous avez payé <strong>${r.total.toFixed(2).replace('.', ',')} €</strong> par carte. Un email de confirmation ${r.emailsAutomatiques ? 'avec votre facture ' : ''}vous est envoyé.<br><strong>Votre numéro de commande :</strong>`;
       afficherMode(r.livraison, 'payé par carte');
 
       /* Paiement confirmé : on vide le panier et on prévient boutique + client (une seule fois) */
       localStorage.removeItem('ims_cart');
       sessionStorage.removeItem('ims_paiement_en_cours');
-      if (r.premiereConfirmation && typeof envoyerEmailDevis === 'function') {
+      /* Emails de secours seulement si le serveur n'envoie pas lui-même facture + emails */
+      if (r.premiereConfirmation && !r.emailsAutomatiques && typeof envoyerEmailDevis === 'function') {
         const articles = r.articles.map(a => `• ${a.nom} ×${a.qty} = ${a.total.toFixed(2).replace('.', ',')}€`).join('\n');
         const params = dest => ({
           to_email: dest, order_number: r.commande, order_date: new Date().toLocaleString('fr-FR'),

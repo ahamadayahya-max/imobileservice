@@ -12,6 +12,7 @@
 
 const Stripe = require('stripe');
 const { marquerCommandePayee } = require('./_lib/dossiers');
+const { facturerSession } = require('./_lib/factureCommande');
 
 /* Événements qui signifient « argent encaissé » */
 const PAIEMENT_VALIDE = new Set(['checkout.session.completed', 'checkout.session.async_payment_succeeded']);
@@ -51,10 +52,16 @@ module.exports = async (req, res) => {
     if (PAIEMENT_VALIDE.has(evenement.type)) {
       const session = evenement.data.object;
       const cle = session.metadata && session.metadata.cle;
-      if (session.payment_status === 'paid' && cle) {
-        const { dejaFait } = await marquerCommandePayee(cle, session.payment_intent || session.id);
-        /* Journal sans donnée client : uniquement le numéro de commande */
-        console.log(`[stripe-webhook] commande ${session.client_reference_id} ${dejaFait ? 'déjà marquée payée' : 'marquée payée'}`);
+      if (session.payment_status === 'paid') {
+        if (cle) {
+          const { dejaFait } = await marquerCommandePayee(cle, session.payment_intent || session.id);
+          /* Journal sans donnée client : uniquement le numéro de commande */
+          console.log(`[stripe-webhook] commande ${session.client_reference_id} ${dejaFait ? 'déjà marquée payée' : 'marquée payée'}`);
+        }
+        /* Facture PDF + emails client et boutique (une seule fois par paiement) */
+        const stripe = Stripe(process.env.STRIPE_SECRET_KEY.trim());
+        const { numero, dejaFaite } = await facturerSession(stripe, session);
+        console.log(`[stripe-webhook] facture ${numero} ${dejaFaite ? 'déjà émise' : 'émise'}`);
       }
     }
     /* 200 = « bien reçu » : sinon Stripe réessaie pendant plusieurs jours */

@@ -19,6 +19,7 @@ const { chargerCatalogue } = require('./mobilax');
 const { lireReglages } = require('./_lib/reglages');
 const { creerDossier, marquerCommandePayee } = require('./_lib/dossiers');
 const { fraisLivraison, LIVRAISON } = require('./_lib/livraison');
+const { emailConfigure } = require('./_lib/email');
 
 /* Seules ces adresses peuvent servir de retour après paiement */
 const ORIGINES = ['https://imobileservice.fr', 'https://www.imobileservice.fr', 'https://imobileservice.vercel.app'];
@@ -141,6 +142,8 @@ async function verifierPaiement(stripe, req, res) {
     status: 'OK',
     paye,
     premiereConfirmation,
+    /* true : facture + emails partent du serveur (webhook) ; la page ne renvoie rien */
+    emailsAutomatiques: emailConfigure(),
     commande: session.client_reference_id,
     total: (session.amount_total || 0) / 100,
     email: session.customer_details && session.customer_details.email,

@@ -4,6 +4,8 @@
   "description": "Site i-Mobile Service — boutique Mobilax, réglages admin (Vercel Blob)",
   "dependencies": {
     "@vercel/blob": "2.8.0",
+    "nodemailer": "10.2.1",
+    "pdf-lib": "1.17.1",
     "stripe": "23.0.1"
   }
 }

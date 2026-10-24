@@ -171,4 +171,11 @@ async function creneauxPris({ frais = false } = {}) {
 /* Un changement de statut (ex. annulation) libère ou bloque un créneau : on vide le cache */
 function invaliderCreneaux() { cacheCreneaux = { valeur: null, jusqua: 0 }; }
 
-module.exports = { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier, creneauxPris, invaliderCreneaux, marquerCommandePayee };
+/* Lecture d'un dossier précis (ex. commande liée à un paiement Stripe) */
+async function lireDossier(type, cle) {
+  if (!cleValide(type, cle)) return null;
+  const d = await lireBlob(cle);
+  return d ? { ...d, cle } : null;
+}
+
+module.exports = { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier, creneauxPris, invaliderCreneaux, marquerCommandePayee, lireDossier };

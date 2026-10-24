@@ -92,6 +92,20 @@
         </div>
       </div>
 
+      <!-- ---------------- Factures automatiques (carte) ---------------- -->
+      <div class="data-card" style="margin-bottom:1.5rem;">
+        <div class="card-header">
+          <span class="card-title">💳 Factures automatiques — paiements par carte (série FC)</span>
+          <button class="btn-admin btn-ghost btn-sm" onclick="chargerFacturesCarte()">↻ Actualiser</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Commande</th><th>Total TTC</th><th>Emails</th><th></th></tr></thead>
+            <tbody id="carte-tbody"><tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#aaa;">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ---------------- Registre ---------------- -->
       <div class="data-card">
         <div class="card-header">
@@ -342,8 +356,35 @@
     telecharger(`registre-factures-${new Date().toISOString().slice(0, 10)}.csv`, '﻿' + lignes.join('\r\n'), 'text/csv;charset=utf-8');
   }
 
+  /* Factures émises automatiquement par le serveur après chaque paiement Stripe.
+     Stockées sur le serveur (et non dans ce navigateur) : rien à sauvegarder. */
+  async function chargerFacturesCarte() {
+    const tbody = document.getElementById('carte-tbody');
+    const e = echapperHTML;
+    try {
+      const res = await fetch('/api/factures', { credentials: 'same-origin' });
+      if (res.status === 401) { window.location.replace('login.html'); return; }
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+      const liste = json.factures || [];
+      tbody.innerHTML = liste.length ? liste.map(f => `<tr>
+          <td><strong>${e(f.numero)}</strong></td>
+          <td>${e(f.dateFr)}</td>
+          <td>${e(f.client && f.client.nom)}<br><span style="font-size:.78rem;color:#888;">${e(f.client && f.client.email)}</span></td>
+          <td>${e(f.commande || '—')}</td>
+          <td><strong>${formatEuro(f.ttc)}</strong></td>
+          <td style="font-size:.8rem;">${f.emails && f.emails.client ? '✅ client' : '⚠️ client'}<br>${f.emails && f.emails.boutique ? '✅ boutique' : '⚠️ boutique'}</td>
+          <td><a class="btn-admin btn-ghost btn-sm" href="/api/factures?pdf=${encodeURIComponent(f.numero)}" target="_blank">📄 PDF</a></td>
+        </tr>`).join('')
+        : '<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#aaa;">Aucune facture carte pour le moment.</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#dc2626;">Factures indisponibles : ${e(err.message)}</td></tr>`;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     reinitialiser();
+    chargerFacturesCarte();
     afficherRegistre();
     preremplirDepuisDossier();
   });
