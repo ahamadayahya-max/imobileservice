@@ -68,7 +68,11 @@ async function creerPaiement(stripe, req, res) {
     });
   }
 
-  const mode = LIVRAISON[corps.livraison && corps.livraison.mode] ? corps.livraison.mode : 'store';
+  const modeDemande = corps.livraison && corps.livraison.mode;
+  if (modeDemande && (!LIVRAISON[modeDemande] || LIVRAISON[modeDemande].actif === false)) {
+    return res.status(400).json({ status: 'ERROR', message: "Ce mode de livraison n'est plus proposé. Rechargez la page et choisissez un autre mode." });
+  }
+  const mode = LIVRAISON[modeDemande] ? modeDemande : 'store';
   const sousTotal = lignes.reduce((s, l) => s + l.prix * l.qty, 0);
   const frais = fraisLivraison(sousTotal, mode);
   const total = Math.round((sousTotal + frais) * 100) / 100;

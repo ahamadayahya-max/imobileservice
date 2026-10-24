@@ -9,8 +9,10 @@ const CART_KEY = 'ims_cart';
    les emails, la page de confirmation et l'admin. seuil = offert dès X €. */
 const LIVRAISON = {
   store:    { label: 'Retrait en boutique',         emoji: '🏪', prix: 0,    seuil: null, delai: 'Disponible le jour même' },
-  pickup:   { label: 'Retrait Point Relais Pickup', emoji: '📦', prix: 1.90, seuil: 40,   delai: '24-48h' },
-  vinted:   { label: 'Vinted Locker',               emoji: '🔁', prix: 1.90, seuil: 40,   delai: 'Consigne automatique 24h/24 · 7j/7' },
+  /* actif: false = masqué tant qu'aucun transporteur n'est relié (la liste des points
+     relais du site était fictive) — mettre true pour réactiver, + api/_lib/livraison.js */
+  pickup:   { label: 'Retrait Point Relais Pickup', emoji: '📦', prix: 1.90, seuil: 40,   delai: '24-48h', actif: false },
+  vinted:   { label: 'Vinted Locker',               emoji: '🔁', prix: 1.90, seuil: 40,   delai: 'Consigne automatique 24h/24 · 7j/7', actif: false },
   delivery: { label: 'Livraison à domicile',        emoji: '🚚', prix: 4.90, seuil: 50,   delai: 'Colissimo 2-3 jours ouvrés' },
 };
 const BOUTIQUE_ADRESSE  = '221 Route de Seysses, 31100 Toulouse';
@@ -856,11 +858,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* Modes de réception désactivés : retirés de la page (option + liste de points) */
+  Object.entries(LIVRAISON).filter(([, r]) => r.actif === false).forEach(([mode]) => {
+    const radio = document.querySelector(`.delivery-options input[name="delivery"][value="${mode}"]`);
+    if (radio) radio.closest('label')?.remove();
+    document.getElementById(mode + '-relais-section')?.remove();
+  });
+  if (!document.querySelector('.delivery-options input[name="delivery"]:checked')) {
+    const premier = document.querySelector('.delivery-options input[name="delivery"]');
+    if (premier) premier.checked = true;
+  }
+
   /* Synchroniser les totaux + afficher section relais */
   /* Le mode choisi suit le client d'une page à l'autre (fiche produit → boutique) */
   try {
     const modeMemorise = localStorage.getItem('ims_livraison');
-    const radioMemorise = modeMemorise && LIVRAISON[modeMemorise]
+    const radioMemorise = modeMemorise && LIVRAISON[modeMemorise] && LIVRAISON[modeMemorise].actif !== false
       && document.querySelector(`.delivery-options input[name="delivery"][value="${modeMemorise}"]`);
     if (radioMemorise) { radioMemorise.checked = true; updateTotals(); toggleRelaisSection(modeMemorise); }
   } catch { /* stockage indisponible : mode par défaut */ }

@@ -6,8 +6,9 @@
 
 const LIVRAISON = {
   store:    { label: 'Retrait en boutique',         prix: 0,    seuil: null },
-  pickup:   { label: 'Retrait Point Relais Pickup', prix: 1.90, seuil: 40 },
-  vinted:   { label: 'Vinted Locker',               prix: 1.90, seuil: 40 },
+  /* Désactivés tant qu'aucun transporteur n'est relié (cf. js/cart.js) */
+  pickup:   { label: 'Retrait Point Relais Pickup', prix: 1.90, seuil: 40, actif: false },
+  vinted:   { label: 'Vinted Locker',               prix: 1.90, seuil: 40, actif: false },
   delivery: { label: 'Livraison à domicile',        prix: 4.90, seuil: 50 },
 };
 
