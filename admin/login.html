@@ -33,6 +33,13 @@
     .lock-msg.visible{display:block;}
     .back-link{text-align:center;margin-top:1.25rem;font-size:.82rem;color:#888;}
     .back-link a{color:#8b1a1a;text-decoration:none;font-weight:600;}
+    .lien-oubli{display:block;margin:.75rem auto 0;background:none;border:0;color:#6b7280;font-size:.82rem;cursor:pointer;text-decoration:underline;font-family:inherit;}
+    .lien-oubli:hover{color:#8b1a1a;}
+    .aide-oubli{display:none;margin-top:1rem;background:#f8f9fc;border:1px solid #e5e7eb;border-radius:10px;padding:1rem 1.1rem;font-size:.84rem;line-height:1.55;color:#374151;}
+    .aide-oubli.visible{display:block;}
+    .aide-oubli ol{margin:.5rem 0 .5rem 1.1rem;padding:0;}
+    .aide-oubli code{background:#eef0f4;padding:.05rem .35rem;border-radius:4px;font-size:.8rem;}
+    .aide-oubli a{color:#8b1a1a;font-weight:600;}
   </style>
 </head>
 <body>
@@ -61,6 +68,20 @@
     </div>
 
     <button class="btn-login" id="btn-login" onclick="seConnecter()">Se connecter →</button>
+
+    <!-- Mot de passe oublié : il est stocké dans Vercel (ADMIN_PASSWORD), jamais dans le site -->
+    <button type="button" class="lien-oubli" onclick="document.getElementById('aide-oubli').classList.toggle('visible')">Mot de passe oublié ?</button>
+    <div class="aide-oubli" id="aide-oubli">
+      <strong>🔑 Choisir un nouveau mot de passe</strong>
+      <ol>
+        <li>Connectez-vous sur <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a>.</li>
+        <li>Ouvrez le projet <strong>imobileservice</strong> → <strong>Settings</strong> → <strong>Environment Variables</strong>.</li>
+        <li>Sur la ligne <code>ADMIN_PASSWORD</code> : <strong>⋯</strong> → <strong>Edit</strong>, tapez un nouveau mot de passe, puis <strong>Save</strong>.</li>
+        <li>Acceptez <strong>Redeploy</strong> (ou <strong>Deployments</strong> → <strong>⋯</strong> → <strong>Redeploy</strong>), attendez 1 minute.</li>
+        <li>Revenez ici et connectez-vous avec <code>ims.tlse@gmail.com</code> et le nouveau mot de passe.</li>
+      </ol>
+      Pour votre sécurité, le mot de passe n'est enregistré nulle part sur le site : seul l'accès à votre compte Vercel permet de le changer.
+    </div>
 
     <div class="back-link"><a href="../index.html">← Retour au site</a></div>
   </div>
