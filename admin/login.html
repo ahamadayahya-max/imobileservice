@@ -19,6 +19,11 @@
     .form-label{display:block;font-size:.83rem;font-weight:600;color:#555;margin-bottom:.4rem;}
     .form-input{width:100%;padding:.75rem 1rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.92rem;font-family:inherit;transition:border-color .2s;}
     .form-input:focus{outline:none;border-color:#8b1a1a;}
+    .champ-mdp{position:relative;}
+    .champ-mdp .form-input{padding-right:3rem;}
+    .btn-oeil{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);background:none;border:0;padding:.4rem;cursor:pointer;color:#6b7280;display:flex;align-items:center;border-radius:6px;}
+    .btn-oeil:hover,.btn-oeil:focus-visible{color:#8b1a1a;outline:none;background:#f3f4f6;}
+    .btn-oeil svg{width:20px;height:20px;}
     .btn-login{width:100%;padding:.85rem;background:#8b1a1a;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;margin-top:.5rem;}
     .btn-login:hover{background:#6d1515;}
     .btn-login:disabled{background:#ccc;cursor:not-allowed;}
@@ -47,7 +52,12 @@
     </div>
     <div class="form-group">
       <label class="form-label" for="password">Mot de passe</label>
-      <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')seConnecter()">
+      <div class="champ-mdp">
+        <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')seConnecter()">
+        <button type="button" class="btn-oeil" id="btn-oeil" onclick="basculerMotDePasse()" aria-label="Afficher le mot de passe" title="Afficher le mot de passe">
+          <svg id="icone-oeil" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+        </button>
+      </div>
     </div>
 
     <button class="btn-login" id="btn-login" onclick="seConnecter()">Se connecter →</button>
@@ -58,6 +68,21 @@
 
 <script src="auth.js"></script>
 <script>
+  /* Œil : affiche / masque le mot de passe saisi (utile pour vérifier une faute de frappe) */
+  const OEIL_OUVERT = '<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>';
+  const OEIL_BARRE = '<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/>';
+  function basculerMotDePasse() {
+    const champ = document.getElementById('password');
+    const bouton = document.getElementById('btn-oeil');
+    const visible = champ.type === 'password';
+    champ.type = visible ? 'text' : 'password';
+    document.getElementById('icone-oeil').innerHTML = visible ? OEIL_BARRE : OEIL_OUVERT;
+    const libelle = visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe';
+    bouton.setAttribute('aria-label', libelle);
+    bouton.title = libelle;
+    champ.focus();
+  }
+
   /* Vérification côté serveur (/api/admin-auth) : aucun mot de passe dans cette page */
   async function seConnecter() {
     const email = document.getElementById('email').value.trim();
@@ -79,6 +104,7 @@
     }
 
     document.getElementById('password').value = '';
+    if (document.getElementById('password').type === 'text') basculerMotDePasse();
     btn.disabled = false;
     btn.textContent = 'Se connecter →';
 
