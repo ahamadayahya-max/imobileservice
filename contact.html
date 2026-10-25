@@ -28,6 +28,8 @@
     .hour-closed{color:var(--color-bordeaux);font-weight:700;}
     .map-wrapper{border-radius:var(--radius-lg);overflow:hidden;border:1.5px solid var(--color-border);box-shadow:var(--shadow-sm);margin-top:1.5rem;}
     .map-wrapper iframe{display:block;width:100%;border:none;}
+    .map-placeholder{height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;text-align:center;padding:1rem;background:linear-gradient(135deg,#f0fbfd,#f7f7fb);}
+    .map-placeholder p{margin:0;font-size:.85rem;color:#6b7280;max-width:360px;}
     .partners-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding-top:1rem;margin-top:1rem;border-top:1px solid var(--color-border);}
     .partner-logo{display:flex;align-items:center;gap:.4rem;padding:.4rem .85rem;background:var(--color-bg);border-radius:var(--radius-full);border:1px solid var(--color-border);font-size:.82rem;font-weight:600;color:var(--color-text-secondary);}
     .contact-form-card{background:white;border-radius:var(--radius-xl);padding:2rem;border:1.5px solid var(--color-border);box-shadow:var(--shadow-sm);}
@@ -221,15 +223,21 @@
 
         <!-- Carte Google Maps -->
         <div class="map-wrapper fade-in delay-2">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d11563.777453721072!2d1.4109748!3d43.5660424!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x9018f99da2860ae7!2si-Mobile+Service!5e0!3m2!1sfr!2sfr!4v1550765941185"
-            width="100%"
-            height="280"
-            allowfullscreen=""
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            title="i-Mobile Service sur Google Maps">
-          </iframe>
+          <!-- Carte chargée seulement au clic : Google ne dépose aucun cookie sans action du visiteur -->
+          <div class="map-placeholder" id="map-placeholder">
+            <strong>📍 221 Route de Seysses, 31100 Toulouse</strong>
+            <button type="button" class="btn btn-primary btn-sm" id="map-afficher">Afficher la carte</button>
+            <p>En affichant la carte, Google Maps peut déposer des cookies.</p>
+          </div>
+          <script>
+            document.getElementById('map-afficher').addEventListener('click', function () {
+              var f = document.createElement('iframe');
+              f.src = "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d11563.777453721072!2d1.4109748!3d43.5660424!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x9018f99da2860ae7!2si-Mobile+Service!5e0!3m2!1sfr!2sfr!4v1550765941185";
+              f.height = '280'; f.loading = 'lazy'; f.allowFullscreen = true;
+              f.referrerPolicy = 'no-referrer-when-downgrade'; f.title = 'i-Mobile Service sur Google Maps';
+              document.getElementById('map-placeholder').replaceWith(f);
+            });
+          </script>
 <div style="text-align:center;margin-top:12px"><a href="https://maps.google.com/?q=221+Route+de+Seysses+31100+Toulouse" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#8b1a1a;color:white;padding:10px 20px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:600">📍 Ouvrir dans Google Maps</a></div>
         </div>
       </div>

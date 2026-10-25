@@ -25,6 +25,7 @@
         font-family:inherit;font-size:.92rem;line-height:1.45;animation:ckIn .3s ease-out}
       #cookie-banner .ck-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px 24px;flex-wrap:wrap;justify-content:space-between}
       #cookie-banner p{margin:0;flex:1 1 420px}
+      #cookie-banner a{color:#8b1a1a;text-decoration:underline}
       #cookie-banner .ck-btns{display:flex;gap:10px;flex-wrap:wrap}
       #cookie-banner button{border:0;border-radius:8px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}
       #cookie-banner .ck-accept{background:#8b1a1a;color:#fff}
@@ -41,7 +42,7 @@
     bandeau.setAttribute('aria-label', 'Information cookies');
     bandeau.innerHTML = `
       <div class="ck-inner">
-        <p>🍪 Ce site utilise des cookies nécessaires au fonctionnement du panier et du paiement sécurisé (Stripe). Pas de cookies publicitaires.</p>
+        <p>🍪 Ce site utilise des cookies nécessaires au fonctionnement du panier et du paiement sécurisé (Stripe). Pas de cookies publicitaires. <a href="mentions-legales.html#cookies">En savoir plus</a></p>
         <div class="ck-btns">
           <button type="button" class="ck-refuse">Continuer sans accepter</button>
           <button type="button" class="ck-accept">Accepter</button>
