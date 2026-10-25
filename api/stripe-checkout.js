@@ -21,6 +21,7 @@ const { creerDossier, marquerCommandePayee } = require('./_lib/dossiers');
 const { fraisLivraison, LIVRAISON } = require('./_lib/livraison');
 const { emailConfigure } = require('./_lib/email');
 const { erreursCommande, texteLivraison } = require('./_lib/clientCommande');
+const { prixMinimum } = require('./_lib/prixMinimum');
 
 /* Seules ces adresses peuvent servir de retour après paiement */
 const ORIGINES = ['https://imobileservice.fr', 'https://www.imobileservice.fr', 'https://imobileservice.vercel.app'];
@@ -42,7 +43,9 @@ async function tarifsActuels() {
   for (const p of produits) {
     if (masques.has(p.id) || p.stock === 0) continue;
     const prixFixe = reglages && reglages.prix && reglages.prix[p.id];
-    tarifs.set(p.id, { nom: p.nom, prix: prixFixe != null ? Number(prixFixe) : p.prix, image: p.image });
+    /* Jamais sous le coût d'achat Mobilax TTC, même avec un ancien prix manuel */
+    const prix = prixFixe != null ? Math.max(Number(prixFixe), prixMinimum(p._achatHT)) : p.prix;
+    tarifs.set(p.id, { nom: p.nom, prix, image: p.image });
   }
   return tarifs;
 }

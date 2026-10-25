@@ -12,6 +12,8 @@
 
 const { lireReglages, ecrireReglages } = require('./_lib/reglages');
 const { sessionAdminValide } = require('./_lib/session');
+const { chargerCatalogue } = require('./mobilax');
+const { prixMinimum } = require('./_lib/prixMinimum');
 
 const MAX_HISTORIQUE = 50;
 const PRIX_MAX = 20000;
@@ -82,6 +84,20 @@ function appliquerModifs(r, corps) {
   return r;
 }
 
+/* Prix manuels demandés sous le coût d'achat Mobilax TTC (vente à perte) */
+async function prixSousLeCout(prix) {
+  if (!prix || typeof prix !== 'object') return [];
+  const demandes = Object.entries(prix).filter(([, v]) => v !== null && Number.isFinite(Number(v)));
+  if (!demandes.length) return [];
+  const { produits } = await chargerCatalogue();
+  const parId = new Map(produits.map(p => [p.id, p]));
+  return demandes.map(([k, v]) => {
+    const p = parId.get(Number(k));
+    const minimum = p ? prixMinimum(p._achatHT) : 0;
+    return Number(v) < minimum ? { nom: p.nom, minimum } : null;
+  }).filter(Boolean);
+}
+
 module.exports = async (req, res) => {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return res.status(503).json({ status: 'ERROR', message: 'Stockage des réglages non configuré' });
@@ -103,6 +119,14 @@ module.exports = async (req, res) => {
 
     if (req.method === 'POST') {
       if (!admin) return res.status(401).json({ status: 'ERROR', message: 'Session admin requise' });
+      const tropBas = await prixSousLeCout((req.body || {}).prix);
+      if (tropBas.length) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'Prix inférieur au coût d\'achat Mobilax TTC : '
+            + tropBas.map(p => `${p.nom} (minimum ${p.minimum.toFixed(2).replace('.', ',')} €)`).join(', '),
+        });
+      }
       const actuel = await lireReglages({ fraisDuStockage: true });
       const r = await ecrireReglages(appliquerModifs(actuel, req.body || {}));
       res.setHeader('Cache-Control', 'no-store');
