@@ -9,9 +9,9 @@ const CART_KEY = 'ims_cart';
    les emails, la page de confirmation et l'admin. seuil = offert dès X €. */
 const LIVRAISON = {
   store:    { label: 'Retrait en boutique',         emoji: '🏪', prix: 0,    seuil: null, delai: 'Disponible le jour même' },
-  /* Points relais réels La Poste via api/pickup-relais.js (toute la France).
+  /* Point Relais La Poste masqué en attendant (api/pickup-relais.js reste prêt).
      actif: false = mode masqué (Vinted : liste fictive) — à garder aligné sur api/_lib/livraison.js */
-  pickup:   { label: 'Point Relais La Poste',       emoji: '📦', prix: 1.90, seuil: 40,   delai: 'Colissimo 2-3 jours ouvrés' },
+  pickup:   { label: 'Point Relais La Poste',       emoji: '📦', prix: 1.90, seuil: 40,   delai: 'Colissimo 2-3 jours ouvrés', actif: false },
   vinted:   { label: 'Vinted Locker',               emoji: '🔁', prix: 1.90, seuil: 40,   delai: 'Consigne automatique 24h/24 · 7j/7', actif: false },
   delivery: { label: 'Livraison à domicile',        emoji: '🚚', prix: 4.90, seuil: 50,   delai: 'Colissimo 2-3 jours ouvrés' },
 };
