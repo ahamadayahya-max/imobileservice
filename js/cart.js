@@ -632,6 +632,10 @@ async function payerStripe() {
 
 /* ---------- Valider et confirmer la commande ---------- */
 async function confirmStorePickup() {
+  if (getDeliveryMode() !== 'store') {
+    showToast('Pour un envoi par colis, le paiement se fait par carte.', 'error');
+    return;
+  }
   const form = document.getElementById('order-form');
   if (!validateOrderForm(form)) return;
 
@@ -835,6 +839,10 @@ function adapterFormulaire(mode) {
   afficher('modal-store-info', mode === 'store');
   afficher('modal-address-fields', mode === 'delivery');
   afficher('groupe-civilite', mode !== 'store');
+  /* Payer en boutique : seulement si le client vient chercher sa commande ;
+     un colis expédié est toujours payé en ligne avant l'envoi */
+  afficher('btn-pay-store', mode === 'store');
+  afficher('info-paiement-boutique', mode === 'store');
 
   /* Champs d'adresse obligatoires seulement en livraison à domicile */
   ['order-address', 'order-postal', 'order-city'].forEach(id => {

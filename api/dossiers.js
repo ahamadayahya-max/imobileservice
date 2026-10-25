@@ -66,6 +66,10 @@ module.exports = async (req, res) => {
       if (type === 'commande') {
         const erreurs = erreursCommande(corps.client, corps.livraison);
         if (Object.keys(erreurs).length) return res.status(400).json({ status: 'INVALIDE', erreurs, message: 'Coordonnées incomplètes' });
+        /* Paiement en boutique réservé au retrait en boutique : un colis est payé par carte (Stripe) */
+        if ((corps.livraison && corps.livraison.mode) !== 'store') {
+          return res.status(400).json({ status: 'INVALIDE', message: 'Pour un envoi par colis, le paiement se fait par carte.' });
+        }
       }
       const dossier = await creerDossier(type, corps);
       if (type === 'rdv') invaliderCreneaux();
