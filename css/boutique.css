@@ -552,6 +552,48 @@
 .cart-checkout-btn:hover { background: var(--color-cyan-dark); transform: translateY(-1px); box-shadow: var(--shadow-glow-cyan); }
 .cart-checkout-btn svg { width: 18px; height: 18px; }
 
+/* ---------- Panier compact : tout visible sans défilement ----------
+   Les espacements suivent la hauteur de l'écran (clamp + vh) : sur un écran
+   d'ordinateur standard, article(s), modes de réception, totaux et bouton
+   tiennent ensemble. Le milieu ne défile que s'il y a beaucoup d'articles ;
+   l'en-tête et le pied (total + bouton) restent toujours visibles. */
+.cart-header { padding: clamp(.65rem, 1.6vh, 1.1rem) clamp(1rem, 2vw, 1.4rem); }
+.cart-header h2 { font-size: clamp(1rem, 1.9vh, 1.1rem); }
+.cart-close-btn { width: 32px; height: 32px; }
+
+.cart-body {
+  padding: clamp(.6rem, 1.5vh, 1.1rem) clamp(1rem, 2vw, 1.4rem);
+  gap: clamp(.5rem, 1.2vh, .85rem);
+}
+#cart-items { display: flex; flex-direction: column; gap: clamp(.4rem, 1vh, .6rem); }
+
+.cart-item { padding: clamp(.5rem, 1.1vh, .75rem); gap: .65rem; align-items: center; }
+.cart-item-thumb { width: 44px; height: 44px; min-width: 44px; font-size: 1.5rem; }
+.cart-item-main { gap: .3rem; }
+.cart-item-name { font-size: .85rem; line-height: 1.3; }
+
+.delivery-section { padding-top: clamp(.5rem, 1.2vh, .85rem); margin-top: 0; }
+.delivery-section h3 { font-size: .86rem; margin-bottom: clamp(.35rem, .9vh, .6rem); }
+.delivery-options { gap: clamp(.35rem, .8vh, .5rem); }
+.delivery-option { padding: clamp(.5rem, 1.1vh, .7rem) .85rem; gap: .65rem; }
+.delivery-option-title { font-size: .87rem; }
+.delivery-option-sub { font-size: .76rem; line-height: 1.35; }
+.delivery-option-price { font-size: .87rem; white-space: nowrap; }
+
+.cart-footer { padding: clamp(.65rem, 1.5vh, 1.1rem) clamp(1rem, 2vw, 1.4rem); }
+.cart-totals { margin-bottom: clamp(.5rem, 1.2vh, .85rem); }
+.cart-total-row { font-size: .86rem; margin-bottom: .25rem; }
+.cart-total-row.total { font-size: clamp(1rem, 2vh, 1.1rem); padding-top: .45rem; margin-top: .3rem; }
+#cart-shipping-hint { margin: 0 0 .2rem !important; }
+.cart-checkout-btn { padding: clamp(.65rem, 1.5vh, .85rem); font-size: .97rem; }
+
+/* Petits écrans (téléphone, ou fenêtre très basse) : plein écran,
+   le milieu défile, le total et le bouton restent épinglés en bas */
+@media (max-height: 640px), (max-width: 480px) {
+  .cart-item-thumb { width: 38px; height: 38px; min-width: 38px; font-size: 1.3rem; }
+  .delivery-option-sub { font-size: .74rem; }
+}
+
 /* ---------- Modal récapitulatif commande ------------------- */
 .modal-overlay {
   position: fixed;
