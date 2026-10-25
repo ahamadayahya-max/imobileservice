@@ -20,6 +20,7 @@ const { lireReglages } = require('./_lib/reglages');
 const { creerDossier, marquerCommandePayee } = require('./_lib/dossiers');
 const { fraisLivraison, LIVRAISON } = require('./_lib/livraison');
 const { emailConfigure } = require('./_lib/email');
+const { erreursCommande, texteLivraison } = require('./_lib/clientCommande');
 
 /* Seules ces adresses peuvent servir de retour après paiement */
 const ORIGINES = ['https://imobileservice.fr', 'https://www.imobileservice.fr', 'https://imobileservice.vercel.app'];
@@ -68,6 +69,11 @@ async function creerPaiement(stripe, req, res) {
     });
   }
 
+  const erreurs = erreursCommande(corps.client, corps.livraison);
+  if (Object.keys(erreurs).length) {
+    return res.status(400).json({ status: 'INVALIDE', erreurs, message: 'Coordonnées incomplètes : ' + Object.values(erreurs).join(', ') });
+  }
+
   const modeDemande = corps.livraison && corps.livraison.mode;
   if (modeDemande && (!LIVRAISON[modeDemande] || LIVRAISON[modeDemande].actif === false)) {
     return res.status(400).json({ status: 'ERROR', message: "Ce mode de livraison n'est plus proposé. Rechargez la page et choisissez un autre mode." });
@@ -83,11 +89,12 @@ async function creerPaiement(stripe, req, res) {
   const commande = await creerDossier('commande', {
     id: 'IMS-' + Date.now().toString(36).toUpperCase().slice(-6),
     date: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }),
-    client: { nom: txt(client.nom, 120), email: txt(client.email, 160), phone: txt(client.phone, 40) },
+    client,
     articles: lignes.map(l => ({ id: l.id, name: l.nom, price: l.prix, qty: l.qty })),
     livraison: {
       mode,
       adresse: txt(corps.livraison && corps.livraison.adresse, 600) || LIVRAISON[mode].label,
+      adresseLivraison: corps.livraison && corps.livraison.adresseLivraison,
       relais: corps.livraison && corps.livraison.relais,
     },
     soustotal: sousTotal, frais, total,
@@ -136,9 +143,22 @@ async function verifierPaiement(stripe, req, res) {
 
   /* Commande marquée payée une seule fois (le client peut recharger la page) */
   let premiereConfirmation = false;
+  let recap = null;
   if (paye && cle) {
-    const { dejaFait } = await marquerCommandePayee(cle, session.payment_intent || session.id);
+    const reference = session.payment_intent || session.id;
+    const { dossier, dejaFait } = await marquerCommandePayee(cle, reference);
     premiereConfirmation = !dejaFait;
+    /* Détails pour les emails de confirmation, envoyés une seule fois par success.html */
+    if (premiereConfirmation) {
+      const c = dossier.client || {};
+      recap = {
+        client: [c.civilite, c.prenom, c.nomFamille].filter(Boolean).join(' ') || c.nom || '',
+        telephone: c.phone || '',
+        livraison: texteLivraison(dossier.livraison),
+        sousTotal: dossier.soustotal, frais: dossier.frais,
+        referencePaiement: reference,
+      };
+    }
   }
 
   res.setHeader('Cache-Control', 'no-store');
@@ -146,6 +166,7 @@ async function verifierPaiement(stripe, req, res) {
     status: 'OK',
     paye,
     premiereConfirmation,
+    recap,
     /* true : facture + emails partent du serveur (webhook) ; la page ne renvoie rien */
     emailsAutomatiques: emailConfigure(),
     commande: session.client_reference_id,

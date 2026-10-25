@@ -62,7 +62,9 @@
 
   const statutLabels = { en_attente:'En attente', confirmee:'Confirmée', expediee:'Expédiée', livree:'Livrée', annulee:'Annulée' };
   const statutBadges = { en_attente:'badge-attente', confirmee:'badge-confirmee', expediee:'badge-expediee', livree:'badge-livree', annulee:'badge-annulee' };
-  const livraisonLabels = { store:'🏪 Retrait boutique', pickup:'📦 Point Relais', vinted:'🔁 Vinted Locker', delivery:'🚚 Livraison' };
+  const livraisonLabels = { store:'🏪 Retrait boutique', pickup:'📦 Point Relais', vinted:'🔁 Vinted Locker', delivery:'🚚 Domicile' };
+  /* Couleur du badge par mode de réception */
+  const livraisonCouleurs = { store:'background:#e8f5e9;color:#2e7d32', pickup:'background:#e0f7fa;color:#00838f', vinted:'background:#fce4ec;color:#8b1a1a', delivery:'background:#fff3e0;color:#e65100' };
   const esc = t => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   const euros = n => Number(n || 0).toFixed(2).replace('.', ',') + '€';
 
@@ -121,20 +123,26 @@
       const articles = Array.isArray(c.articles) ? c.articles.map(a => `${a.name} ×${a.qty}`).join(', ') : '—';
       const modeLiv = c.livraison?.mode;
       const livraisonBase = livraisonLabels[modeLiv]
-        ? `<span class="badge badge-livraison-${modeLiv}">${livraisonLabels[modeLiv]}</span>`
+        ? `<span class="badge badge-livraison-${modeLiv}" style="${livraisonCouleurs[modeLiv]}">${livraisonLabels[modeLiv]}</span>`
         : esc(modeLiv || '—');
       const relais = c.livraison?.relais;
+      const a = c.livraison?.adresseLivraison;
       const livraison = relais
-        ? `${livraisonBase}<br><small style="color:#8b1a1a;font-weight:600;">📍 ${esc(relais.nom)}</small><br><small style="color:#666;">${esc(relais.adresse)}</small>`
-        : livraisonBase;
+        ? `${livraisonBase}<br><small style="color:#8b1a1a;font-weight:600;">📍 ${esc(relais.nom)}</small><br><small style="color:#666;">${esc(relais.adresse || relais.adresseComplete)}</small>${relais.horaires && typeof relais.horaires === 'string' ? `<br><small style="color:#999;">🕐 ${esc(relais.horaires)}</small>` : ''}`
+        : a && a.ligne1
+          ? `${livraisonBase}<br><small style="color:#444;">${esc(a.ligne1)}${a.complement ? '<br>' + esc(a.complement) : ''}<br>${esc(a.codePostal)} ${esc(a.ville)}</small>`
+          : modeLiv === 'delivery' && c.livraison?.adresse
+            ? `${livraisonBase}<br><small style="color:#444;">${esc(c.livraison.adresse)}</small>`
+            : livraisonBase;
+      const civ = c.client?.civilite ? esc(c.client.civilite) + ' ' : '';
       const sujet = encodeURIComponent(`Commande ${c.id} — i-Mobile Service`);
       const corps = encodeURIComponent(`Bonjour ${c.client?.nom || ''},\n\nConcernant votre commande ${c.id}...\n\nCordialement,\ni-Mobile Service`);
       return `<tr>
         <td><span class="badge badge-commande">${esc(c.id)}</span></td>
         <td style="white-space:nowrap;font-size:.82rem;">${esc(c.date)}</td>
         <td>
-          <strong>${esc(c.client?.nom || '—')}</strong><br>
-          <a href="tel:${esc(c.client?.phone)}" style="font-size:.78rem;color:#8b1a1a;">${esc(c.client?.phone || '')}</a>
+          <strong>${civ}${esc(c.client?.nom || '—')}</strong><br>
+          <a href="tel:${esc(c.client?.phone)}" style="font-size:.78rem;color:#8b1a1a;">${esc(c.client?.phone || '')}</a>${c.client?.email ? `<br><a href="mailto:${esc(c.client.email)}" style="font-size:.75rem;color:#666;">${esc(c.client.email)}</a>` : ''}
         </td>
         <td style="max-width:180px;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(articles)}">${esc(articles)}</td>
         <td style="font-size:.82rem;">${livraison}</td>

@@ -67,6 +67,13 @@
     }
     .relais-search { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
     /* La liste a sa propre zone défilante : le reste du panier reste visible */
+    .modal-info-bloc { font-size: .88rem; line-height: 1.5; padding: .7rem .9rem; margin-bottom: 1rem; background: rgba(0,188,212,.07); border: 1px solid rgba(0,188,212,.3); border-radius: var(--radius-xs); }
+    .modal-info-bloc .relais-modifier { margin-left: .4rem; font-size: .8rem; color: #0097a7; background: none; border: 0; text-decoration: underline; cursor: pointer; padding: 0; }
+    .civilite-choix { display: flex; gap: 1.2rem; padding: .35rem 0; }
+    .civilite-choix label { display: inline-flex; align-items: center; gap: .4rem; font-size: .92rem; cursor: pointer; }
+    .civilite-choix.error { outline: 1.5px solid #e53935; outline-offset: 4px; border-radius: 6px; }
+    .relais-choisi-titre { font-size: .82rem; font-weight: 700; color: #2e7d32; margin: .2rem 0 .4rem; }
+    .relais-categorie { font-size: .72rem; font-weight: 600; color: #0097a7; background: rgba(0,188,212,.12); padding: .1rem .45rem; border-radius: 99px; }
     #relais-liste-pickup, #relais-liste-vinted { max-height: 290px; overflow-y: auto; padding-right: .25rem; overscroll-behavior: contain; }
     .relais-changer { margin-top: .5rem; width: 100%; padding: .6rem; border: 1.5px dashed var(--color-border); border-radius: 10px; background: none; color: #8b1a1a; font-weight: 600; font-size: .88rem; cursor: pointer; font-family: inherit; }
     .relais-changer:hover { border-color: #8b1a1a; background: rgba(139,26,26,.04); }
@@ -330,19 +337,20 @@
         <label class="delivery-option">
           <input type="radio" name="delivery" value="pickup" id="radio-pickup">
           <div class="delivery-option-label">
-            <div class="delivery-option-title">📦 Retrait Point Relais Pickup</div>
-            <div class="delivery-option-sub" id="pickup-sub-label">1,90€ — Offert dès 40€ — 24/48h</div>
+            <div class="delivery-option-title">📦 Point Relais La Poste</div>
+            <div class="delivery-option-sub" id="pickup-sub-label">Bureau de poste ou relais · offert dès 40 €</div>
           </div>
           <span class="delivery-option-price" id="prix-livraison-pickup">+1,90€</span>
         </label>
-        <!-- Section sélection Point Relais Pickup -->
+        <!-- Section sélection Point Relais (toute la France, api/pickup-relais.js) -->
         <div id="pickup-relais-section" style="display:none">
           <div class="relais-search">
             <input type="text" id="adresse-relais-pickup" class="relais-cp-input"
-              placeholder="Code postal, ville ou adresse (ex: 31100 ou Toulouse)"
-              autocomplete="off" value="31100">
-            <button type="button" class="relais-search-btn" onclick="chercherRelais('pickup')">
-              🔍 Trouver
+              placeholder="📮 Code postal, ville ou adresse"
+              autocomplete="postal-code" enterkeyhint="search"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();chercherRelais('pickup',true)}">
+            <button type="button" class="relais-search-btn" onclick="chercherRelais('pickup', true)">
+              🔍 Rechercher
             </button>
           </div>
           <div id="relais-liste-pickup"></div>
@@ -435,44 +443,65 @@
         </div>
       </div>
       <div class="modal-section">
-        <div class="modal-section-title">Vos coordonnées</div>
+        <div class="modal-section-title" id="titre-coordonnees">Vos coordonnées</div>
         <form id="order-form" novalidate>
+          <!-- Retrait boutique : adresse rappelée, pas de saisie -->
+          <div id="modal-store-info" class="modal-info-bloc" style="display:none">
+            📍 <strong>221 Route de Seysses, 31100 Toulouse</strong><br>
+            🕐 Mar-Ven 10h-19h / Sam 10h-18h
+          </div>
+          <!-- Point relais : rappel du point choisi -->
+          <div id="modal-relais-info" class="modal-info-bloc" style="display:none"></div>
+          <div class="form-group" id="groupe-civilite">
+            <span class="form-label">Civilité <span class="required">*</span></span>
+            <div class="civilite-choix" role="radiogroup" aria-label="Civilité">
+              <label><input type="radio" name="order-civilite" value="M."> M.</label>
+              <label><input type="radio" name="order-civilite" value="Mme"> Mme</label>
+            </div>
+            <div class="form-error" data-pour="civilite">Choisissez M. ou Mme</div>
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="order-firstname">Prénom <span class="required">*</span></label>
-              <input type="text" id="order-firstname" class="form-input" required placeholder="Jean">
+              <input type="text" id="order-firstname" class="form-input" required placeholder="Jean" autocomplete="given-name">
               <div class="form-error">Champ obligatoire</div>
             </div>
             <div class="form-group">
               <label class="form-label" for="order-lastname">Nom <span class="required">*</span></label>
-              <input type="text" id="order-lastname" class="form-input" required placeholder="Dupont">
+              <input type="text" id="order-lastname" class="form-input" required placeholder="Dupont" autocomplete="family-name">
               <div class="form-error">Champ obligatoire</div>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label" for="order-email">Email <span class="required">*</span></label>
-            <input type="email" id="order-email" class="form-input" required placeholder="jean.dupont@email.com">
+            <input type="email" id="order-email" class="form-input" required placeholder="jean.dupont@email.com" autocomplete="email">
             <div class="form-error">Email invalide</div>
           </div>
           <div class="form-group">
             <label class="form-label" for="order-phone">Téléphone <span class="required">*</span></label>
-            <input type="tel" id="order-phone" class="form-input" required placeholder="06 12 34 56 78">
-            <div class="form-error">Champ obligatoire</div>
+            <input type="tel" id="order-phone" class="form-input" required placeholder="06 12 34 56 78" autocomplete="tel">
+            <div class="form-error">Numéro invalide (ex : 06 12 34 56 78)</div>
           </div>
           <div id="modal-address-fields" style="display:none">
             <div class="form-group">
               <label class="form-label" for="order-address">Adresse <span class="required">*</span></label>
-              <input type="text" id="order-address" class="form-input" placeholder="12 rue de la Paix">
+              <input type="text" id="order-address" class="form-input" placeholder="12 rue de la Paix" autocomplete="address-line1">
               <div class="form-error">Champ obligatoire</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="order-address2">Complément d'adresse <span style="font-weight:400;color:var(--color-text-secondary)">(facultatif)</span></label>
+              <input type="text" id="order-address2" class="form-input" placeholder="Bâtiment, étage, digicode…" autocomplete="address-line2">
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label" for="order-postal">Code postal <span class="required">*</span></label>
-                <input type="text" id="order-postal" class="form-input" placeholder="31000">
+                <input type="text" id="order-postal" class="form-input" placeholder="31000" inputmode="numeric" maxlength="5" autocomplete="postal-code">
+                <div class="form-error">5 chiffres</div>
               </div>
               <div class="form-group">
                 <label class="form-label" for="order-city">Ville <span class="required">*</span></label>
-                <input type="text" id="order-city" class="form-input" placeholder="Toulouse">
+                <input type="text" id="order-city" class="form-input" placeholder="Toulouse" autocomplete="address-level2">
+                <div class="form-error">Champ obligatoire</div>
               </div>
             </div>
           </div>

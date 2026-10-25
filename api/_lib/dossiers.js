@@ -28,14 +28,28 @@ function nettoyer(type, d) {
     return {
       id: txt(d.id, 30),
       date: txt(d.date, 40),
-      client: { nom: txt(c.nom, 120), email: txt(c.email, 160), phone: txt(c.phone, 40) },
+      client: {
+        civilite: ['M.', 'Mme'].includes(c.civilite) ? c.civilite : '',
+        prenom: txt(c.prenom, 80),
+        nomFamille: txt(c.nomFamille, 80),
+        nom: txt(c.nom, 120),
+        email: txt(c.email, 160), phone: txt(c.phone, 40),
+      },
       articles: (Array.isArray(d.articles) ? d.articles : []).slice(0, 50).map(a => ({
         id: txt(a && a.id, 20), name: txt(a && a.name, 200), price: num(a && a.price), qty: Math.min(9999, Math.max(1, Math.floor(Number(a && a.qty) || 1))),
       })),
       livraison: {
         mode: txt(liv.mode, 20),
         adresse: txt(liv.adresse, 600),
-        relais: relais ? { nom: txt(relais.nom, 120), adresse: txt(relais.adresseComplete || relais.adresse, 200) } : null,
+        adresseLivraison: liv.adresseLivraison && typeof liv.adresseLivraison === 'object' ? {
+          ligne1: txt(liv.adresseLivraison.ligne1, 200), complement: txt(liv.adresseLivraison.complement, 200),
+          codePostal: txt(liv.adresseLivraison.codePostal, 10), ville: txt(liv.adresseLivraison.ville, 100),
+        } : null,
+        relais: relais ? {
+          id: txt(relais.id, 40), nom: txt(relais.nom, 120), categorie: txt(relais.categorie, 60),
+          adresse: txt(relais.adresseComplete || relais.adresse, 200),
+          horaires: txt(relais.horairesTexte, 300),
+        } : null,
       },
       soustotal: num(d.soustotal), frais: num(d.frais), total: num(d.total),
       /* boutique = payé au retrait ; carte_attente → carte_payee via Stripe */

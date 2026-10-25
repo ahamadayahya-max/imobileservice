@@ -9,6 +9,7 @@
 
 const { TYPES, creerDossier, listerDossiers, changerStatut, supprimerDossier, creneauxPris, invaliderCreneaux } = require('./_lib/dossiers');
 const { sessionAdminValide } = require('./_lib/session');
+const { erreursCommande } = require('./_lib/clientCommande');
 
 /* Anti-abus sur l'enregistrement public : 20 dossiers / 10 min par IP (par instance) */
 const FENETRE_MS = 10 * 60 * 1000;
@@ -61,6 +62,10 @@ module.exports = async (req, res) => {
         if ((await creneauxPris({ frais: true })).includes(cle)) {
           return res.status(409).json({ status: 'CRENEAU_PRIS', message: "Ce créneau vient d'être réservé" });
         }
+      }
+      if (type === 'commande') {
+        const erreurs = erreursCommande(corps.client, corps.livraison);
+        if (Object.keys(erreurs).length) return res.status(400).json({ status: 'INVALIDE', erreurs, message: 'Coordonnées incomplètes' });
       }
       const dossier = await creerDossier(type, corps);
       if (type === 'rdv') invaliderCreneaux();

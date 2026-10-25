@@ -110,8 +110,8 @@
   const MODES = {
     store:    { label: 'Retrait en boutique', delai: 'Disponible le jour même',
                 consigne: '🏪 Venez récupérer votre commande au :<br><strong>221 Route de Seysses, 31100 Toulouse</strong><br>Mar-Ven 10h-19h / Sam 10h-18h' },
-    pickup:   { label: 'Retrait Point Relais Pickup', delai: '24-48h',
-                consigne: '📦 Votre colis sera disponible dans <strong>24-48h</strong><br>au point relais choisi' },
+    pickup:   { label: 'Point Relais La Poste', delai: 'Colissimo 2-3 jours ouvrés',
+                consigne: '📦 Votre colis sera disponible sous <strong>2-3 jours ouvrés</strong><br>au point relais choisi (avis de passage par SMS/email)' },
     vinted:   { label: 'Vinted Locker', delai: 'Consigne automatique 24h/24 · 7j/7',
                 consigne: '🔁 Votre colis sera disponible en consigne<br><strong>Vinted Locker 24h/24 - 7j/7</strong>' },
     delivery: { label: 'Livraison à domicile', delai: 'Colissimo 2-3 jours ouvrés',
@@ -154,12 +154,16 @@
       /* Emails de secours seulement si le serveur n'envoie pas lui-même facture + emails */
       if (r.premiereConfirmation && !r.emailsAutomatiques && typeof envoyerEmailDevis === 'function') {
         const articles = r.articles.map(a => `• ${a.nom} ×${a.qty} = ${a.total.toFixed(2).replace('.', ',')}€`).join('\n');
+        const rc = r.recap || {};
+        const euros = n => typeof n === 'number' ? (n === 0 ? 'Gratuit' : n.toFixed(2).replace('.', ',') + '€') : '—';
         const params = dest => ({
           to_email: dest, order_number: r.commande, order_date: new Date().toLocaleString('fr-FR'),
-          customer_name: r.nom || '', customer_email: r.email || '', customer_phone: '—',
-          order_items: 'COMMANDE PAYÉE PAR CARTE (Stripe)\n' + articles,
-          delivery_mode: (MODES[r.livraison] || MODES.store).label,
-          subtotal: '—', shipping: '—', total: r.total.toFixed(2).replace('.', ',') + '€ (payé)',
+          customer_name: rc.client || r.nom || '', customer_email: r.email || '', customer_phone: rc.telephone || '—',
+          order_items: 'COMMANDE PAYÉE PAR CARTE (Stripe)\n' + articles
+            + (rc.referencePaiement ? '\nRéférence paiement Stripe : ' + rc.referencePaiement : '')
+            + '\n\nContact : 05 31 21 71 38 / ims.tlse@gmail.com',
+          delivery_mode: rc.livraison || (MODES[r.livraison] || MODES.store).label,
+          subtotal: euros(rc.sousTotal), shipping: euros(rc.frais), total: r.total.toFixed(2).replace('.', ',') + '€ (payé)',
           reply_to: dest === 'ims.tlse@gmail.com' ? (r.email || dest) : 'ims.tlse@gmail.com',
         });
         envoyerEmailDevis(params('ims.tlse@gmail.com')).catch(() => {});

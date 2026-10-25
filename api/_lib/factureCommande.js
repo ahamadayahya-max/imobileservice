@@ -12,7 +12,7 @@ const { emailConfigure, envoyerFactureClient, envoyerAlerteBoutique } = require(
 
 const LIBELLES_LIVRAISON = {
   store: 'Retrait en boutique — 221 Route de Seysses, Toulouse',
-  pickup: 'Retrait Point Relais Pickup',
+  pickup: 'Point Relais La Poste',
   vinted: 'Vinted Locker',
   delivery: 'Livraison à domicile (Colissimo 2-3 jours)',
 };

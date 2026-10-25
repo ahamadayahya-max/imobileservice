@@ -9,9 +9,9 @@ const CART_KEY = 'ims_cart';
    les emails, la page de confirmation et l'admin. seuil = offert dès X €. */
 const LIVRAISON = {
   store:    { label: 'Retrait en boutique',         emoji: '🏪', prix: 0,    seuil: null, delai: 'Disponible le jour même' },
-  /* actif: false = masqué tant qu'aucun transporteur n'est relié (la liste des points
-     relais du site était fictive) — mettre true pour réactiver, + api/_lib/livraison.js */
-  pickup:   { label: 'Retrait Point Relais Pickup', emoji: '📦', prix: 1.90, seuil: 40,   delai: '24-48h', actif: false },
+  /* Points relais réels La Poste via api/pickup-relais.js (toute la France).
+     actif: false = mode masqué (Vinted : liste fictive) — à garder aligné sur api/_lib/livraison.js */
+  pickup:   { label: 'Point Relais La Poste',       emoji: '📦', prix: 1.90, seuil: 40,   delai: 'Colissimo 2-3 jours ouvrés' },
   vinted:   { label: 'Vinted Locker',               emoji: '🔁', prix: 1.90, seuil: 40,   delai: 'Consigne automatique 24h/24 · 7j/7', actif: false },
   delivery: { label: 'Livraison à domicile',        emoji: '🚚', prix: 4.90, seuil: 50,   delai: 'Colissimo 2-3 jours ouvrés' },
 };
@@ -23,13 +23,6 @@ const prixPanier = n => n.toFixed(2).replace('.', ',') + '€';
 
 /* ---------- Base de données Points Relais & Vinted Lockers -- */
 const POINTS_RELAIS = [
-  /* === PICKUP === */
-  { id:'PK001', type:'pickup',  emoji:'🛒', nom:'Carrefour Market Seysses',        adresse:'Route de Seysses',        codePostal:'31600', ville:'Seysses',              adresseComplete:'Route de Seysses, 31600 Seysses',               distance:0.8, distanceLabel:'0.8 km', horaires:{'Lun–Sam':'8h00–20h00','Dim':'9h00–13h00'},              disponible:true },
-  { id:'PK002', type:'pickup',  emoji:'🗞️', nom:'Tabac Presse Les Pradettes',      adresse:'15 Rue des Pradettes',    codePostal:'31100', ville:'Toulouse',             adresseComplete:'15 Rue des Pradettes, 31100 Toulouse',           distance:1.2, distanceLabel:'1.2 km', horaires:{'Lun–Sam':'7h00–20h00','Dim':'8h00–13h00'},              disponible:true },
-  { id:'PK003', type:'pickup',  emoji:'👔', nom:'Pressing du Quartier',            adresse:'8 Allée des Glières',     codePostal:'31100', ville:'Toulouse',             adresseComplete:'8 Allée des Glières, 31100 Toulouse',            distance:0.3, distanceLabel:'0.3 km', horaires:{'Lun–Sam':'9h00–19h00','Dim':'Fermé'},                   disponible:true },
-  { id:'PK004', type:'pickup',  emoji:'💊', nom:'Pharmacie des Glières',           adresse:'2 Place des Glières',     codePostal:'31100', ville:'Toulouse',             adresseComplete:'2 Place des Glières, 31100 Toulouse',            distance:0.4, distanceLabel:'0.4 km', horaires:{'Lun–Ven':'9h00–19h30','Sam':'9h00–18h00','Dim':'Fermé'}, disponible:true },
-  { id:'PK005', type:'pickup',  emoji:'🛍️', nom:'Supérette Casino',               adresse:'45 Route de Seysses',     codePostal:'31100', ville:'Toulouse',             adresseComplete:'45 Route de Seysses, 31100 Toulouse',            distance:1.5, distanceLabel:'1.5 km', horaires:{'Lun–Dim':'7h00–22h00'},                                 disponible:true },
-  { id:'PK006', type:'pickup',  emoji:'🥖', nom:'Boulangerie Paul',                adresse:'23 Avenue de Muret',      codePostal:'31100', ville:'Toulouse',             adresseComplete:'23 Avenue de Muret, 31100 Toulouse',             distance:2.1, distanceLabel:'2.1 km', horaires:{'Lun–Sam':'7h00–20h00','Dim':'7h00–14h00'},              disponible:true },
   /* === VINTED LOCKER === */
   { id:'VL001', type:'vinted',  emoji:'🔁', nom:'Vinted Locker — i-Mobile Service',nom_court:'i-Mobile Service',      codePostal:'31100', ville:'Toulouse',             adresseComplete:'221 Route de Seysses, 31100 Toulouse',           distance:0,   distanceLabel:'0 km — en boutique', horaires:{'Mar–Ven':'10h00–19h00','Sam':'10h00–18h00','Lun & Dim':'Fermé'}, disponible:true, badge:'Notre boutique' },
   { id:'VL002', type:'vinted',  emoji:'🔁', nom:'Vinted Locker — Basso Cambo',     nom_court:'Basso Cambo',           codePostal:'31100', ville:'Toulouse',             adresseComplete:'Route d\'Espagne, 31100 Toulouse',               distance:3.2, distanceLabel:'3.2 km', horaires:{'Lun–Sam':'9h00–20h00','Dim':'10h00–19h00'},             disponible:true },
@@ -167,8 +160,9 @@ function afficherRelaisChoisi(type) {
   const recherche = listEl && listEl.previousElementSibling;
   if (!listEl || !selectedRelais || selectedRelais.type !== type) return false;
   if (recherche && recherche.classList.contains('relais-search')) recherche.style.display = 'none';
-  listEl.innerHTML = buildRelaisCard(selectedRelais)
-    + `<button type="button" class="relais-changer" onclick="changerRelais('${type}')">↺ Changer de point relais</button>`;
+  listEl.innerHTML = '<div class="relais-choisi-titre">✅ Point relais choisi :</div>'
+    + buildRelaisCard(selectedRelais)
+    + `<button type="button" class="relais-changer" onclick="changerRelais('${type}')">✏️ Modifier</button>`;
   return true;
 }
 
@@ -177,8 +171,51 @@ function changerRelais(type) {
   const recherche = listEl && listEl.previousElementSibling;
   if (recherche && recherche.classList.contains('relais-search')) recherche.style.display = '';
   chercherRelais(type, true);
+  const champ = document.getElementById('adresse-relais-' + type);
+  if (champ) champ.focus();
 }
 window.changerRelais = changerRelais;
+
+/* Points renvoyés par la dernière recherche serveur, par identifiant */
+const relaisTrouves = new Map();
+
+/* Horaires { 'Lun–Ven': '9h00-12h00' } → « Lun–Ven 9h00-12h00 / Sam … » */
+function horairesEnTexte(horaires) {
+  return Object.entries(horaires || {}).map(([j, h]) => j + ' ' + h).join(' / ');
+}
+
+function echapper(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ---------- Recherche Point Relais La Poste : toute la France (serveur) -- */
+let rechercheEnCours = 0;
+async function chercherRelaisServeur(listEl, saisie) {
+  const numero = ++rechercheEnCours;
+  if (saisie.length < 2) {
+    listEl.innerHTML = '<div class="relais-msg">📮 Tapez votre code postal, votre ville ou votre adresse puis « Rechercher ».</div>';
+    return;
+  }
+  listEl.innerHTML = '<div class="relais-loading">🔍 Recherche des points relais…</div>';
+  try {
+    const res = await fetch('/api/pickup-relais?q=' + encodeURIComponent(saisie));
+    const json = await res.json().catch(() => ({}));
+    /* Une recherche plus récente a été lancée entre-temps : on l'ignore */
+    if (numero !== rechercheEnCours) return;
+    if (!res.ok) throw new Error(json.message || 'Recherche indisponible');
+    const relais = json.relais || [];
+    if (!relais.length) {
+      listEl.innerHTML = '<div class="relais-msg">Aucun point relais trouvé pour « ' + echapper(saisie) + ' ». Vérifiez le code postal ou essayez le nom de la ville.</div>';
+      return;
+    }
+    relais.forEach(r => relaisTrouves.set(r.id, r));
+    listEl.innerHTML = `<div class="relais-msg">Les ${relais.length} points les plus proches de <strong>${echapper(json.reference || saisie)}</strong> :</div>`
+      + relais.map(buildRelaisCard).join('');
+  } catch (err) {
+    if (numero !== rechercheEnCours) return;
+    listEl.innerHTML = '<div class="relais-msg">⚠️ ' + echapper(err.message) + '</div>';
+  }
+}
 
 /* ---------- Recherche intelligente par adresse / CP / ville -- */
 function chercherRelais(typeForce, forcerListe) {
@@ -191,6 +228,11 @@ function chercherRelais(typeForce, forcerListe) {
   /* Liste complète : la zone de recherche doit être visible */
   const zoneRecherche = listEl.previousElementSibling;
   if (zoneRecherche && zoneRecherche.classList.contains('relais-search')) zoneRecherche.style.display = '';
+
+  if (type === 'pickup') {
+    chercherRelaisServeur(listEl, input);
+    return;
+  }
 
   listEl.innerHTML = '<div class="relais-loading">🔍 Recherche en cours…</div>';
 
@@ -232,28 +274,28 @@ function buildRelaisCard(p) {
   const isSelected = selectedRelais && selectedRelais.id === p.id;
   const typeBadge  = p.type === 'vinted'
     ? '<span class="relais-type-badge vinted">🔁 Vinted Locker</span>'
-    : '<span class="relais-type-badge pickup">📦 Pickup</span>';
+    : `<span class="relais-categorie">📦 ${echapper(p.categorie || 'Point relais')}</span>`;
   const notresBadge = p.badge
     ? `<span class="relais-notre-badge">⭐ ${p.badge}</span>`
     : '';
-  const horairesHTML = Object.entries(p.horaires)
-    .map(([j, h]) => `<span>${j} : ${h}</span>`).join(' · ');
+  const horairesHTML = Object.entries(p.horaires || {})
+    .map(([j, h]) => `<span>${echapper(j)} : ${echapper(h)}</span>`).join(' · ');
   const mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(p.adresseComplete);
 
   return `
     <div class="relais-card${isSelected ? ' selected' : ''}" id="relais-card-${p.id}">
       <div class="relais-card-header">
         ${typeBadge}${notresBadge}
-        <span class="relais-distance">📍 ${p.distanceLabel}</span>
+        <span class="relais-distance">📍 ${echapper(p.distanceLabel)}</span>
       </div>
-      <div class="relais-nom">${p.emoji} ${p.nom}</div>
-      <div class="relais-adresse">📮 ${p.adresseComplete}</div>
-      <div class="relais-horaires">${horairesHTML}</div>
+      <div class="relais-nom">${p.emoji || '📦'} ${echapper(p.nom)}</div>
+      <div class="relais-adresse">📮 ${echapper(p.adresseComplete)}</div>
+      ${horairesHTML ? `<div class="relais-horaires">🕐 ${horairesHTML}</div>` : ''}
       <div class="relais-actions">
-        <button class="btn-choisir${isSelected ? ' active' : ''}"
+        <button type="button" class="btn-choisir${isSelected ? ' active' : ''}"
           onclick="selectionnerRelais('${p.id}')"
           ${!p.disponible ? 'disabled' : ''}>
-          ${isSelected ? '✓ Sélectionné' : 'Choisir ce point'}
+          ${isSelected ? '✓ Sélectionné' : '✓ Choisir ce point relais'}
         </button>
         <a href="${mapsUrl}" target="_blank" rel="noopener" class="btn-maps">
           🗺️ Maps
@@ -264,9 +306,9 @@ function buildRelaisCard(p) {
 
 /* ---------- Sélectionner un point relais ------------------- */
 function selectionnerRelais(id) {
-  const relais = POINTS_RELAIS.find(r => r.id === id);
+  const relais = relaisTrouves.get(id) || POINTS_RELAIS.find(r => r.id === id);
   if (!relais) return;
-  selectedRelais = relais;
+  selectedRelais = { ...relais, horairesTexte: horairesEnTexte(relais.horaires) };
 
   /* Liste repliée sur le point choisi, puis on montre le bas du panier (bouton Commander) */
   afficherRelaisChoisi(relais.type);
@@ -486,6 +528,7 @@ async function openOrderModal() {
     const section = document.getElementById(sectionId);
     if (section) section.style.display = 'block';
     chercherRelais(mode);
+    document.getElementById('adresse-relais-' + mode)?.focus();
     return;
   }
 
@@ -522,11 +565,7 @@ async function openOrderModal() {
   }
   if (modalTotal) modalTotal.textContent = total.toFixed(2).replace('.', ',') + '€';
 
-  /* Afficher/masquer les champs adresse dans la modal (livraison domicile uniquement) */
-  const modalAddressFields = document.getElementById('modal-address-fields');
-  if (modalAddressFields) {
-    modalAddressFields.style.display = deliveryMode === 'delivery' ? '' : 'none';
-  }
+  adapterFormulaire(deliveryMode);
 
   closeCart();
   const overlay = document.getElementById('modal-overlay');
@@ -571,9 +610,8 @@ async function payerStripe() {
 
   const cart = getCart();
   const mode = getDeliveryMode();
-  const adresse = mode === 'delivery'
-    ? ['order-address', 'order-postal', 'order-city'].map(id => (document.getElementById(id)?.value || '').trim()).join(' ').trim()
-    : (selectedRelais ? `${selectedRelais.nom} — ${selectedRelais.adresseComplete}` : '');
+  const { client, adresseLivraison } = lireCoordonnees(mode);
+  const relais = (mode === 'pickup' || mode === 'vinted') ? selectedRelais : null;
 
   btn.textContent = '⏳ Redirection vers le paiement…';
   try {
@@ -582,12 +620,8 @@ async function payerStripe() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         articles: cart.map(item => ({ id: Number(item.id), qty: item.qty })),
-        livraison: { mode, adresse, relais: selectedRelais },
-        client: {
-          nom: `${document.getElementById('order-firstname').value.trim()} ${document.getElementById('order-lastname').value.trim()}`,
-          email: document.getElementById('order-email').value.trim(),
-          phone: document.getElementById('order-phone').value.trim(),
-        },
+        livraison: { mode, adresse: texteReception(mode, adresseLivraison), adresseLivraison, relais },
+        client,
       }),
     });
     const json = await res.json().catch(() => ({}));
@@ -625,33 +659,14 @@ async function confirmStorePickup() {
   const total    = subtotal + shipping;
 
   /* Données client */
-  const prenom = document.getElementById('order-firstname').value.trim();
-  const nom    = document.getElementById('order-lastname').value.trim();
-  const email  = document.getElementById('order-email').value.trim();
-  const phone  = document.getElementById('order-phone').value.trim();
-  const addr   = (document.getElementById('order-address')?.value || '').trim();
-  const cp     = (document.getElementById('order-postal')?.value  || '').trim();
-  const ville  = (document.getElementById('order-city')?.value    || '').trim();
-
-  const nomClient = `${prenom} ${nom}`;
+  const { client, adresseLivraison } = lireCoordonnees(mode);
+  const { email, phone } = client;
+  const nomClient = [client.civilite, client.nom].filter(Boolean).join(' ');
   const orderNum  = genOrderNumber();
   const orderDate = new Date().toLocaleString('fr-FR');
 
-  /* Label livraison avec détails relais si sélectionné */
-  let modeLabel;
-  if (mode === 'store') {
-    modeLabel = 'Retrait en boutique — ' + BOUTIQUE_ADRESSE + ' (' + BOUTIQUE_HORAIRES + ')';
-  } else if ((mode === 'pickup' || mode === 'vinted') && selectedRelais) {
-    const typeLabel = selectedRelais.type === 'vinted' ? 'Vinted Locker' : 'Point Relais Pickup';
-    const horairesStr = Object.entries(selectedRelais.horaires).map(([j,h]) => j + ': ' + h).join(' / ');
-    modeLabel = typeLabel + ' — ' + selectedRelais.nom + '\nAdresse : ' + selectedRelais.adresseComplete + '\nHoraires : ' + horairesStr;
-  } else if (mode === 'pickup') {
-    modeLabel = 'Retrait Point Relais Pickup';
-  } else if (mode === 'vinted') {
-    modeLabel = 'Vinted Locker';
-  } else {
-    modeLabel = 'Livraison à domicile (' + LIVRAISON.delivery.delai + ') — ' + addr + ' ' + cp + ' ' + ville;
-  }
+  /* Label livraison : adresse complète, point relais (horaires compris) ou boutique */
+  const modeLabel = texteReception(mode, adresseLivraison);
 
   /* Articles en texte */
   const articlesTexte = cart.map(i =>
@@ -662,10 +677,10 @@ async function confirmStorePickup() {
   const commandes = JSON.parse(localStorage.getItem('ims_commandes') || '[]');
   commandes.unshift({
     id: orderNum, date: orderDate,
-    client: { nom: nomClient, email, phone },
+    client,
     articles: cart,
     livraison: {
-      mode, adresse: modeLabel,
+      mode, adresse: modeLabel, adresseLivraison,
       relais: ((mode === 'pickup' || mode === 'vinted') && selectedRelais) ? selectedRelais : null
     },
     soustotal: subtotal.toFixed(2),
@@ -714,7 +729,7 @@ i-Mobile Service · 05 31 21 71 38
     customer_name:    nomClient,
     customer_email:   email,
     customer_phone:   phone,
-    order_items:      articlesTexte,
+    order_items:      articlesTexte + '\n\nPaiement : à régler auprès de la boutique (non payé en ligne)\nContact : 05 31 21 71 38 / ims.tlse@gmail.com',
     delivery_mode:    modeLabel,
     subtotal:         subtotal.toFixed(2).replace('.', ',') + '€',
     shipping:         shipping === 0 ? 'Gratuit' : shipping.toFixed(2).replace('.', ',') + '€',
@@ -818,29 +833,142 @@ function afficherConfirmation(orderNum, nomClient, total, date, email, corpsMail
   }
 }
 
-/* ---------- Validation du formulaire commande -------------- */
-function validateOrderForm(form) {
-  let isValid = true;
-  const required = form ? form.querySelectorAll('[required]') : [];
+/* ---------- Formulaire adapté au mode de réception --------- */
+/* Boutique : prénom/nom/email/tél + adresse rappelée.
+   Domicile : civilité + adresse complète. Point relais : civilité + rappel du point. */
+function adapterFormulaire(mode) {
+  const afficher = (id, oui) => { const el = document.getElementById(id); if (el) el.style.display = oui ? '' : 'none'; };
+  afficher('modal-store-info', mode === 'store');
+  afficher('modal-address-fields', mode === 'delivery');
+  afficher('groupe-civilite', mode !== 'store');
 
-  required.forEach(field => {
-    const errorEl = field.nextElementSibling;
-    if (!field.value.trim()) {
-      field.classList.add('error');
-      if (errorEl && errorEl.classList.contains('form-error')) {
-        errorEl.classList.add('visible');
-      }
-      isValid = false;
-    } else {
-      field.classList.remove('error');
-      if (errorEl && errorEl.classList.contains('form-error')) {
-        errorEl.classList.remove('visible');
-      }
-    }
+  /* Champs d'adresse obligatoires seulement en livraison à domicile */
+  ['order-address', 'order-postal', 'order-city'].forEach(id => {
+    const champ = document.getElementById(id);
+    if (champ) champ.required = mode === 'delivery';
   });
 
-  if (!isValid) showToast('Veuillez remplir tous les champs obligatoires', 'error');
-  return isValid;
+  const infoRelais = document.getElementById('modal-relais-info');
+  if (infoRelais) {
+    const r = mode === 'pickup' ? selectedRelais : null;
+    infoRelais.style.display = r ? '' : 'none';
+    infoRelais.innerHTML = r
+      ? `✅ <strong>Point relais choisi :</strong> ${echapper(r.nom)}`
+        + `<button type="button" class="relais-modifier" onclick="modifierRelaisDepuisCommande()">Modifier</button><br>`
+        + `📮 ${echapper(r.adresseComplete)}`
+        + (r.horairesTexte ? `<br>🕐 ${echapper(r.horairesTexte)}` : '')
+      : '';
+  }
+  const titre = document.getElementById('titre-coordonnees');
+  if (titre) titre.textContent = mode === 'delivery' ? 'Vos coordonnées et adresse de livraison' : 'Vos coordonnées';
+}
+
+/* Retour au panier pour changer de point relais sans perdre la saisie */
+function modifierRelaisDepuisCommande() {
+  closeOrderModal();
+  openCart();
+  changerRelais('pickup');
+}
+window.modifierRelaisDepuisCommande = modifierRelaisDepuisCommande;
+
+/* Mêmes règles que le serveur (api/_lib/clientCommande.js) */
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const RE_TEL   = /^(?:\+33|0033|0)[1-9]\d{8}$/;
+const RE_CP    = /^\d{5}$/;
+
+function valeur(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+/* Coordonnées saisies, au format attendu par le serveur */
+function lireCoordonnees(mode) {
+  const civ = document.querySelector('input[name="order-civilite"]:checked');
+  const prenom = valeur('order-firstname');
+  const nomFamille = valeur('order-lastname');
+  const civilite = mode === 'store' ? '' : (civ ? civ.value : '');
+  return {
+    client: {
+      civilite, prenom, nomFamille,
+      nom: `${prenom} ${nomFamille}`.trim(),
+      email: valeur('order-email'),
+      phone: valeur('order-phone'),
+    },
+    adresseLivraison: mode === 'delivery' ? {
+      ligne1: valeur('order-address'), complement: valeur('order-address2'),
+      codePostal: valeur('order-postal'), ville: valeur('order-city'),
+    } : null,
+  };
+}
+
+/* Texte de réception pour l'email, la commande et l'admin */
+function texteReception(mode, adresseLivraison) {
+  if (mode === 'store') return 'Retrait en boutique — ' + BOUTIQUE_ADRESSE + ' (' + BOUTIQUE_HORAIRES + ')';
+  if (mode === 'pickup' && selectedRelais) {
+    return 'Point Relais La Poste — ' + selectedRelais.nom + '\nAdresse : ' + selectedRelais.adresseComplete
+      + (selectedRelais.horairesTexte ? '\nHoraires : ' + selectedRelais.horairesTexte : '');
+  }
+  if (mode === 'vinted' && selectedRelais) return 'Vinted Locker — ' + selectedRelais.nom + '\nAdresse : ' + selectedRelais.adresseComplete;
+  if (mode === 'delivery' && adresseLivraison) {
+    const a = adresseLivraison;
+    return 'Livraison à domicile (' + LIVRAISON.delivery.delai + ') — '
+      + [a.ligne1, a.complement, a.codePostal + ' ' + a.ville].filter(Boolean).join(', ');
+  }
+  return (LIVRAISON[mode] || LIVRAISON.store).label;
+}
+
+/* ---------- Validation du formulaire commande -------------- */
+/* Message d'erreur sous chaque champ ; la saisie est conservée */
+function validateOrderForm(form) {
+  const mode = getDeliveryMode();
+  let premierChampFaux = null;
+
+  const verifier = (id, ok, message) => {
+    const champ = document.getElementById(id);
+    if (!champ) return;
+    const erreur = champ.parentElement.querySelector('.form-error');
+    champ.classList.toggle('error', !ok);
+    champ.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    if (erreur) {
+      if (message) erreur.textContent = message;
+      erreur.classList.toggle('visible', !ok);
+    }
+    if (!ok && !premierChampFaux) premierChampFaux = champ;
+  };
+
+  if (mode !== 'store') {
+    const civOk = !!document.querySelector('input[name="order-civilite"]:checked');
+    document.querySelector('.civilite-choix')?.classList.toggle('error', !civOk);
+    document.querySelector('[data-pour="civilite"]')?.classList.toggle('visible', !civOk);
+    if (!civOk && !premierChampFaux) premierChampFaux = document.querySelector('input[name="order-civilite"]');
+  }
+
+  verifier('order-firstname', !!valeur('order-firstname'), 'Prénom obligatoire');
+  verifier('order-lastname', !!valeur('order-lastname'), 'Nom obligatoire');
+  const email = valeur('order-email');
+  verifier('order-email', RE_EMAIL.test(email), email ? 'Adresse email invalide (ex : jean.dupont@email.com)' : 'Email obligatoire');
+  const tel = valeur('order-phone');
+  verifier('order-phone', RE_TEL.test(tel.replace(/[\s.-]/g, '')), tel ? 'Numéro invalide (ex : 06 12 34 56 78)' : 'Téléphone obligatoire');
+
+  if (mode === 'delivery') {
+    verifier('order-address', !!valeur('order-address'), 'Adresse obligatoire');
+    const cp = valeur('order-postal');
+    verifier('order-postal', RE_CP.test(cp), cp ? 'Code postal : 5 chiffres' : 'Code postal obligatoire');
+    verifier('order-city', !!valeur('order-city'), 'Ville obligatoire');
+  } else {
+    ['order-address', 'order-postal', 'order-city'].forEach(id => verifier(id, true));
+  }
+
+  if ((mode === 'pickup' || mode === 'vinted') && !selectedRelais) {
+    showToast('⚠️ Choisissez d\'abord votre point relais', 'error');
+    modifierRelaisDepuisCommande();
+    return false;
+  }
+
+  if (premierChampFaux) {
+    premierChampFaux.focus();
+    premierChampFaux.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast('Veuillez corriger les champs en rouge', 'error');
+    return false;
+  }
+  return true;
 }
 
 /* ---------- Initialisation --------------------------------- */
@@ -898,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedRelais = null;
         const subPickup = document.getElementById('pickup-sub-label');
         const subVinted = document.getElementById('vinted-sub-label');
-        if (subPickup) subPickup.textContent = '1,90€ — Offert dès 40€ — 24/48h';
+        if (subPickup) subPickup.textContent = 'Bureau de poste ou relais · offert dès 40 €';
         if (subVinted) subVinted.textContent = '1,90€ — Offert dès 40€ — 24h/24 7j/7';
       }
     });
