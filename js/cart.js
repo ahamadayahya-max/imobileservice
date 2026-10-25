@@ -414,12 +414,6 @@ function updateTotals() {
     }
     hintEl.style.display = hintEl.textContent ? '' : 'none';
   }
-
-  /* Afficher/masquer le champ adresse */
-  const addressField = document.getElementById('address-field');
-  if (addressField) {
-    addressField.classList.toggle('visible', deliveryMode === 'delivery');
-  }
 }
 
 /* ---------- Ouvrir / fermer le drawer ---------------------- */
