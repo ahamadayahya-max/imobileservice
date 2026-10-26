@@ -82,8 +82,8 @@
           <input type="text" id="search-prix" class="admin-input" placeholder="🔍 Rechercher..." oninput="filtrerPrix()" style="width:180px;">
         </div>
         <div style="overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Produit</th><th>Catégorie</th><th title="Prix d'achat Mobilax hors taxes">Prix Mobilax (HT)</th><th>Prix vente (TTC)</th><th title="Prix de vente − prix d'achat TTC">Marge TTC</th><th>Nouveau prix</th><th>Sauvegarder</th></tr></thead>
+          <table class="data-table" id="prix-table">
+            <thead><tr><th>Produit</th><th>Catégorie</th><th title="Prix d'achat Mobilax hors taxes">Prix Mobilax (HT)</th><th>Prix vente (TTC)</th><th title="Prix de vente − prix d'achat TTC">Marge TTC</th><th>Nouveau prix</th><th>Sauvegarder</th><th>Visible</th></tr></thead>
             <tbody id="prix-tbody"></tbody>
           </table>
         </div>
@@ -131,7 +131,9 @@
 
   /* Recalque l'état local sur la réponse du serveur (source de vérité) */
   function synchroniser(r) {
+    const masques = new Set((r.masques || []).map(Number));
     catalogue.forEach(p => {
+      p.masque = masques.has(p.id);
       const fixe = r.prix[p.id];
       p.prix = fixe != null ? Number(fixe) : p.prixAuto;
       p.prixManuel = fixe != null;
@@ -184,7 +186,7 @@
   function afficherPrix(liste) {
     document.getElementById('prix-tbody').innerHTML = liste.map(p => `
       <tr>
-        <td>${p.emoji} <strong>${esc(p.nom)}</strong>${p.masque ? ' <span style="color:#b45309;font-size:.75rem;">(masqué)</span>' : ''}</td>
+        <td style="${p.masque ? 'opacity:.55;' : ''}">${p.emoji} <strong>${esc(p.nom)}</strong>${p.masque ? ' <span style="color:#b45309;font-size:.75rem;">(masqué)</span>' : ''}</td>
         <td>${catLabels[p.categorie] || ''} ${p.categorie}</td>
         <td style="white-space:nowrap;color:#555;">${couts[p.id] ? euros(couts[p.id]) : '—'}</td>
         <td>
@@ -197,7 +199,18 @@
           <button class="btn-admin btn-primary btn-sm" onclick="sauvegarderPrix(${p.id})">✅ Mettre à jour</button>
           ${p.prixManuel ? `<button class="btn-admin btn-ghost btn-sm" title="Revenir au prix automatique" onclick="revenirAuto(${p.id})">↺ Auto</button>` : ''}
         </td>
+        <td>
+          <label class="toggle-switch" title="${p.masque ? 'Masqué sur le site' : 'Visible sur le site'}">
+            <input type="checkbox" ${!p.masque ? 'checked' : ''} onchange="toggleVisible(${p.id}, this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </td>
       </tr>`).join('');
+  }
+
+  /* Même réglage que la page Produits : masque ou réaffiche le produit pour tous les clients */
+  function toggleVisible(id, visible) {
+    envoyer({ masques: { [id]: !visible } }, visible ? '✅ Produit visible' : '🙈 Produit masqué');
   }
 
   function sauvegarderPrix(id) {
