@@ -58,7 +58,7 @@
             <thead>
               <tr>
                 <th>Photo</th><th>Nom</th><th>Catégorie</th>
-                <th>Prix</th><th title="Prix d'achat Mobilax HT">Prix Mobilax</th><th title="(prix de vente HT − achat HT) / achat HT">Marge</th><th>Badge</th><th>Visible</th><th>Actions</th>
+                <th>Prix</th><th title="Prix d'achat Mobilax HT">Prix Mobilax</th><th title="Prix de vente − prix d'achat TTC">Marge TTC</th><th>Badge</th><th>Visible</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="produits-tbody"></tbody>
@@ -187,18 +187,17 @@
       + `<br><span style="font-size:.72rem;color:#888;">${euros(achatHT * TVA)} TTC</span>`;
   }
 
-  /* Marge = (prix de vente HT − achat HT) / achat HT : on compare hors taxes des deux côtés,
-     sinon la TVA gonflerait artificiellement la marge */
+  /* Marge affichée en euros TTC (prix de vente − achat TTC). La couleur suit le taux
+     (vente HT − achat HT) / achat HT : 🟢 > 50 %, 🟡 20-50 %, 🔴 < 20 % */
   function celluleMarge(p) {
     if (!estMobilax(p)) return '<span style="color:#aaa;">—</span>';
     if (coutsIndispo) return '<span style="color:#e65100;font-size:.8rem;">⚠️ indispo</span>';
     const achatHT = Number(couts[p.id]);
     if (!achatHT) return '<span style="color:#aaa;">—</span>';
-    const venteHT = p.prix / TVA;
-    const taux = (venteHT - achatHT) / achatHT * 100;
+    const taux = (p.prix / TVA - achatHT) / achatHT * 100;
+    const gainTTC = p.prix - achatHT * TVA;
     const [pastille, couleur, alerte] = taux > 50 ? ['🟢', '#2e7d32', ''] : taux >= 20 ? ['🟡', '#b26a00', ''] : ['🔴', '#c62828', ' ALERTE'];
-    return `<span style="font-weight:700;font-size:.85rem;color:${couleur};white-space:nowrap;">${pastille} ${Math.round(taux)} %${alerte}</span>`
-      + `<br><span style="font-size:.72rem;color:#888;">${venteHT - achatHT >= 0 ? '+' : ''}${euros(venteHT - achatHT)} HT</span>`;
+    return `<span style="font-weight:700;font-size:.85rem;color:${couleur};white-space:nowrap;">${pastille} ${gainTTC >= 0 ? '+' : ''}${euros(gainTTC)} TTC${alerte}</span>`;
   }
 
   function filtrerProduits() {

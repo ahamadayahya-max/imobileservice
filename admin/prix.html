@@ -83,7 +83,7 @@
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table">
-            <thead><tr><th>Produit</th><th>Catégorie</th><th title="Prix d'achat Mobilax hors taxes">Prix Mobilax (HT)</th><th>Prix vente (TTC)</th><th title="Marge sur le prix d'achat, calculée hors taxes">Marge</th><th>Nouveau prix</th><th>Sauvegarder</th></tr></thead>
+            <thead><tr><th>Produit</th><th>Catégorie</th><th title="Prix d'achat Mobilax hors taxes">Prix Mobilax (HT)</th><th>Prix vente (TTC)</th><th title="Prix de vente − prix d'achat TTC">Marge TTC</th><th>Nouveau prix</th><th>Sauvegarder</th></tr></thead>
             <tbody id="prix-tbody"></tbody>
           </table>
         </div>
@@ -167,11 +167,13 @@
     return (p.prix / TVA - achat) / achat;
   }
 
-  function badgeMarge(m) {
+  /* Affiche le gain en euros TTC (prix de vente − achat TTC) ; la couleur suit le taux de marge */
+  function badgeMarge(p) {
+    const m = marge(p);
     if (m == null) return '<span style="color:#aaa;font-size:.8rem;">—</span>';
-    const pct = Math.round(m * 100);
+    const gainTTC = p.prix - couts[p.id] * TVA;
     const [fond, texte, icone] = m > 0.5 ? ['#dcfce7', '#166534', '🟢'] : m >= 0.2 ? ['#ffedd5', '#9a3412', '🟡'] : ['#fee2e2', '#b91c1c', '🔴'];
-    return `<span class="badge" style="background:${fond};color:${texte};">${icone} ${pct >= 0 ? '+' : ''}${pct}%${m < 0.2 ? ' ALERTE' : ''}</span>`;
+    return `<span class="badge" style="background:${fond};color:${texte};white-space:nowrap;">${icone} ${gainTTC >= 0 ? '+' : ''}${euros(gainTTC)} TTC${m < 0.2 ? ' ALERTE' : ''}</span>`;
   }
 
   function filtrerPrix() {
@@ -189,7 +191,7 @@
           <span class="prix-value">${euros(p.prix)}</span>
           ${p.prixManuel ? `<br><span style="font-size:.72rem;color:#8b1a1a;font-weight:600;">fixé à la main · auto : ${euros(p.prixAuto)}</span>` : '<br><span style="font-size:.72rem;color:#888;">automatique</span>'}
         </td>
-        <td>${badgeMarge(marge(p))}</td>
+        <td>${badgeMarge(p)}</td>
         <td><input type="number" class="admin-input prix-input" id="new-prix-${p.id}" value="${p.prix.toFixed(2)}" step="0.01" min="0"></td>
         <td style="white-space:nowrap;">
           <button class="btn-admin btn-primary btn-sm" onclick="sauvegarderPrix(${p.id})">✅ Mettre à jour</button>
