@@ -45,7 +45,7 @@
       <!-- KPI -->
       <div class="kpi-grid" id="kpi-grid">
         <div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-label">Produits total</div><div class="kpi-value" id="kpi-produits">—</div></div>
-        <div class="kpi-card"><div class="kpi-icon">👁️</div><div class="kpi-label">Produits visibles</div><div class="kpi-value" id="kpi-visibles">—</div></div>
+        <div class="kpi-card"><div class="kpi-icon">👁️</div><div class="kpi-label">Visibles / masqués</div><div class="kpi-value" id="kpi-visibles">—</div></div>
         <div class="kpi-card"><div class="kpi-icon">🛍️</div><div class="kpi-label">Commandes</div><div class="kpi-value" id="kpi-commandes">—</div></div>
         <div class="kpi-card"><div class="kpi-icon">📩</div><div class="kpi-label">Devis reçus</div><div class="kpi-value" id="kpi-devis">—</div></div>
       </div>
@@ -110,7 +110,7 @@
     const visibles  = CATALOGUE.filter(p => !p.masque).length;
 
     document.getElementById('kpi-produits').textContent  = totalProd;
-    document.getElementById('kpi-visibles').textContent  = visibles;
+    document.getElementById('kpi-visibles').textContent  = `${visibles} / ${totalProd - visibles}`;
     document.getElementById('kpi-commandes').textContent = commandes.length;
     document.getElementById('kpi-devis').textContent     = devis.length;
 

@@ -58,7 +58,7 @@
             <thead>
               <tr>
                 <th>Photo</th><th>Nom</th><th>Catégorie</th>
-                <th>Prix</th><th title="Prix d'achat Mobilax (HT et TTC) et marge">Prix Mobilax</th><th>Badge</th><th>Visible</th><th>Actions</th>
+                <th>Prix</th><th title="Prix d'achat Mobilax HT">Prix Mobilax</th><th title="(prix de vente HT − achat HT) / achat HT">Marge</th><th>Badge</th><th>Visible</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="produits-tbody"></tbody>
@@ -152,26 +152,53 @@
     }
   }
 
-  /* Prix d'achat HT Mobilax : réservés à l'admin connecté, jamais envoyés au public */
+  /* Prix d'achat HT Mobilax : réservés à l'admin connecté, jamais envoyés au public.
+     Cache 1 h dans sessionStorage (onglet admin uniquement) pour limiter les appels Mobilax. */
   let couts = {};
+  let coutsIndispo = false;
   const TVA = 1.20;
+  const CLE_COUTS = 'ims_admin_couts';
+  const DUREE_CACHE_COUTS = 60 * 60 * 1000;
   async function chargerCouts() {
     try {
+      const cache = JSON.parse(sessionStorage.getItem(CLE_COUTS) || 'null');
+      if (cache && Date.now() - cache.le < DUREE_CACHE_COUTS) { couts = cache.couts; return; }
+    } catch { /* cache illisible : on recharge */ }
+    try {
       const res = await fetch('/api/mobilax?action=couts', { credentials: 'same-origin' });
-      if (res.ok) couts = (await res.json()).couts || {};
-    } catch { /* colonne Mobilax vide si indisponible */ }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      couts = (await res.json()).couts || {};
+      coutsIndispo = false;
+      try { sessionStorage.setItem(CLE_COUTS, JSON.stringify({ le: Date.now(), couts })); } catch { /* sans cache */ }
+    } catch {
+      coutsIndispo = true;
+    }
   }
 
-  /* Achat HT, achat TTC et marge TTC par rapport au prix de vente */
+  const estMobilax = p => p.source === 'mobilax';
+
+  /* Prix d'achat Mobilax : HT (comme facturé par Mobilax) + rappel TTC */
   function celluleMobilax(p) {
+    if (!estMobilax(p)) return '<span style="color:#aaa;">—</span>';
+    if (coutsIndispo) return '<span style="color:#e65100;font-size:.8rem;">⚠️ indispo</span>';
     const achatHT = Number(couts[p.id]);
     if (!achatHT) return '<span style="color:#aaa;">—</span>';
-    const achatTTC = achatHT * TVA;
-    const marge = p.prix - achatTTC;
-    const couleur = marge < 0 ? '#c62828' : marge < 2 ? '#e65100' : '#2e7d32';
-    return `<span style="font-size:.82rem;">${euros(achatHT)} <span style="color:#888;">HT</span></span><br>`
-      + `<span style="font-size:.75rem;color:#888;">${euros(achatTTC)} TTC</span><br>`
-      + `<span style="font-size:.75rem;font-weight:600;color:${couleur};">marge ${marge >= 0 ? '+' : ''}${euros(marge)}</span>`;
+    return `<span style="font-size:.85rem;">${euros(achatHT)} <span style="color:#888;font-size:.75rem;">HT</span></span>`
+      + `<br><span style="font-size:.72rem;color:#888;">${euros(achatHT * TVA)} TTC</span>`;
+  }
+
+  /* Marge = (prix de vente HT − achat HT) / achat HT : on compare hors taxes des deux côtés,
+     sinon la TVA gonflerait artificiellement la marge */
+  function celluleMarge(p) {
+    if (!estMobilax(p)) return '<span style="color:#aaa;">—</span>';
+    if (coutsIndispo) return '<span style="color:#e65100;font-size:.8rem;">⚠️ indispo</span>';
+    const achatHT = Number(couts[p.id]);
+    if (!achatHT) return '<span style="color:#aaa;">—</span>';
+    const venteHT = p.prix / TVA;
+    const taux = (venteHT - achatHT) / achatHT * 100;
+    const [pastille, couleur, alerte] = taux > 50 ? ['🟢', '#2e7d32', ''] : taux >= 20 ? ['🟡', '#b26a00', ''] : ['🔴', '#c62828', ' ALERTE'];
+    return `<span style="font-weight:700;font-size:.85rem;color:${couleur};white-space:nowrap;">${pastille} ${Math.round(taux)} %${alerte}</span>`
+      + `<br><span style="font-size:.72rem;color:#888;">${venteHT - achatHT >= 0 ? '+' : ''}${euros(venteHT - achatHT)} HT</span>`;
   }
 
   function filtrerProduits() {
@@ -189,7 +216,7 @@
     document.getElementById('produits-count').textContent = liste.length + ' produit(s)' + (nbMasques ? ' · ' + nbMasques + ' masqué(s)' : '');
     const tbody = document.getElementById('produits-tbody');
     if (!liste.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#aaa;">Aucun produit</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#aaa;">Aucun produit</td></tr>';
       return;
     }
     tbody.innerHTML = liste.map(p => {
@@ -203,6 +230,7 @@
           ${p.prixManuel ? '<br><span style="font-size:.7rem;color:#8b1a1a;">fixé à la main</span>' : ''}
         </td>
         <td style="white-space:nowrap;">${celluleMobilax(p)}</td>
+        <td>${celluleMarge(p)}</td>
         <td>${p.badge ? `<span class="badge badge-devis">${esc(p.badge)}</span>` : '—'}</td>
         <td>
           <label class="toggle-switch" title="${p.masque ? 'Masqué sur le site' : 'Visible sur le site'}">
@@ -246,7 +274,7 @@
   }
 
   function toggleVisible(id, visible) {
-    envoyer({ masques: { [id]: !visible } }, visible ? 'Produit affiché' : 'Produit masqué');
+    envoyer({ masques: { [id]: !visible } }, visible ? '✅ Produit visible' : '🙈 Produit masqué');
   }
 
   function ouvrirModal(id) {
