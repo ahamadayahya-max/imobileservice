@@ -58,7 +58,7 @@
             <thead>
               <tr>
                 <th>Photo</th><th>Nom</th><th>Catégorie</th>
-                <th>Prix</th><th>Badge</th><th>Visible</th><th>Actions</th>
+                <th>Prix</th><th title="Prix d'achat Mobilax (HT et TTC) et marge">Prix Mobilax</th><th>Badge</th><th>Visible</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="produits-tbody"></tbody>
@@ -124,6 +124,8 @@
     catalogue = (typeof CATALOGUE !== 'undefined') ? CATALOGUE : [];
     if (!window.REGLAGES) adminToast('Réglages serveur indisponibles : les modifications ne pourront pas être enregistrées', 'error');
     afficherProduits(catalogue);
+    await chargerCouts();
+    filtrerProduits();
   });
 
   /* Recalque l'état local sur la réponse du serveur (source de vérité) */
@@ -150,6 +152,28 @@
     }
   }
 
+  /* Prix d'achat HT Mobilax : réservés à l'admin connecté, jamais envoyés au public */
+  let couts = {};
+  const TVA = 1.20;
+  async function chargerCouts() {
+    try {
+      const res = await fetch('/api/mobilax?action=couts', { credentials: 'same-origin' });
+      if (res.ok) couts = (await res.json()).couts || {};
+    } catch { /* colonne Mobilax vide si indisponible */ }
+  }
+
+  /* Achat HT, achat TTC et marge TTC par rapport au prix de vente */
+  function celluleMobilax(p) {
+    const achatHT = Number(couts[p.id]);
+    if (!achatHT) return '<span style="color:#aaa;">—</span>';
+    const achatTTC = achatHT * TVA;
+    const marge = p.prix - achatTTC;
+    const couleur = marge < 0 ? '#c62828' : marge < 2 ? '#e65100' : '#2e7d32';
+    return `<span style="font-size:.82rem;">${euros(achatHT)} <span style="color:#888;">HT</span></span><br>`
+      + `<span style="font-size:.75rem;color:#888;">${euros(achatTTC)} TTC</span><br>`
+      + `<span style="font-size:.75rem;font-weight:600;color:${couleur};">marge ${marge >= 0 ? '+' : ''}${euros(marge)}</span>`;
+  }
+
   function filtrerProduits() {
     const q   = document.getElementById('search').value.toLowerCase();
     const cat = document.getElementById('filter-cat').value;
@@ -165,7 +189,7 @@
     document.getElementById('produits-count').textContent = liste.length + ' produit(s)' + (nbMasques ? ' · ' + nbMasques + ' masqué(s)' : '');
     const tbody = document.getElementById('produits-tbody');
     if (!liste.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#aaa;">Aucun produit</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#aaa;">Aucun produit</td></tr>';
       return;
     }
     tbody.innerHTML = liste.map(p => {
@@ -178,6 +202,7 @@
           <span class="price-editable" onclick="editerPrixInline(${p.id}, this)" id="price-${p.id}">${euros(p.prix)}</span>
           ${p.prixManuel ? '<br><span style="font-size:.7rem;color:#8b1a1a;">fixé à la main</span>' : ''}
         </td>
+        <td style="white-space:nowrap;">${celluleMobilax(p)}</td>
         <td>${p.badge ? `<span class="badge badge-devis">${esc(p.badge)}</span>` : '—'}</td>
         <td>
           <label class="toggle-switch" title="${p.masque ? 'Masqué sur le site' : 'Visible sur le site'}">
@@ -245,8 +270,8 @@
   }
 
   function exportCSV() {
-    const rows = [['ID', 'Nom', 'Categorie', 'Prix', 'Prix automatique', 'Visible']];
-    catalogue.forEach(p => rows.push([p.id, p.nom, p.categorie, p.prix, p.prixAuto, !p.masque ? 'Oui' : 'Non']));
+    const rows = [['ID', 'Nom', 'Categorie', 'Prix', 'Prix automatique', 'Achat Mobilax HT', 'Visible']];
+    catalogue.forEach(p => rows.push([p.id, p.nom, p.categorie, p.prix, p.prixAuto, couts[p.id] ?? '', !p.masque ? 'Oui' : 'Non']));
     const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n');
     const a = document.createElement('a');
     a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\ufeff' + csv);
