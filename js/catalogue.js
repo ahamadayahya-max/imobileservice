@@ -129,7 +129,8 @@ window.CATALOGUE = CATALOGUE;
    Le tableau est muté en place car boutique.js / product.html
    gardent une référence directe à CATALOGUE.
    ============================================================ */
-const MOBILAX_TIMEOUT_MS = 6000;
+/* Démarrage à froid du serveur + ~26 appels Mobilax : 6 s ne suffisaient pas toujours */
+const MOBILAX_TIMEOUT_MS = 15000;
 
 window.CATALOGUE_SOURCE = 'statique';
 
@@ -176,15 +177,24 @@ window.imageProduit = function (p) {
 };
 
 window.CATALOGUE_PRET = (async () => {
-  const controleur = new AbortController();
-  const minuteur = setTimeout(() => controleur.abort(), MOBILAX_TIMEOUT_MS);
   const promesseReglages = chargerReglages();
 
-  try {
-    const res = await fetch('/api/mobilax?action=catalogue', { signal: controleur.signal });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+  /* Un essai + une nouvelle tentative : un échec ponctuel ne fait pas basculer en catalogue de secours */
+  async function chargerUneFois() {
+    const controleur = new AbortController();
+    const minuteur = setTimeout(() => controleur.abort(), MOBILAX_TIMEOUT_MS);
+    try {
+      const res = await fetch('/api/mobilax?action=catalogue', { signal: controleur.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    } finally {
+      clearTimeout(minuteur);
+    }
+  }
 
-    const { produits, categoriesChargees } = await res.json();
+  try {
+    const { produits, categoriesChargees } = await chargerUneFois()
+      .catch(() => new Promise(r => setTimeout(r, 1500)).then(chargerUneFois));
     if (!Array.isArray(produits) || !produits.length) throw new Error('catalogue vide');
 
     const conserves = CATALOGUE.filter(p => !categoriesChargees.includes(p.categorie));
@@ -193,8 +203,6 @@ window.CATALOGUE_PRET = (async () => {
     window.CATALOGUE_SOURCE = 'mobilax';
   } catch (err) {
     console.warn('[catalogue] API Mobilax indisponible, catalogue statique conservé :', err.message);
-  } finally {
-    clearTimeout(minuteur);
   }
 
   window.REGLAGES = await promesseReglages;

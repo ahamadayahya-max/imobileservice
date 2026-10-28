@@ -284,8 +284,10 @@ module.exports = async (req, res) => {
       if (!data.produits.length) {
         return res.status(502).json({ status: 'ERROR', message: 'Catalogue Mobilax vide' });
       }
-      /* Cache CDN 10 min : protège le quota Mobilax (30 req/min sur /products) */
-      res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
+      /* Cache CDN 10 min : protège le quota Mobilax (30 req/min sur /products).
+         Jusqu'à 24 h, le CDN sert la dernière version connue pendant qu'il recharge :
+         un ralentissement ou une panne Mobilax ne vide pas la boutique. */
+      res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=86400, stale-if-error=86400');
       return res.status(200).json({ status: 'OK', ...data, produits: data.produits.map(versionPublique) });
     }
 
