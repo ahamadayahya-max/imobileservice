@@ -1,0 +1,89 @@
+/* ============================================================
+   « Les offres de la semaine » (page d'accueil) — styles isolés :
+   toutes les règles sont préfixées .ims-offres-, aucune règle globale.
+   Couleurs et rayons : variables déjà définies dans css/style.css.
+   ============================================================ */
+
+.ims-offres { padding-top: 3rem; padding-bottom: 3rem; }
+.ims-offres .section-header { margin-bottom: 1.5rem; }
+.ims-offres-tag { background: var(--color-bordeaux-light); color: var(--color-bordeaux); }
+.ims-offres-entete-bas { display: flex; justify-content: center; margin-top: .25rem; }
+.ims-offres-lien-boutique { color: var(--color-cyan-dark); font-weight: 600; font-size: .92rem; text-decoration: none; }
+.ims-offres-lien-boutique:hover { text-decoration: underline; }
+
+.ims-offres-cadre { position: relative; }
+
+/* Piste horizontale : 3 cartes visibles sur ordinateur, défilement par cran */
+.ims-offres-piste {
+  display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory;
+  scroll-behavior: smooth; padding: .5rem .25rem 1rem; margin: 0;
+  list-style: none; scrollbar-width: none; overscroll-behavior-x: contain;
+}
+.ims-offres-piste::-webkit-scrollbar { display: none; }
+
+.ims-offres-carte {
+  flex: 0 0 calc((100% - 2rem) / 3); scroll-snap-align: start;
+  display: flex; flex-direction: column; background: var(--color-bg-card);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow var(--transition), transform var(--transition);
+}
+.ims-offres-carte:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.ims-offres-visuel {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  height: 170px; background: var(--color-bg); text-decoration: none;
+}
+.ims-offres-visuel img { max-width: 80%; max-height: 150px; object-fit: contain; }
+.ims-offres-emoji { font-size: 3.5rem; }
+.ims-offres-badge {
+  position: absolute; top: .6rem; left: .6rem; background: var(--color-bordeaux); color: #fff;
+  font-size: .68rem; font-weight: 700; letter-spacing: .04em; padding: .25rem .55rem; border-radius: var(--radius-full);
+}
+
+.ims-offres-corps { display: flex; flex-direction: column; gap: .4rem; padding: .9rem 1rem 1rem; flex: 1; }
+.ims-offres-nom {
+  font-family: var(--font-title); font-size: .95rem; font-weight: 600; line-height: 1.3; color: var(--color-text);
+  text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ims-offres-desc {
+  font-size: .8rem; color: var(--color-text-secondary); line-height: 1.4; margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ims-offres-pied { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: auto; padding-top: .4rem; }
+.ims-offres-prix { font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--color-bordeaux); white-space: nowrap; }
+.ims-offres-prix small { font-size: .7rem; font-weight: 500; color: var(--color-text-muted); margin-left: .2rem; }
+.ims-offres-bouton {
+  background: var(--color-cyan); color: #fff; font-weight: 600; font-size: .85rem; text-decoration: none;
+  padding: .5rem .95rem; border-radius: var(--radius-sm); white-space: nowrap; transition: background var(--transition-fast);
+}
+.ims-offres-bouton:hover, .ims-offres-bouton:focus-visible { background: var(--color-cyan-dark); }
+
+/* Flèches : ordinateur uniquement (sur mobile, balayage au doigt) */
+.ims-offres-fleche {
+  position: absolute; top: 40%; transform: translateY(-50%); z-index: 2;
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--color-border);
+  background: var(--color-bg-card); color: var(--color-text); box-shadow: var(--shadow-sm);
+  font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.ims-offres-fleche:hover { border-color: var(--color-cyan); color: var(--color-cyan-dark); }
+.ims-offres-fleche:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px; }
+.ims-offres-fleche[disabled] { opacity: .35; cursor: default; }
+.ims-offres-prec { left: -18px; }
+.ims-offres-suiv { right: -18px; }
+
+@media (max-width: 1024px) {
+  .ims-offres-carte { flex-basis: calc((100% - 1rem) / 2); }
+}
+
+/* Mobile : une carte principale + l'aperçu de la suivante */
+@media (max-width: 640px) {
+  .ims-offres { padding-top: 2rem; padding-bottom: 2rem; }
+  .ims-offres-fleche { display: none; }
+  .ims-offres-carte { flex-basis: 80%; }
+  .ims-offres-visuel { height: 150px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ims-offres-piste { scroll-behavior: auto; }
+  .ims-offres-carte, .ims-offres-carte:hover { transition: none; transform: none; }
+}

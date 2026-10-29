@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Produits de la semaine — Admin i-Mobile Service</title>
+  <link href="../css/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="../css/offres-semaine.css">
+  <style>
+    /* Styles propres à cette page */
+    .ofs-ligne { display: grid; grid-template-columns: 28px 48px 1fr auto; gap: .75rem; align-items: center; padding: .75rem 1.25rem; border-bottom: 1px solid #f3f3f3; }
+    .ofs-ligne img { width: 44px; height: 44px; object-fit: contain; background: #fafafa; border-radius: 6px; }
+    .ofs-pos { font-weight: 700; color: #8b1a1a; text-align: center; }
+    .ofs-nom { font-weight: 600; font-size: .88rem; line-height: 1.3; }
+    .ofs-infos { font-size: .78rem; color: #777; margin-top: .2rem; }
+    .ofs-reglages { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-top: .45rem; font-size: .78rem; color: #555; }
+    .ofs-reglages input[type=datetime-local] { padding: .3rem .4rem; font-size: .78rem; }
+    .ofs-actions { display: flex; gap: .35rem; align-items: center; }
+    .ofs-resultat { display: flex; align-items: center; gap: .75rem; padding: .55rem 1.25rem; border-bottom: 1px solid #f5f5f5; font-size: .85rem; }
+    .ofs-resultat img { width: 36px; height: 36px; object-fit: contain; }
+    .ofs-resultat .ofs-nom { flex: 1; font-weight: 500; }
+    .ofs-etat { padding: .75rem 1.25rem; font-size: .85rem; }
+    .ofs-etat.ok { color: #166534; background: #f0fdf4; }
+    .ofs-etat.ko { color: #b91c1c; background: #fef2f2; }
+    /* Variables du site, nécessaires aux styles de l'aperçu (limitées à ce bloc) */
+    .ofs-apercu {
+      --color-bg: #f8f9fc; --color-bg-card: #fff; --color-text: #1a1a2e; --color-text-secondary: #5a5a7a; --color-text-muted: #9b9bb5;
+      --color-border: #e4e7ee; --color-cyan: #00bcd4; --color-cyan-dark: #0097a7; --color-bordeaux: #8b1a1a; --color-bordeaux-light: #fce8e8;
+      --shadow-sm: 0 2px 6px rgba(26,26,46,.08); --shadow-md: 0 4px 16px rgba(26,26,46,.10);
+      --radius-sm: 10px; --radius-md: 14px; --radius-full: 9999px;
+      --transition: .25s ease; --transition-fast: .15s ease; --font-title: 'Space Grotesk', sans-serif;
+      background: #f8f9fc; padding: 1.25rem 2rem;
+    }
+    @media (max-width: 700px) { .ofs-ligne { grid-template-columns: 24px 40px 1fr; } .ofs-actions { grid-column: 1 / -1; justify-content: flex-end; } }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">🔧 i-Mobile Service<span>Administration</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="produits.html"><span class="nav-icon">📦</span> Produits</a>
+      <a href="photos.html"><span class="nav-icon">🖼️</span> Photos</a>
+      <a href="prix.html"><span class="nav-icon">💰</span> Prix</a>
+      <a href="offres.html" class="active"><span class="nav-icon">⭐</span> Produits de la semaine</a>
+      <a href="commandes.html"><span class="nav-icon">📋</span> Commandes</a>
+      <a href="factures.html"><span class="nav-icon">🧾</span> Factures</a>
+      <a href="devis.html"><span class="nav-icon">📩</span> Devis reçus</a>
+      <a href="rdv.html"><span class="nav-icon">📅</span> Rendez-vous</a>
+      <a href="messages.html"><span class="nav-icon">✉️</span> Messages</a>
+    </nav>
+    <div class="sidebar-footer"><button class="btn-logout" onclick="adminLogout()">🚪 Déconnexion</button></div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">⭐ Produits de la semaine</div>
+      <div class="topbar-right">
+        <button class="btn-admin btn-primary btn-sm" id="btn-enregistrer" onclick="enregistrer()">✅ Enregistrer</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div style="background:#e8f7ee;border:1px solid #9bd3b0;color:#1f5f3a;border-radius:8px;padding:.7rem 1rem;font-size:.85rem;margin:0 0 1rem;">
+        ⭐ Choisissez <strong>3 à 5 produits</strong> du catalogue : ils s'affichent sous la bannière de la page d'accueil, dans l'ordre ci-dessous.
+        Avec moins de 3 produits en cours, la section est masquée. Dates et heures en <strong>heure de Paris</strong> (laisser vide = sans limite).
+        Le prix affiché est celui du catalogue (page Prix) : c'est aussi celui payé au panier.
+      </div>
+
+      <div class="data-card">
+        <div class="card-header">
+          <strong>Sélection</strong>
+          <span id="compteur" style="font-size:.85rem;color:#888;"></span>
+        </div>
+        <div id="selection"></div>
+        <div id="etat" class="ofs-etat" style="display:none;"></div>
+      </div>
+
+      <div class="data-card">
+        <div class="card-header">
+          <strong>Ajouter un produit</strong>
+          <input type="text" id="recherche" class="admin-input" placeholder="🔍 Rechercher un produit du catalogue…" oninput="rechercher()" style="width:320px;max-width:100%;">
+        </div>
+        <div id="resultats"><div class="ofs-etat" style="color:#888;">Tapez au moins 2 lettres (ex : « verre », « iPhone 15 », « chargeur »).</div></div>
+      </div>
+
+      <div class="data-card">
+        <div class="card-header"><strong>Aperçu</strong><span style="font-size:.8rem;color:#888;">produits actifs, avant enregistrement (sans tenir compte des dates)</span></div>
+        <div class="ofs-apercu" id="apercu"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="../js/catalogue.js"></script>
+<script src="../js/images.js"></script>
+<script src="auth.js"></script>
+<script>
+  /* Sélection enregistrée sur le serveur (/api/offres-semaine, fichier dédié) :
+     seuls les produits Mobilax peuvent être choisis, car eux seuls ont un prix
+     contrôlé par le serveur au moment du paiement. */
+  const MIN = 3, MAX = 5;
+  let catalogue = [];
+  let selection = [];
+
+  const euros = n => Number(n).toFixed(2).replace('.', ',') + ' €';
+  const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const produit = id => catalogue.find(p => p.id === id);
+  const imageDe = p => { const i = p && window.imageProduit(p); return i ? i.src : ''; };
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.CATALOGUE_PRET) await window.CATALOGUE_PRET;
+    catalogue = (typeof CATALOGUE !== 'undefined' ? CATALOGUE : []).filter(p => p.source === 'mobilax');
+    try {
+      const res = await fetch('/api/offres-semaine?admin=1', { credentials: 'same-origin' });
+      if (res.status === 401) { window.location.replace('login.html'); return; }
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+      selection = (json.offres || []).sort((a, b) => a.position - b.position)
+        .map(o => ({ produitId: o.produitId, actif: o.actif !== false, debut: o.debut || '', fin: o.fin || '' }));
+    } catch (err) {
+      adminToast('Sélection indisponible : ' + err.message, 'error');
+    }
+    afficher();
+  });
+
+  function etatOffre(o) {
+    const p = produit(o.produitId);
+    if (!p) return '⚠️ introuvable dans le catalogue (épuisé chez Mobilax ?) : ne s\'affichera pas';
+    if (p.masque) return '⚠️ produit masqué dans la boutique : ne s\'affichera pas';
+    if (p.stock === 0) return '⚠️ en rupture : ne s\'affichera pas';
+    return '';
+  }
+
+  function afficher() {
+    const actifs = selection.filter(o => o.actif).length;
+    document.getElementById('compteur').textContent = `${selection.length} / ${MAX} produits · ${actifs} actif(s)`;
+    document.getElementById('selection').innerHTML = selection.length ? selection.map((o, i) => {
+      const p = produit(o.produitId);
+      const alerte = etatOffre(o);
+      return `<div class="ofs-ligne" style="${o.actif ? '' : 'opacity:.55;'}">
+        <div class="ofs-pos">${i + 1}</div>
+        <div>${p && imageDe(p) ? `<img src="${esc(imageDe(p))}" alt="">` : '📦'}</div>
+        <div>
+          <div class="ofs-nom">${esc(p ? p.nom : 'Produit #' + o.produitId)}</div>
+          <div class="ofs-infos">${p ? euros(p.prix) + ' TTC' : ''} ${alerte ? `<span style="color:#b45309;">${alerte}</span>` : ''}</div>
+          <div class="ofs-reglages">
+            <label>Début <input type="datetime-local" class="admin-input" value="${esc(o.debut)}" onchange="modifier(${i}, 'debut', this.value)"></label>
+            <label>Fin <input type="datetime-local" class="admin-input" value="${esc(o.fin)}" onchange="modifier(${i}, 'fin', this.value)"></label>
+          </div>
+        </div>
+        <div class="ofs-actions">
+          <label class="toggle-switch" title="${o.actif ? 'Actif' : 'Inactif'}">
+            <input type="checkbox" ${o.actif ? 'checked' : ''} onchange="modifier(${i}, 'actif', this.checked)" aria-label="Activer ${esc(p ? p.nom : '')}">
+            <span class="toggle-slider"></span>
+          </label>
+          <button class="btn-admin btn-ghost btn-sm" onclick="deplacer(${i}, -1)" ${i === 0 ? 'disabled' : ''} aria-label="Monter">↑</button>
+          <button class="btn-admin btn-ghost btn-sm" onclick="deplacer(${i}, 1)" ${i === selection.length - 1 ? 'disabled' : ''} aria-label="Descendre">↓</button>
+          <button class="btn-admin btn-ghost btn-sm" onclick="retirer(${i})" title="Retirer de la sélection (le produit reste dans le catalogue)">✕ Retirer</button>
+        </div>
+      </div>`;
+    }).join('') : '<div class="ofs-etat" style="color:#888;">Aucun produit sélectionné : la section n\'apparaît pas sur la page d\'accueil.</div>';
+
+    const msg = verifier();
+    const etat = document.getElementById('etat');
+    etat.style.display = '';
+    etat.className = 'ofs-etat ' + (msg ? 'ko' : 'ok');
+    etat.textContent = msg || (actifs ? `✅ Prêt : ${actifs} produits actifs.` : 'ℹ️ Aucun produit actif : la section sera masquée.');
+    document.getElementById('btn-enregistrer').disabled = !!msg;
+    rechercher();
+    afficherApercu();
+  }
+
+  /* Mêmes règles que le serveur (api/_lib/offresSemaine.js) */
+  function verifier() {
+    const actifs = selection.filter(o => o.actif).length;
+    if (selection.length > MAX) return `❌ ${MAX} produits maximum.`;
+    if (actifs && actifs < MIN) return `❌ Il faut au moins ${MIN} produits actifs (ou aucun pour masquer la section).`;
+    const mauvaiseDate = selection.find(o => o.debut && o.fin && o.fin <= o.debut);
+    if (mauvaiseDate) return '❌ Une date de fin est avant (ou égale à) sa date de début.';
+    return '';
+  }
+
+  function modifier(i, champ, valeur) { selection[i][champ] = valeur; afficher(); }
+  function deplacer(i, sens) {
+    const j = i + sens;
+    if (j < 0 || j >= selection.length) return;
+    [selection[i], selection[j]] = [selection[j], selection[i]];
+    afficher();
+  }
+  function retirer(i) { selection.splice(i, 1); afficher(); }
+  function ajouter(id) {
+    if (selection.length >= MAX || selection.some(o => o.produitId === id)) return;
+    selection.push({ produitId: id, actif: true, debut: '', fin: '' });
+    afficher();
+  }
+
+  function rechercher() {
+    const q = document.getElementById('recherche').value.trim().toLowerCase();
+    const zone = document.getElementById('resultats');
+    if (q.length < 2) {
+      zone.innerHTML = '<div class="ofs-etat" style="color:#888;">Tapez au moins 2 lettres (ex : « verre », « iPhone 15 », « chargeur »).</div>';
+      return;
+    }
+    const plein = selection.length >= MAX;
+    const res = catalogue.filter(p => p.nom.toLowerCase().includes(q)).slice(0, 20);
+    zone.innerHTML = res.length ? res.map(p => {
+      const deja = selection.some(o => o.produitId === p.id);
+      return `<div class="ofs-resultat">
+        ${imageDe(p) ? `<img src="${esc(imageDe(p))}" alt="">` : '📦'}
+        <span class="ofs-nom">${esc(p.nom)}${p.masque ? ' <span style="color:#b45309;font-size:.75rem;">(masqué)</span>' : ''}</span>
+        <span style="white-space:nowrap;">${euros(p.prix)}</span>
+        <button class="btn-admin btn-secondary btn-sm" onclick="ajouter(${p.id})" ${deja || plein ? 'disabled' : ''}>${deja ? '✓ Ajouté' : plein ? 'Max 5' : '+ Ajouter'}</button>
+      </div>`;
+    }).join('') : '<div class="ofs-etat" style="color:#888;">Aucun produit trouvé.</div>';
+  }
+
+  /* Même rendu que la page d'accueil (classes de css/offres-semaine.css) */
+  function afficherApercu() {
+    const cartes = selection.filter(o => o.actif).map(o => produit(o.produitId)).filter(Boolean);
+    document.getElementById('apercu').innerHTML = cartes.length < MIN
+      ? '<p style="color:#888;font-size:.85rem;margin:0;">Moins de 3 produits actifs : la section n\'est pas affichée sur le site.</p>'
+      : `<div class="ims-offres-cadre"><ul class="ims-offres-piste">${cartes.map(p => `
+          <li class="ims-offres-carte">
+            <div class="ims-offres-visuel">${imageDe(p) ? `<img src="${esc(imageDe(p))}" alt="">` : `<span class="ims-offres-emoji">${esc(p.emoji || '📦')}</span>`}</div>
+            <div class="ims-offres-corps">
+              <span class="ims-offres-nom">${esc(p.nom)}</span>
+              <div class="ims-offres-pied"><span class="ims-offres-prix">${euros(p.prix)}<small>TTC</small></span><span class="ims-offres-bouton">Découvrir</span></div>
+            </div>
+          </li>`).join('')}</ul></div>`;
+  }
+
+  async function enregistrer() {
+    const msg = verifier();
+    if (msg) { adminToast(msg, 'error'); return; }
+    const bouton = document.getElementById('btn-enregistrer');
+    bouton.disabled = true;
+    try {
+      const res = await fetch('/api/offres-semaine', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offres: selection }),
+      });
+      if (res.status === 401) { window.location.replace('login.html'); return; }
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message || 'Enregistrement impossible');
+      adminToast('✅ Offres de la semaine enregistrées — en ligne sur l\'accueil sous 2 minutes', 'success');
+    } catch (err) {
+      adminToast('Non enregistré : ' + err.message, 'error');
+    } finally {
+      bouton.disabled = !!verifier();
+    }
+  }
+</script>
+</body>
+</html>
