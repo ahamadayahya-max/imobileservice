@@ -1,5 +1,5 @@
 /* ============================================================
-   i-Mobile Service — « Les offres de la semaine » (page d'accueil)
+   i-Mobile Service — « Nos coups de cœur de la semaine » (page d'accueil)
    Lit /api/offres-semaine (3 à 5 produits réels du catalogue, prix
    identique au paiement) et remplit #ims-offres-semaine.
    Moins de 3 offres ou erreur → rien n'est affiché (aucun espace vide).
@@ -36,14 +36,14 @@
         <div class="section-inner">
           <div class="section-header">
             <div class="section-tag ims-offres-tag">SÉLECTION DE LA SEMAINE</div>
-            <h2 class="section-title" id="ims-offres-titre">LES OFFRES DE LA SEMAINE</h2>
+            <h2 class="section-title" id="ims-offres-titre">NOS COUPS DE CŒUR DE LA SEMAINE</h2>
             <p class="section-subtitle">Les bons plans i-Mobile Service, sélectionnés pour vous.</p>
             <div class="ims-offres-entete-bas"><a class="ims-offres-lien-boutique" href="boutique.html">Voir toute la boutique →</a></div>
           </div>
           <div class="ims-offres-cadre">
-            <button type="button" class="ims-offres-fleche ims-offres-prec" aria-label="Offres précédentes">‹</button>
-            <ul class="ims-offres-piste" tabindex="0" aria-label="Offres de la semaine">${offres.map(carte).join('')}</ul>
-            <button type="button" class="ims-offres-fleche ims-offres-suiv" aria-label="Offres suivantes">›</button>
+            <button type="button" class="ims-offres-fleche ims-offres-prec" aria-label="Produits précédents">‹</button>
+            <ul class="ims-offres-piste" tabindex="0" aria-label="Coups de cœur de la semaine">${offres.map(carte).join('')}</ul>
+            <button type="button" class="ims-offres-fleche ims-offres-suiv" aria-label="Produits suivants">›</button>
           </div>
         </div>
       </section>`;
