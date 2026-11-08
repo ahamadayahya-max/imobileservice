@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<!-- Ancien modèle EmailJS (template_01plkrv), remplacé le 08/11/2026 par emailjs-modele-commande.html.
+     Reconstitué à partir d'un email reçu : à recoller dans EmailJS seulement pour revenir en arrière. -->
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}
+  .container{max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+  .header{background:#8b1a1a;color:#fff;padding:28px 32px;text-align:center}
+  .header h1{margin:0;font-size:22px;letter-spacing:.5px}
+  .header p{margin:6px 0 0;opacity:.85;font-size:13px}
+  .order-num{background:#fff3f3;border:2px solid #8b1a1a;color:#8b1a1a;font-size:20px;font-weight:700;text-align:center;padding:14px;margin:24px 32px;border-radius:8px;letter-spacing:2px}
+  .section{padding:0 32px 20px}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#8b1a1a;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0e0e0}
+  .info-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;color:#444;border-bottom:1px solid #f9f9f9}
+  .info-row span:first-child{color:#888;min-width:80px}
+  .items-table{width:100%;border-collapse:collapse;font-size:14px}
+  .items-table th{background:#f8f8f8;padding:8px 10px;text-align:left;font-size:12px;color:#666;font-weight:600}
+  .items-table td{padding:9px 10px;border-bottom:1px solid #f0f0f0;color:#333}
+  .items-table td:last-child{text-align:right;font-weight:600;color:#8b1a1a}
+  .totals{background:#fafafa;border-radius:8px;padding:14px 18px;margin:0 32px 24px;font-size:14px}
+  .total-row{display:flex;justify-content:space-between;padding:4px 0;color:#666}
+  .total-row.grand{font-size:16px;font-weight:700;color:#1a1a1a;border-top:1px solid #e0e0e0;margin-top:8px;padding-top:10px}
+  .footer{background:#1a1a2e;color:#aaa;text-align:center;padding:18px 32px;font-size:12px}
+  .footer strong{color:#fff}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📱 i-Mobile Service</h1>
+    <p>Confirmation de commande · {{order_date}}</p>
+  </div>
+  <div class="order-num">N° {{order_number}}</div>
+  <div class="section">
+    <div class="section-title">Client</div>
+    <div class="info-row"><span>Nom</span><span>{{customer_name}}</span></div>
+    <div class="info-row"><span>Email</span><span>{{customer_email}}</span></div>
+    <div class="info-row"><span>Tél</span><span>{{customer_phone}}</span></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Articles commandés</div>
+    <table class="items-table">
+      <tr><th>Produit</th><th style="text-align:right">Total</th></tr>
+      <tr><td style="white-space:pre-line">{{order_items}}</td><td></td></tr>
+    </table>
+  </div>
+  <div class="section">
+    <div class="section-title">Livraison</div>
+    <div class="info-row"><span>Mode</span><span>{{delivery_mode}}</span></div>
+  </div>
+  <div class="totals">
+    <div class="total-row"><span>Sous-total</span><span>{{subtotal}}</span></div>
+    <div class="total-row"><span>Livraison</span><span>{{shipping}}</span></div>
+    <div class="total-row grand"><span>TOTAL</span><span>{{total}}</span></div>
+  </div>
+  <div class="footer">
+    <strong>i-Mobile Service</strong><br>
+    221 Route de Seysses · 31100 Toulouse<br>
+    📞 05 31 21 71 38
+  </div>
+</div>
+</body>
+</html>

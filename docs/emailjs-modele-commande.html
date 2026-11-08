@@ -18,12 +18,12 @@
   <!-- CLIENT : une information par ligne, libellé en gras suivi de « : » -->
   <tr><td style="padding:16px 32px 8px;">
     <div style="font-size:11px;font-weight:bold;text-transform:uppercase;color:#8b1a1a;letter-spacing:1px;padding-bottom:6px;border-bottom:1px solid #f0e0e0;">Client</div>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#333;">
-      <tr><td style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Civilité :</strong> {{customer_civilite}}</td></tr>
-      <tr><td style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Nom :</strong> {{customer_name}}</td></tr>
-      <tr><td style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Email :</strong> {{customer_email}}</td></tr>
-      <tr><td style="padding:6px 0;"><strong>Tél :</strong> {{customer_phone}}</td></tr>
-    </table>
+    <div style="font-size:14px;color:#333;">
+      <div style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Civilité :</strong> {{customer_civilite}}</div>
+      <div style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Nom :</strong> {{customer_name}}</div>
+      <div style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Email :</strong> {{customer_email}}</div>
+      <div style="padding:6px 0;"><strong>Tél :</strong> {{customer_phone}}</div>
+    </div>
   </td></tr>
 
   <tr><td style="padding:16px 32px 8px;">
@@ -33,18 +33,18 @@
 
   <tr><td style="padding:16px 32px 8px;">
     <div style="font-size:11px;font-weight:bold;text-transform:uppercase;color:#8b1a1a;letter-spacing:1px;padding-bottom:6px;border-bottom:1px solid #f0e0e0;">Livraison</div>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#333;">
-      <tr><td style="padding:6px 0;"><strong>Mode de réception :</strong> {{delivery_mode}}</td></tr>
-      <tr><td style="padding:2px 0 6px;white-space:pre-line;line-height:1.6;">{{reception_details}}</td></tr>
-    </table>
+    <div style="font-size:14px;color:#333;">
+      <div style="padding:6px 0;"><strong>Mode de réception :</strong> {{delivery_mode}}</div>
+      <div style="padding:2px 0 6px;white-space:pre-line;line-height:1.6;">{{reception_details}}</div>
+    </div>
   </td></tr>
 
   <tr><td style="padding:8px 32px 24px;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border-radius:8px;font-size:14px;color:#666;">
-      <tr><td style="padding:10px 18px 4px;"><strong>Sous-total :</strong> {{subtotal}}</td></tr>
-      <tr><td style="padding:4px 18px;"><strong>Livraison :</strong> {{shipping}}</td></tr>
-      <tr><td style="padding:10px 18px 12px;font-size:16px;font-weight:bold;color:#1a1a1a;border-top:1px solid #e0e0e0;">TOTAL : {{total}}</td></tr>
-    </table>
+    <div style="background:#fafafa;border-radius:8px;font-size:14px;color:#666;">
+      <div style="padding:10px 18px 4px;"><strong>Sous-total :</strong> {{subtotal}}</div>
+      <div style="padding:4px 18px;"><strong>Livraison :</strong> {{shipping}}</div>
+      <div style="padding:10px 18px 12px;font-size:16px;font-weight:bold;color:#1a1a1a;border-top:1px solid #e0e0e0;">TOTAL : {{total}}</div>
+    </div>
   </td></tr>
 
   <tr><td style="background:#1a1a2e;color:#aaaaaa;text-align:center;padding:18px 32px;font-size:12px;">
