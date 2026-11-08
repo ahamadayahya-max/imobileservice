@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border-collapse:separate;">
+
+  <tr><td style="background:#8b1a1a;color:#ffffff;padding:28px 32px;text-align:center;">
+    <div style="margin:0;font-size:22px;font-weight:bold;letter-spacing:.5px;">📱 i-Mobile Service</div>
+    <div style="margin:6px 0 0;font-size:13px;color:#f3dede;">Confirmation de commande · {{order_date}}</div>
+  </td></tr>
+
+  <tr><td style="padding:24px 32px 8px;">
+    <div style="background:#fff3f3;border:2px solid #8b1a1a;color:#8b1a1a;font-size:20px;font-weight:bold;text-align:center;padding:14px;border-radius:8px;letter-spacing:2px;">N° {{order_number}}</div>
+  </td></tr>
+
+  <!-- CLIENT : une information par ligne, libellé en gras suivi de « : » -->
+  <tr><td style="padding:16px 32px 8px;">
+    <div style="font-size:11px;font-weight:bold;text-transform:uppercase;color:#8b1a1a;letter-spacing:1px;padding-bottom:6px;border-bottom:1px solid #f0e0e0;">Client</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#333;">
+      <tr><td style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Civilité :</strong> {{customer_civilite}}</td></tr>
+      <tr><td style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Nom :</strong> {{customer_name}}</td></tr>
+      <tr><td style="padding:6px 0;border-bottom:1px solid #f5f5f5;"><strong>Email :</strong> {{customer_email}}</td></tr>
+      <tr><td style="padding:6px 0;"><strong>Tél :</strong> {{customer_phone}}</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:16px 32px 8px;">
+    <div style="font-size:11px;font-weight:bold;text-transform:uppercase;color:#8b1a1a;letter-spacing:1px;padding-bottom:6px;border-bottom:1px solid #f0e0e0;">Articles commandés</div>
+    <div style="font-size:14px;color:#333;padding:8px 0;white-space:pre-line;line-height:1.5;">{{order_items}}</div>
+  </td></tr>
+
+  <tr><td style="padding:16px 32px 8px;">
+    <div style="font-size:11px;font-weight:bold;text-transform:uppercase;color:#8b1a1a;letter-spacing:1px;padding-bottom:6px;border-bottom:1px solid #f0e0e0;">Livraison</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#333;">
+      <tr><td style="padding:6px 0;"><strong>Mode de réception :</strong> {{delivery_mode}}</td></tr>
+      <tr><td style="padding:2px 0 6px;white-space:pre-line;line-height:1.6;">{{reception_details}}</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:8px 32px 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border-radius:8px;font-size:14px;color:#666;">
+      <tr><td style="padding:10px 18px 4px;"><strong>Sous-total :</strong> {{subtotal}}</td></tr>
+      <tr><td style="padding:4px 18px;"><strong>Livraison :</strong> {{shipping}}</td></tr>
+      <tr><td style="padding:10px 18px 12px;font-size:16px;font-weight:bold;color:#1a1a1a;border-top:1px solid #e0e0e0;">TOTAL : {{total}}</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="background:#1a1a2e;color:#aaaaaa;text-align:center;padding:18px 32px;font-size:12px;">
+    <strong style="color:#ffffff;">i-Mobile Service</strong><br>
+    221 Route de Seysses · 31100 Toulouse<br>
+    📞 05 31 21 71 38
+  </td></tr>
+</table>
+</body>
+</html>

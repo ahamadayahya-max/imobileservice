@@ -36,18 +36,26 @@ function erreursCommande(client, livraison) {
   return err;
 }
 
-/* Texte de réception lisible pour les emails : adresse, point relais ou boutique */
+/* Réception pour les emails : { mode: libellé court, details: une ligne « Libellé : valeur » par information } */
 function texteLivraison(livraison) {
   const l = livraison || {};
   if (l.mode === 'delivery' && l.adresseLivraison) {
     const a = l.adresseLivraison;
-    return ['Livraison à domicile (Colissimo 2-3 jours ouvrés)', a.ligne1, a.complement, `${a.codePostal} ${a.ville}`].filter(Boolean).join('\n');
+    return {
+      mode: 'Livraison à domicile (Colissimo 2-3 jours ouvrés)',
+      details: ['Adresse : ' + a.ligne1, a.complement ? 'Complément : ' + a.complement : '', 'Code postal : ' + a.codePostal, 'Ville : ' + a.ville].filter(Boolean).join('\n'),
+    };
   }
   if (l.mode === 'pickup' && l.relais) {
-    return ['Point Relais La Poste', l.relais.nom, l.relais.adresse, l.relais.horaires ? 'Horaires : ' + l.relais.horaires : ''].filter(Boolean).join('\n');
+    return {
+      mode: 'Point Relais La Poste',
+      details: ['Point relais : ' + l.relais.nom, 'Adresse : ' + l.relais.adresse, l.relais.horaires ? 'Horaires : ' + l.relais.horaires : ''].filter(Boolean).join('\n'),
+    };
   }
-  if (l.mode === 'store' || !l.mode) return 'Retrait en boutique\n221 Route de Seysses, 31100 Toulouse\nMar-Ven 10h-19h / Sam 10h-18h';
-  return l.adresse || '';
+  if (l.mode === 'store' || !l.mode) {
+    return { mode: 'Retrait en boutique', details: 'Adresse : 221 Route de Seysses, 31100 Toulouse\nHoraires : Mar-Ven 10h-19h / Sam 10h-18h' };
+  }
+  return { mode: l.adresse || '', details: '' };
 }
 
 module.exports = { erreursCommande, texteLivraison };

@@ -436,7 +436,8 @@ function parametresEmailRdv(rdv, destinataire) {
     order_date: rdv.dateLabel + ' à ' + rdv.heure,
     customer_name: rdv.client.prenom + ' ' + rdv.client.nom,
     customer_email: rdv.client.email,
-    customer_phone: rdv.client.tel,
+    customer_civilite: '—',
+    customer_phone: (typeof formaterTelephone === 'function' ? formaterTelephone(rdv.client.tel) : rdv.client.tel),
     order_items:
       `RENDEZ-VOUS EN BOUTIQUE\n` +
       `Date : ${rdv.dateLabel} à ${rdv.heure}\n` +

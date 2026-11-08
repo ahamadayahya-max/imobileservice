@@ -103,6 +103,7 @@
 </footer>
 
 <div id="toast-container"></div>
+<script src="js/format.js"></script>
 <script src="js/main.js"></script>
 <script src="js/devis.js"></script>
 <script>
@@ -158,11 +159,13 @@
         const euros = n => typeof n === 'number' ? (n === 0 ? 'Gratuit' : n.toFixed(2).replace('.', ',') + '€') : '—';
         const params = dest => ({
           to_email: dest, order_number: r.commande, order_date: new Date().toLocaleString('fr-FR'),
+          customer_civilite: rc.civilite || '—',
           customer_name: rc.client || r.nom || '', customer_email: r.email || '', customer_phone: rc.telephone || '—',
           order_items: 'COMMANDE PAYÉE PAR CARTE (Stripe)\n' + articles
             + (rc.referencePaiement ? '\nRéférence paiement Stripe : ' + rc.referencePaiement : '')
             + '\n\nContact : 05 31 21 71 38 / ims.tlse@gmail.com',
           delivery_mode: rc.livraison || (MODES[r.livraison] || MODES.store).label,
+          reception_details: rc.livraisonDetails || '',
           subtotal: euros(rc.sousTotal), shipping: euros(rc.frais), total: r.total.toFixed(2).replace('.', ',') + '€ (payé)',
           reply_to: dest === 'ims.tlse@gmail.com' ? (r.email || dest) : 'ims.tlse@gmail.com',
         });

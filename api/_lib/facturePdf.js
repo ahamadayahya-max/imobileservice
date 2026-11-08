@@ -8,6 +8,7 @@
 
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const { ENTREPRISE } = require('./entreprise');
+const { formaterTelephone } = require('./format');
 
 const BORDEAUX = rgb(0.545, 0.102, 0.102);
 const CYAN = rgb(0, 0.59, 0.655);
@@ -81,7 +82,13 @@ async function genererFacturePdf(f) {
   const yBloc = y;
   ecrire('FACTURÉ À', G, y, { taille: 8, police: gras, couleur: GRIS });
   y -= 14;
-  for (const l of [f.client.nom, f.client.email, f.client.tel, f.client.adresse].filter(Boolean)) {
+  const lignesClient = [
+    f.client.nom,
+    f.client.email && 'Email : ' + f.client.email,
+    f.client.tel && 'Tél : ' + formaterTelephone(f.client.tel),
+    f.client.adresse && 'Adresse : ' + f.client.adresse,
+  ];
+  for (const l of lignesClient.filter(Boolean)) {
     for (const ligne of couper(l, 240, 10)) { ecrire(ligne, G, y, { taille: 10 }); y -= 13; }
   }
   let yp = yBloc;

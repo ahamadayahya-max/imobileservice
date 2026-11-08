@@ -18,6 +18,7 @@
 
 <main id="doc"></main>
 
+<script src="../js/format.js"></script>
 <script src="auth.js"></script>
 <script src="../js/entreprise.js"></script>
 <script>
@@ -72,9 +73,9 @@
           <div class="doc-bloc">
             <h2>Facturé à</h2>
             <strong>${e(f.client.nom)}</strong>
-            ${f.client.adresse ? '<br>' + e(f.client.adresse) : ''}
-            ${f.client.email ? '<br>' + e(f.client.email) : ''}
-            ${f.client.tel ? '<br>' + e(f.client.tel) : ''}
+            ${f.client.adresse ? '<br><b>Adresse :</b> ' + e(f.client.adresse) : ''}
+            ${f.client.email ? '<br><b>Email :</b> ' + e(f.client.email) : ''}
+            ${f.client.tel ? '<br><b>Tél :</b> ' + e(formaterTelephone(f.client.tel)) : ''}
           </div>
           <div class="doc-bloc">
             <h2>Règlement</h2>

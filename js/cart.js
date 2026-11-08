@@ -660,6 +660,10 @@ async function confirmStorePickup() {
   const { client, adresseLivraison } = lireCoordonnees(mode);
   const { email, phone } = client;
   const nomClient = [client.civilite, client.nom].filter(Boolean).join(' ');
+  /* Affichage seulement : le numéro brut reste dans la commande et les liens tel: */
+  const telAffiche = typeof formaterTelephone === 'function' ? formaterTelephone(phone) : phone;
+  const libelleMode = (LIVRAISON[mode] || LIVRAISON.store).label;
+  const details = detailsReception(mode, adresseLivraison);
   const orderNum  = genOrderNumber();
   const orderDate = new Date().toLocaleString('fr-FR');
 
@@ -704,18 +708,20 @@ async function confirmStorePickup() {
 N° ${orderNum}  |  ${orderDate}
 
 CLIENT
-Nom    : ${nomClient}
-Email  : ${email}
-Tél    : ${phone}
+${client.civilite ? 'Civilité : ' + client.civilite + '\n' : ''}Nom : ${client.nom}
+Email : ${email}
+Tél : ${telAffiche}
 
 ARTICLES
 ${articlesTexte}
 
-LIVRAISON : ${modeLabel}
+LIVRAISON
+Mode de réception : ${libelleMode}
+${details}
 
 Sous-total : ${subtotal.toFixed(2).replace('.', ',')}€
-Livraison  : ${shipping === 0 ? 'Gratuit' : shipping.toFixed(2).replace('.', ',') + '€'}
-TOTAL      : ${total.toFixed(2).replace('.', ',')}€
+Livraison : ${shipping === 0 ? 'Gratuit' : shipping.toFixed(2).replace('.', ',') + '€'}
+TOTAL : ${total.toFixed(2).replace('.', ',')}€
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 i-Mobile Service · 05 31 21 71 38
 221 Route de Seysses · 31100 Toulouse`;
@@ -724,11 +730,13 @@ i-Mobile Service · 05 31 21 71 38
     to_email:         email,  /* destinataire dynamique */
     order_number:     orderNum,
     order_date:       orderDate,
-    customer_name:    nomClient,
+    customer_civilite: client.civilite || '—',
+    customer_name:    client.nom,
     customer_email:   email,
-    customer_phone:   phone,
+    customer_phone:   telAffiche,
     order_items:      articlesTexte + '\n\nPaiement : à régler auprès de la boutique (non payé en ligne)\nContact : 05 31 21 71 38 / ims.tlse@gmail.com',
-    delivery_mode:    modeLabel,
+    delivery_mode:    libelleMode,
+    reception_details: details,
     subtotal:         subtotal.toFixed(2).replace('.', ',') + '€',
     shipping:         shipping === 0 ? 'Gratuit' : shipping.toFixed(2).replace('.', ',') + '€',
     total:            total.toFixed(2).replace('.', ',') + '€',
@@ -914,6 +922,22 @@ function texteReception(mode, adresseLivraison) {
       + [a.ligne1, a.complement, a.codePostal + ' ' + a.ville].filter(Boolean).join(', ');
   }
   return (LIVRAISON[mode] || LIVRAISON.store).label;
+}
+
+/* Détail de réception pour l'email, une information par ligne « Libellé : valeur » */
+function detailsReception(mode, adresseLivraison) {
+  const lignes = [];
+  if (mode === 'delivery' && adresseLivraison) {
+    lignes.push('Adresse : ' + adresseLivraison.ligne1);
+    if (adresseLivraison.complement) lignes.push('Complément : ' + adresseLivraison.complement);
+    lignes.push('Code postal : ' + adresseLivraison.codePostal, 'Ville : ' + adresseLivraison.ville);
+  } else if ((mode === 'pickup' || mode === 'vinted') && selectedRelais) {
+    lignes.push('Point relais : ' + selectedRelais.nom, 'Adresse : ' + selectedRelais.adresseComplete);
+    if (selectedRelais.horairesTexte) lignes.push('Horaires : ' + selectedRelais.horairesTexte);
+  } else if (mode === 'store') {
+    lignes.push('Adresse : ' + BOUTIQUE_ADRESSE, 'Horaires : ' + BOUTIQUE_HORAIRES);
+  }
+  return lignes.join('\n');
 }
 
 /* ---------- Validation du formulaire commande -------------- */

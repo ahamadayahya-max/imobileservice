@@ -54,6 +54,7 @@
 </div>
 
 <div id="toast-container"></div>
+<script src="../js/format.js"></script>
 <script src="auth.js"></script>
 <script>
   requireAuth();
@@ -131,19 +132,19 @@
       const livraison = relais
         ? `${livraisonBase}<br><small style="color:#8b1a1a;font-weight:600;">📍 ${esc(relais.nom)}</small><br><small style="color:#666;">${esc(relais.adresse || relais.adresseComplete)}</small>${relais.horaires && typeof relais.horaires === 'string' ? `<br><small style="color:#999;">🕐 ${esc(relais.horaires)}</small>` : ''}`
         : a && a.ligne1
-          ? `${livraisonBase}<br><small style="color:#444;">${esc(a.ligne1)}${a.complement ? '<br>' + esc(a.complement) : ''}<br>${esc(a.codePostal)} ${esc(a.ville)}</small>`
+          ? `${livraisonBase}<br><small style="color:#444;">Adresse : ${esc(a.ligne1)}${a.complement ? '<br>Complément : ' + esc(a.complement) : ''}<br>Code postal : ${esc(a.codePostal)}<br>Ville : ${esc(a.ville)}</small>`
           : modeLiv === 'delivery' && c.livraison?.adresse
             ? `${livraisonBase}<br><small style="color:#444;">${esc(c.livraison.adresse)}</small>`
             : livraisonBase;
-      const civ = c.client?.civilite ? esc(c.client.civilite) + ' ' : '';
       const sujet = encodeURIComponent(`Commande ${c.id} — i-Mobile Service`);
       const corps = encodeURIComponent(`Bonjour ${c.client?.nom || ''},\n\nConcernant votre commande ${c.id}...\n\nCordialement,\ni-Mobile Service`);
       return `<tr>
         <td><span class="badge badge-commande">${esc(c.id)}</span></td>
         <td style="white-space:nowrap;font-size:.82rem;">${esc(c.date)}</td>
         <td>
-          <strong>${civ}${esc(c.client?.nom || '—')}</strong><br>
-          <a href="tel:${esc(c.client?.phone)}" style="font-size:.78rem;color:#8b1a1a;">${esc(c.client?.phone || '')}</a>${c.client?.email ? `<br><a href="mailto:${esc(c.client.email)}" style="font-size:.75rem;color:#666;">${esc(c.client.email)}</a>` : ''}
+          ${c.client?.civilite ? `<span style="font-size:.75rem;"><span style="color:#999;">Civilité : </span>${esc(c.client.civilite)}</span><br>` : ''}
+          <span style="font-size:.78rem;color:#999;">Nom : </span><strong>${esc(c.client?.nom || '—')}</strong>
+          ${c.client?.phone ? `<br><span style="font-size:.78rem;"><span style="color:#999;">Tél : </span><a href="tel:${esc(c.client.phone)}" style="color:#8b1a1a;">${esc(formaterTelephone(c.client.phone))}</a></span>` : ''}${c.client?.email ? `<br><span style="font-size:.75rem;"><span style="color:#999;">Email : </span><a href="mailto:${esc(c.client.email)}" style="color:#666;">${esc(c.client.email)}</a></span>` : ''}
         </td>
         <td style="max-width:180px;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(articles)}">${esc(articles)}</td>
         <td style="font-size:.82rem;">${livraison}</td>

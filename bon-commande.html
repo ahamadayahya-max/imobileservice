@@ -17,6 +17,7 @@
 
 <main id="doc"></main>
 
+<script src="js/format.js"></script>
 <script src="js/entreprise.js"></script>
 <script>
 /* ============================================================
@@ -77,9 +78,10 @@
       <section class="doc-parties">
         <div class="doc-bloc">
           <h2>Client</h2>
-          ${e(cmd.client && cmd.client.nom)}<br>
-          ${e(cmd.client && cmd.client.email)}<br>
-          ${e(cmd.client && cmd.client.phone)}
+          ${cmd.client && cmd.client.civilite ? '<b>Civilité :</b> ' + e(cmd.client.civilite) + '<br>' : ''}
+          <b>Nom :</b> ${e(cmd.client && cmd.client.nom)}<br>
+          <b>Email :</b> ${e(cmd.client && cmd.client.email)}<br>
+          <b>Tél :</b> ${e(formaterTelephone(cmd.client && cmd.client.phone))}
         </div>
         <div class="doc-bloc">
           <h2>Réception</h2>

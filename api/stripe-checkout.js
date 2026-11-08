@@ -22,6 +22,7 @@ const { fraisLivraison, LIVRAISON } = require('./_lib/livraison');
 const { emailConfigure } = require('./_lib/email');
 const { erreursCommande, texteLivraison } = require('./_lib/clientCommande');
 const { prixMinimum } = require('./_lib/prixMinimum');
+const { formaterTelephone } = require('./_lib/format');
 
 /* Seules ces adresses peuvent servir de retour après paiement */
 const ORIGINES = ['https://imobileservice.fr', 'https://www.imobileservice.fr', 'https://imobileservice.vercel.app'];
@@ -154,10 +155,13 @@ async function verifierPaiement(stripe, req, res) {
     /* Détails pour les emails de confirmation, envoyés une seule fois par success.html */
     if (premiereConfirmation) {
       const c = dossier.client || {};
+      const reception = texteLivraison(dossier.livraison);
       recap = {
-        client: [c.civilite, c.prenom, c.nomFamille].filter(Boolean).join(' ') || c.nom || '',
-        telephone: c.phone || '',
-        livraison: texteLivraison(dossier.livraison),
+        civilite: c.civilite || '',
+        client: [c.prenom, c.nomFamille].filter(Boolean).join(' ') || c.nom || '',
+        telephone: formaterTelephone(c.phone),
+        livraison: reception.mode,
+        livraisonDetails: reception.details,
         sousTotal: dossier.soustotal, frais: dossier.frais,
         referencePaiement: reference,
       };

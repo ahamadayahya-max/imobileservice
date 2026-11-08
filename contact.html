@@ -375,6 +375,7 @@
 </footer>
 
 <div id="toast-container"></div>
+<script src="js/format.js"></script>
 <script src="js/main.js"></script>
 <script>
 document.getElementById('contact-form').addEventListener('submit', function(e) {
@@ -432,7 +433,8 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
         to_email: 'ims.tlse@gmail.com',
         order_number: msg.id, order_date: msg.date,
         customer_name: msg.client.prenom + ' ' + msg.client.nom,
-        customer_email: msg.client.email, customer_phone: msg.client.tel || '—',
+        customer_civilite: '—',
+        customer_email: msg.client.email, customer_phone: msg.client.tel ? (typeof formaterTelephone === 'function' ? formaterTelephone(msg.client.tel) : msg.client.tel) : '—',
         order_items: `MESSAGE DU FORMULAIRE CONTACT\nSujet : ${msg.sujet}\n\n${msg.message}`,
         delivery_mode: 'Formulaire de contact', subtotal: '—', shipping: '—', total: '—',
         reply_to: msg.client.email,
